@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         getStringFileButton.isEnabled = false
         putStringFileButton.isEnabled = false
 
-        val config = java.net.URI("https://192.168.0.102:8080/").run {
+        val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
             org.blockstack.android.sdk.BlockstackConfig(
                     this,
                     java.net.URI("${this}/redirect/"),
@@ -47,8 +47,11 @@ class MainActivity : AppCompatActivity() {
                 onLoadedCallback = {
                     // Wait until this callback fires before using any of the
                     // BlockstackSession API methods
-
-                    signInButton.isEnabled = true
+                    if (intent?.action == Intent.ACTION_VIEW) {
+                        handleAuthResponse(intent)
+                    }
+                    else
+                        signInButton.isEnabled = true
                 })
         getStringFileButton.isEnabled = false
         putStringFileButton.isEnabled = false
@@ -154,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         val options = GetFileOptions(username = username,
                                 zoneFileLookupURL = zoneFileLookupUrl,
-                                app = "https://flamboyant-darwin-d11c17.netlify.com",
+                                app = "https://condescending-fermat-e43740.netlify.com",
                                 decrypt = false)
                         blockstackSession().getFile(textFileName, options, { contentResult: Result<Any> ->
                             if (contentResult.hasValue) {
@@ -175,10 +178,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-
-        if (intent?.action == Intent.ACTION_VIEW) {
-            handleAuthResponse(intent)
         }
     }
 
