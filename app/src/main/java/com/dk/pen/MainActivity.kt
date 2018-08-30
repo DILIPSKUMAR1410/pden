@@ -15,13 +15,14 @@ import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import org.blockstack.android.sdk.*
 import org.jetbrains.anko.coroutines.experimental.bg
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.java.simpleName
 
-    private val textFileName = "message.txt"
+    private val textFileName = "message.json"
     private val imageFileName = "team.jpg"
 
     private var _blockstackSession: BlockstackSession? = null
@@ -47,10 +48,6 @@ class MainActivity : AppCompatActivity() {
                 onLoadedCallback = {
                     // Wait until this callback fires before using any of the
                     // BlockstackSession API methods
-                    if (intent?.action == Intent.ACTION_VIEW) {
-                        handleAuthResponse(intent)
-                    }
-                    else
                         signInButton.isEnabled = true
                 })
         getStringFileButton.isEnabled = false
@@ -77,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             val options = GetFileOptions()
             blockstackSession().getFile(textFileName, options, { contentResult ->
                 if (contentResult.hasValue) {
-                    val content = contentResult.value!!
+                    val content = contentResult.value!!.toString()
                     Log.d(TAG, "File contents: ${content as String}")
                     runOnUiThread {
                         fileContentsTextView.text = content
@@ -91,7 +88,10 @@ class MainActivity : AppCompatActivity() {
         putStringFileButton.setOnClickListener { _ ->
             readURLTextView.text = "Uploading..."
             val options = PutFileOptions()
-            blockstackSession().putFile(textFileName, "Hello Android!", options,
+            val rootObject= JSONObject()
+            rootObject.put("name","Dilip")
+            rootObject.put("age","28")
+            blockstackSession().putFile(textFileName, rootObject.toString(), options,
                     { readURLResult ->
                         if (readURLResult.hasValue) {
                             val readURL = readURLResult.value!!
@@ -249,6 +249,7 @@ class MainActivity : AppCompatActivity() {
                             onSignIn(userData)
                         }
                     } else {
+                        Log.d(TAG, "error: " + userDataResult.error)
                         Toast.makeText(this, "error: " + userDataResult.error, Toast.LENGTH_SHORT).show()
                     }
                 })
