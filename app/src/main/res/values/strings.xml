@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">pden</string>
     <string name="send_tweet">send_tweet</string>
     <string name="chars_left">chars_left</string>
 </resources>
