@@ -9,7 +9,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
+import com.dk.pen.ObjectBox
 import com.dk.pen.R
+import com.dk.pen.model.MyThought
+import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.PutFileOptions
@@ -19,6 +22,8 @@ import java.sql.Timestamp
 class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
+    private lateinit var mythoughtBox: Box<MyThought>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_compose)
@@ -85,6 +90,8 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
                     blockstackSession().putFile("MyThoughts.json", rootObject.toString(), options,
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
+                                    mythoughtBox = ObjectBox.boxStore.boxFor(MyThought::class.java)
+                                    mythoughtBox.put(MyThought(rootObject.getString("thought"),rootObject.getString("timestamp")))
                                     val readURL = readURLResult.value!!
                                     Log.d("Gaia URL", "File stored at: ${readURL}")
                                 } else {

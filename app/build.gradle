@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
-
-apply plugin: 'kotlin-android'
-
+apply plugin: 'kotlin-android' // if using Kotlin
+apply plugin: 'kotlin-kapt' // if using Kotlin
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'io.objectbox'
 
 android {
     compileSdkVersion 27
