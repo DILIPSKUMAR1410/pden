@@ -10,7 +10,7 @@ interface ComposeThoughtMvpView : MvpView {
 
     fun showTooManyCharsError()
 
-    fun showEmptyTweetError()
+    fun showEmptyThoughtError()
 
     fun showSendTweetError()
 

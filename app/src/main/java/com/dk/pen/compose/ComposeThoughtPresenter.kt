@@ -6,7 +6,6 @@ import com.dk.pen.base.BasePresenter
 class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
     private val MAX_URL_LENGTH = 23 // it will change
-
     private var charsLeft: Int = 140
     private var lastAtIndex: Int = -1
 
@@ -16,12 +15,6 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         checkLength(text)
     }
 
-    fun sendThought() {
-        when {
-            charsLeft < 0 -> mvpView?.showTooManyCharsError()
-            else -> sendThought("${mvpView?.getThought()}")
-        }
-    }
 
     fun onTextChanged(text: String, start: Int, count: Int) {
 
