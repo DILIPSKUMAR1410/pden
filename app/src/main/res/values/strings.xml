@@ -2,4 +2,5 @@
     <string name="app_name">Pden</string>
     <string name="send_tweet">send_tweet</string>
     <string name="chars_left">chars_left</string>
+    <string name="profile_pic_contentDescriptor">Profile Picture</string>
 </resources>

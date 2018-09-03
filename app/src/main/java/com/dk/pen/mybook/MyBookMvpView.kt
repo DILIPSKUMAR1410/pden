@@ -1,36 +1,27 @@
 package com.dk.pen.mybook
 
 import com.dk.pen.base.MvpView
-import com.dk.pen.model.Interest
-import com.dk.pen.model.OthersThought
+import com.dk.pen.model.Thought
 
 
 /**
  * Created by andrea on 17/05/16.
  */
-interface TimelineMvpView : MvpView {
+interface MyBookMvpView : MvpView {
 
-    fun showTweets(tweets: MutableList<OthersThought>)
+    fun showThoughts(thoughts: MutableList<Thought>)
 
-    fun showTweet(tweet: OthersThought)
+    fun showThought(thought: Thought)
 
-    fun showMoreTweets(tweets: MutableList<OthersThought>)
+    fun showMoreMyThoughts(thoughts: MutableList<Thought>)
 
-    fun getLastTweetId(): Long
+    fun getLastMyThoughtId(): Long
 
     fun stopRefresh()
-
-    fun showEmpty()
-
-    fun showError()
-
-    fun showSnackBar(stringResource: Int)
 
     fun showLoading()
 
     fun hideLoading()
-
-    fun showNewTweet(tweet: OthersThought, user: Interest)
 
     fun updateRecyclerViewView()
 

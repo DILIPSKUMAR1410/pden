@@ -11,7 +11,9 @@ import android.widget.TextView
 import android.widget.Toast
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
-import com.dk.pen.model.MyThought
+import com.dk.pen.model.Thought
+import com.dk.pen.model.User
+import com.dk.pen.model.User_
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
@@ -22,7 +24,9 @@ import java.sql.Timestamp
 class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
-    private lateinit var mythoughtBox: Box<MyThought>
+    private lateinit var thoughtBox: Box<Thought>
+    private lateinit var userBox: Box<User>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,8 +94,16 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
                     blockstackSession().putFile("MyThoughts.json", rootObject.toString(), options,
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
-                                    mythoughtBox = ObjectBox.boxStore.boxFor(MyThought::class.java)
-                                    mythoughtBox.put(MyThought(rootObject.getString("thought"),rootObject.getString("timestamp")))
+                                    thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+                                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
+
+                                    val user = userBox.query().run {
+                                        equal(User_.blockstackId, "me")
+                                        build().findFirst()
+                                    }
+                                    val thought = Thought(rootObject.getString("thought"),rootObject.getString("timestamp").toLong())
+                                    thought.user.setAndPutTargetAlways(user)
+                                    thoughtBox.put(thought)
                                     val readURL = readURLResult.value!!
                                     Log.d("Gaia URL", "File stored at: ${readURL}")
                                 } else {

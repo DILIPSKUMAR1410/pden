@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.dk.pen.mybook.MyBookActivity
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
@@ -182,10 +183,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onSignIn(userData: UserData) {
+
+        val intent = Intent(this, MyBookActivity::class.java)
+        startActivity(intent)
         userDataTextView.text = "Signed in as ${userData.decentralizedID}"
         showUserAvatar(userData.profile?.avatarImage)
         signInButton.isEnabled = false
-
         getStringFileButton.isEnabled = true
         putStringFileButton.isEnabled = true
         putImageFileButton.isEnabled = true
