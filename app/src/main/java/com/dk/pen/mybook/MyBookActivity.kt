@@ -1,18 +1,23 @@
 package com.dk.pen.mybook
 
+import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.widget.ProgressBar
+import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
 import com.dk.pen.common.visible
+import com.dk.pen.compose.ComposeThoughtActivity
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
+import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
@@ -22,6 +27,7 @@ import org.blockstack.android.sdk.BlockstackSession
 
 class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
+    private lateinit var thoughtBox: Box<Thought>
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
     private val presenter: MyBookPresenter by lazy {getMyBookPresenter()}
@@ -29,6 +35,7 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var floatingActionButton: FloatingActionButton
     private fun getMyBookPresenter() = MyBookPresenter()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,9 +60,10 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
         presenter.attachView(this)
         adapter = MyBookAdapter()
-        recyclerView = findViewById(R.id.tweetsRecyclerView) as RecyclerView
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout) as SwipeRefreshLayout
-        loadingProgressBar = findViewById(R.id.loadingProgressBar) as ProgressBar
+        recyclerView = findViewById(R.id.tweetsRecyclerView)
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        loadingProgressBar = findViewById(R.id.loadingProgressBar)
+        floatingActionButton = findViewById(R.id.fab_compose)
 
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
@@ -74,8 +82,10 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
         })
 
 //        swipeRefreshLayout.setOnRefreshListener { presenter.onRefresh() }
+        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+        Log.d("total thoughts-->>", thoughtBox.count().toString())
 
-                    if (adapter.thoughts.isEmpty())
+                if (adapter.thoughts.isEmpty())
                     {
                         // Get a instance of PreferencesHelper class
                         val preferencesHelper = PreferencesHelper(this)
@@ -84,17 +94,18 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
                         val blockstack_id = preferencesHelper.deviceToken
 
                         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                        val user = userBox.query().run {
-                            equal(User_.blockstackId, blockstack_id)
-                            build().findFirst()
-                        }
+                        val user = userBox.find(User_.blockstackId,blockstack_id).firstOrNull()
 
                         if (user != null) {
-
-                            showThoughts(user.thought as MutableList<Thought>)
+                            Log.d("thoughts-->>", user.thoughts.size.toString())
+                            showThoughts(user.thoughts as MutableList<Thought>)
                         }
                     }
 
+        floatingActionButton.setOnClickListener { view ->
+            val intent = Intent(this, ComposeThoughtActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 
@@ -104,7 +115,11 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     }
 
     override fun showThought(thought: Thought) {
-        val removedPosition = adapter.thoughts.size - 1
+        var removedPosition = 0
+        if (adapter.thoughts.isNotEmpty())
+        {
+            removedPosition = adapter.thoughts.size - 1
+        }
         adapter.thoughts.removeAt(removedPosition)
         adapter.notifyItemRemoved(removedPosition)
 
@@ -146,5 +161,20 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
             throw IllegalStateException("No session.")
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        KBus.subscribe<NewMyThoughtEvent>(this) {
+           showThought(it.thought)
+        }
+
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        KBus.unsubscribe(this)
+    }
+
 
     }

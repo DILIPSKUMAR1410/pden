@@ -1,5 +1,6 @@
 package com.dk.pen.compose
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
@@ -9,22 +10,24 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
+import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
+import com.dk.pen.common.PreferencesHelper
+import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
+import com.dk.pen.mybook.MyBookActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.PutFileOptions
 import org.json.JSONObject
-import java.sql.Timestamp
 
 class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
-    private lateinit var thoughtBox: Box<Thought>
     private lateinit var userBox: Box<User>
 
 
@@ -89,23 +92,23 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
             when {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
-                    rootObject.put("timestamp", Timestamp(System.currentTimeMillis()))
+                    rootObject.put("timestamp", System.currentTimeMillis())
                     rootObject.put("thought", getThought())
                     blockstackSession().putFile("MyThoughts.json", rootObject.toString(), options,
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
-                                    thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
                                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
-
-                                    val user = userBox.query().run {
-                                        equal(User_.blockstackId, "me")
-                                        build().findFirst()
-                                    }
+                                    val blockstack_id = PreferencesHelper(this).deviceToken
+                                    val user = userBox.find(User_.blockstackId,blockstack_id).first()
                                     val thought = Thought(rootObject.getString("thought"),rootObject.getString("timestamp").toLong())
-                                    thought.user.setAndPutTargetAlways(user)
-                                    thoughtBox.put(thought)
+                                    user.thoughts.add(thought)
+                                    userBox.put(user)
+                                    Log.d("thought owner ", userBox.find(User_.blockstackId,blockstack_id).first().thoughts.size.toString())
+                                    KBus.post(NewMyThoughtEvent(thought))
                                     val readURL = readURLResult.value!!
                                     Log.d("Gaia URL", "File stored at: ${readURL}")
+                                    val intent = Intent(this, MyBookActivity::class.java)
+                                    startActivity(intent)
                                 } else {
                                     Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                 }

@@ -23,6 +23,13 @@ class MainActivity : AppCompatActivity() {
     private var _blockstackSession: BlockstackSession? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Get a instance of PreferencesHelper class
+        ObjectBox.build(this)
+        if (PreferencesHelper(this).deviceToken.isNotEmpty()) {
+            val intent = Intent(this, MyBookActivity::class.java)
+            startActivity(intent)
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 //        setSupportActionBar(toolbar)
@@ -181,9 +188,11 @@ class MainActivity : AppCompatActivity() {
         val preferencesHelper = PreferencesHelper(this)
         // save token on preferences
         preferencesHelper.deviceToken = userData.json.getString("username")
-        ObjectBox.build(this)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        userBox.put(User(userData.json.getString("username")))
+        val user = User(userData.json.getString("username"))
+        userBox.put(user)
+        Log.d("User count", userBox.count().toString())
+
         val intent = Intent(this, MyBookActivity::class.java)
         startActivity(intent)
 

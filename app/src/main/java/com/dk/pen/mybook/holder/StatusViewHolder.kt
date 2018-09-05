@@ -16,11 +16,11 @@ open class StatusViewHolder(container: View) :
     override fun setup(thought: Thought) {
 
         val currentThought = thought
-        val currentUser = currentThought.user.cachedTarget
+        val currentUser = currentThought.user.target
         userNameTextView.text = currentUser.blockstackId
         userScreenNameTextView.text = "@${currentUser.name}"
         timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"
-        userProfilePicImageView.loadAvatar("https://images.indianexpress.com/2017/08/dilip-kumar-news-759.jpg")
+        userProfilePicImageView.loadAvatar(currentUser.avatarImage)
 
         statusTextView.text = currentThought.text
     }

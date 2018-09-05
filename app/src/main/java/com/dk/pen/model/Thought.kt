@@ -13,6 +13,10 @@ data class Thought(    @Json(name = "text")
                        var timestamp: Long)
 
 {
+
+    constructor() : this("",0)
+
+
     @Id
     @Json(ignored = true)
     var id: Long = 0
