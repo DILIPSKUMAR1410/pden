@@ -5,8 +5,11 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 
 @Entity
-data class User(val name: String)
+data class User(val blockstackId: String)
 {
+        constructor() : this("")
+
+
         @Id
         var id: Long = 0
 
@@ -17,7 +20,7 @@ data class User(val name: String)
 
         var avatarImage: String = ""
 
-        var blockstackId: String = ""
+        var name: String = ""
 
 
 }

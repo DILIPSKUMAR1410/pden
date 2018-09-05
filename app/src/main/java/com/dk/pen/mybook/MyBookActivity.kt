@@ -7,32 +7,50 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.widget.ProgressBar
-import android.widget.Toast
+import com.dk.pen.ObjectBox
 import com.dk.pen.R
+import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
 import com.dk.pen.common.visible
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
 import com.dk.pen.model.Thought
+import com.dk.pen.model.User
+import com.dk.pen.model.User_
+import io.objectbox.Box
 import org.blockstack.android.sdk.BlockstackSession
-import org.blockstack.android.sdk.GetFileOptions
-import java.sql.Timestamp
 
 
 class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
+    private var _blockstackSession: BlockstackSession? = null
+    private lateinit var userBox: Box<User>
     private val presenter: MyBookPresenter by lazy {getMyBookPresenter()}
     private lateinit var adapter: MyBookAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
     private fun getMyBookPresenter() = MyBookPresenter()
-    private var _blockstackSession: BlockstackSession? = null
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
+        var context = this
+
+
+        val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
+            org.blockstack.android.sdk.BlockstackConfig(
+                    this,
+                    java.net.URI("${this}/redirect/"),
+                    java.net.URI("${this}/manifest.json"),
+                    kotlin.arrayOf(org.blockstack.android.sdk.Scope.StoreWrite))
+        }
+
+        _blockstackSession = BlockstackSession(this, config,
+                onLoadedCallback = {
+                    // Wait until this callback fires before using any of the
+                    // BlockstackSession API methods
+                })
+
+
         presenter.attachView(this)
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView) as RecyclerView
@@ -59,29 +77,23 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
                     if (adapter.thoughts.isEmpty())
                     {
-                        val options = GetFileOptions()
-                        Utils.getblockstackSession(this).getFile("MyThoughts.json", options, { contentResult ->
-                            if (contentResult.hasValue) {
-                                val content = contentResult.value!!.toString()
-                                Log.d("MyThoughts", "File contents: ${content}")
-                            } else {
-                                Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
-                            }
-                        })
+                        // Get a instance of PreferencesHelper class
+                        val preferencesHelper = PreferencesHelper(this)
 
+                        // save token on preferences
+                        val blockstack_id = preferencesHelper.deviceToken
+
+                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                        val user = userBox.query().run {
+                            equal(User_.blockstackId, blockstack_id)
+                            build().findFirst()
+                        }
+
+                        if (user != null) {
+
+                            showThoughts(user.thought as MutableList<Thought>)
+                        }
                     }
-
-
-
-        var myList: MutableList<Thought> = mutableListOf<Thought>()
-        var t = Thought("Hi test", Timestamp(System.currentTimeMillis()).time)
-//        var u = User("dilip")
-//        u.blockstackId = "dilipkumar.id.blockstack"
-//        var userBox = ObjectBox.boxStore.boxFor(User::class.java)
-//        userBox.put(u)
-//        t.user.setAndPutTargetAlways(u)
-        myList.add(t)
-        showThoughts(myList)
 
     }
 
@@ -122,6 +134,17 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
     override fun updateRecyclerViewView() {
         adapter.notifyDataSetChanged()
+    }
+
+
+
+    fun blockstackSession(): BlockstackSession {
+        val session = _blockstackSession
+        if (session != null) {
+            return session
+        } else {
+            throw IllegalStateException("No session.")
+        }
     }
 
     }
