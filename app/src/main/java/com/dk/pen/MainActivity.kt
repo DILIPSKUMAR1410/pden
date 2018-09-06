@@ -190,6 +190,9 @@ class MainActivity : AppCompatActivity() {
         preferencesHelper.deviceToken = userData.json.getString("username")
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         val user = User(userData.json.getString("username"))
+        user.name = userData.profile?.name!!
+        user.description = userData.profile?.description!!
+        user.avatarImage = userData.profile?.avatarImage!!
         userBox.put(user)
         Log.d("User count", userBox.count().toString())
 

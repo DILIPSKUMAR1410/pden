@@ -22,7 +22,9 @@ import com.dk.pen.mybook.MyBookActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
+import org.blockstack.android.sdk.GetFileOptions
 import org.blockstack.android.sdk.PutFileOptions
+import org.json.JSONArray
 import org.json.JSONObject
 
 class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
@@ -87,20 +89,49 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item?.itemId == R.id.action_send) {
-            val options = PutFileOptions()
+            var my_book = JSONArray()
             val rootObject = JSONObject()
             when {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
                     rootObject.put("timestamp", System.currentTimeMillis())
-                    rootObject.put("thought", getThought())
-                    blockstackSession().putFile("MyThoughts.json", rootObject.toString(), options,
+                    rootObject.put("text", getThought())
+
+//                    val optionsut = PutFileOptions()
+//                    blockstackSession().putFile("MyThoughts.json", "", optionsut,
+//                            { readURLResult ->
+//                                if (readURLResult.hasValue) {
+//                                    val readURL = readURLResult.value!!
+//                                    Log.d("Gaia URL", "File stored at: ${readURL}")
+//                                    val intent = Intent(this, MyBookActivity::class.java)
+//                                    startActivity(intent)
+//                                } else {
+//                                    Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+//                                }
+//                            })
+
+
+                    val options_get = GetFileOptions()
+                    blockstackSession().getFile("MyThoughts.json", options_get, { contentResult ->
+                        if (contentResult.hasValue) {
+                            val content = contentResult.value!!.toString()
+                            if(content.isNotEmpty())
+                                my_book = JSONArray(content)
+                        } else {
+                            Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                        }
+                    })
+
+                    my_book.put(rootObject)
+                    Log.d("Final content", my_book.toString())
+                    val options_put = PutFileOptions()
+                    blockstackSession().putFile("MyThoughts.json", my_book.toString(), options_put,
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
                                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                     val blockstack_id = PreferencesHelper(this).deviceToken
                                     val user = userBox.find(User_.blockstackId,blockstack_id).first()
-                                    val thought = Thought(rootObject.getString("thought"),rootObject.getString("timestamp").toLong())
+                                    val thought = Thought(rootObject.getString("text"),rootObject.getString("timestamp").toLong())
                                     user.thoughts.add(thought)
                                     userBox.put(user)
                                     Log.d("thought owner ", userBox.find(User_.blockstackId,blockstack_id).first().thoughts.size.toString())

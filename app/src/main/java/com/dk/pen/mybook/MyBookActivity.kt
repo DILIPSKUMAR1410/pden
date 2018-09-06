@@ -42,22 +42,6 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
         setContentView(R.layout.activity_my_book)
         var context = this
 
-
-        val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
-            org.blockstack.android.sdk.BlockstackConfig(
-                    this,
-                    java.net.URI("${this}/redirect/"),
-                    java.net.URI("${this}/manifest.json"),
-                    kotlin.arrayOf(org.blockstack.android.sdk.Scope.StoreWrite))
-        }
-
-        _blockstackSession = BlockstackSession(this, config,
-                onLoadedCallback = {
-                    // Wait until this callback fires before using any of the
-                    // BlockstackSession API methods
-                })
-
-
         presenter.attachView(this)
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
@@ -70,18 +54,21 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
         recyclerView.setHasFixedSize(true)
         recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (linearLayoutManager.childCount + linearLayoutManager
-                                .findFirstVisibleItemPosition() + 1 > linearLayoutManager.itemCount - 10)
-//                    presenter.getMoreThoughts()
-                Log.d("Need more thoughts-->>", "Fixthis")
 
-            }
-        })
+//        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+//                super.onScrolled(recyclerView, dx, dy)
+//                if (linearLayoutManager.childCount + linearLayoutManager
+//                                .findFirstVisibleItemPosition() + 1 > linearLayoutManager.itemCount - 10)
+//                    presenter.getMoreThoughts(this)
+//                Log.d("Need more thoughts-->>", "Fixthis")
+//
+//            }
+//        })
 
-//        swipeRefreshLayout.setOnRefreshListener { presenter.onRefresh() }
+
+        swipeRefreshLayout.setOnRefreshListener { presenter.onRefresh(this) }
+
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         Log.d("total thoughts-->>", thoughtBox.count().toString())
 
@@ -110,8 +97,11 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
 
     override fun showThoughts(thoughts: MutableList<Thought>) {
-        adapter.thoughts = thoughts
-        adapter.notifyDataSetChanged()
+
+        runOnUiThread {
+            adapter.thoughts = thoughts
+            adapter.notifyDataSetChanged()
+        }
     }
 
     override fun showThought(thought: Thought) {
@@ -135,7 +125,9 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     override fun getLastMyThoughtId(): Long = if (adapter.thoughts.size > 0) adapter.thoughts[0].id else -1
 
     override fun stopRefresh() {
-        swipeRefreshLayout.isRefreshing = false
+        runOnUiThread {
+            swipeRefreshLayout.isRefreshing = false
+        }
     }
 
     override fun showLoading() {
@@ -149,17 +141,6 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
     override fun updateRecyclerViewView() {
         adapter.notifyDataSetChanged()
-    }
-
-
-
-    fun blockstackSession(): BlockstackSession {
-        val session = _blockstackSession
-        if (session != null) {
-            return session
-        } else {
-            throw IllegalStateException("No session.")
-        }
     }
 
     override fun onStart() {
