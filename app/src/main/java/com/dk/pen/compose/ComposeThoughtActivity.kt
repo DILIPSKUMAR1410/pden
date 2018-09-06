@@ -115,35 +115,40 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
                     blockstackSession().getFile("MyThoughts.json", options_get, { contentResult ->
                         if (contentResult.hasValue) {
                             val content = contentResult.value!!.toString()
-                            if(content.isNotEmpty())
+                            if (content.isNotEmpty()) {
                                 my_book = JSONArray(content)
+                                Log.d("old content", content)
+                            }
+
+                            my_book.put(rootObject)
+                            Log.d("Final content", my_book.toString())
+                            val options_put = PutFileOptions()
+                            runOnUiThread {
+                            blockstackSession().putFile("MyThoughts.json", my_book.toString(), options_put,
+                                    { readURLResult ->
+                                        if (readURLResult.hasValue) {
+                                            userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                            val blockstack_id = PreferencesHelper(this).deviceToken
+                                            val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                                            val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
+                                            user.thoughts.add(thought)
+                                            userBox.put(user)
+                                            Log.d("thought owner ", userBox.find(User_.blockstackId, blockstack_id).first().thoughts.size.toString())
+                                            KBus.post(NewMyThoughtEvent(thought))
+                                            val readURL = readURLResult.value!!
+                                            Log.d("Gaia URL", "File stored at: ${readURL}")
+                                            val intent = Intent(this, MyBookActivity::class.java)
+                                            startActivity(intent)
+                                        } else {
+                                            Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                        }
+                                    })
+                        }
+
                         } else {
                             Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                         }
                     })
-
-                    my_book.put(rootObject)
-                    Log.d("Final content", my_book.toString())
-                    val options_put = PutFileOptions()
-                    blockstackSession().putFile("MyThoughts.json", my_book.toString(), options_put,
-                            { readURLResult ->
-                                if (readURLResult.hasValue) {
-                                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                    val blockstack_id = PreferencesHelper(this).deviceToken
-                                    val user = userBox.find(User_.blockstackId,blockstack_id).first()
-                                    val thought = Thought(rootObject.getString("text"),rootObject.getString("timestamp").toLong())
-                                    user.thoughts.add(thought)
-                                    userBox.put(user)
-                                    Log.d("thought owner ", userBox.find(User_.blockstackId,blockstack_id).first().thoughts.size.toString())
-                                    KBus.post(NewMyThoughtEvent(thought))
-                                    val readURL = readURLResult.value!!
-                                    Log.d("Gaia URL", "File stored at: ${readURL}")
-                                    val intent = Intent(this, MyBookActivity::class.java)
-                                    startActivity(intent)
-                                } else {
-                                    Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
-                                }
-                            })
                 }
             }
         }
