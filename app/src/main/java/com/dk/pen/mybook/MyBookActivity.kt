@@ -1,5 +1,6 @@
 package com.dk.pen.mybook
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
@@ -24,13 +25,23 @@ import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
 import io.objectbox.Box
-import org.blockstack.android.sdk.BlockstackSession
 
 
 class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
+
+
+    companion object {
+        private val ARG_QUERY = "query"
+
+        fun launch(context: Context, query: String) {
+            val intent = Intent(context, MyBookActivity::class.java)
+            intent.putExtra(ARG_QUERY, query)
+            context.startActivity(intent)
+        }
+    }
+
     private lateinit var thoughtBox: Box<Thought>
-    private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
     private val presenter: MyBookPresenter by lazy {getMyBookPresenter()}
     private lateinit var adapter: MyBookAdapter
@@ -42,10 +53,15 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var floatingActionButton: FloatingActionButton
     private fun getMyBookPresenter() = MyBookPresenter()
+    private lateinit var query: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
-        var context = this
+
+        query = intent.getStringExtra(ARG_QUERY)
+        title = query
+
 
         presenter.attachView(this)
         adapter = MyBookAdapter()
