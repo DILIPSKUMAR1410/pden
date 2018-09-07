@@ -8,7 +8,9 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
@@ -32,6 +34,9 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     private lateinit var userBox: Box<User>
     private val presenter: MyBookPresenter by lazy {getMyBookPresenter()}
     private lateinit var adapter: MyBookAdapter
+    private lateinit var avatar: ImageView
+    private lateinit var tcountvalue: TextView
+    private lateinit var icountvalue: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
@@ -48,6 +53,10 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         floatingActionButton = findViewById(R.id.fab_compose)
+        avatar = findViewById(R.id.avatar)
+        tcountvalue = findViewById(R.id.tcountvalue)
+        icountvalue = findViewById(R.id.icountvalue)
+
 
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
@@ -84,7 +93,8 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
                         val user = userBox.find(User_.blockstackId,blockstack_id).firstOrNull()
 
                         if (user != null) {
-                            Log.d("thoughts-->>", user.thoughts.size.toString())
+                            tcountvalue.text = user.thoughts.size.toString()
+                            icountvalue.text = 3.toString()
                             showThoughts(user.thoughts as MutableList<Thought>)
                         }
                     }
