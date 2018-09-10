@@ -6,20 +6,17 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
-import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.mybook.MyBookActivity
+import com.dk.pen.search.SearchActivity
 
 class ShelfActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shelf)
-        ObjectBox.build(this)
-
     }
-
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -28,14 +25,14 @@ class ShelfActivity : AppCompatActivity() {
 
         val search = menu?.findItem(R.id.action_search)
         val searchView = search?.actionView as SearchView
-        searchView .setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String): Boolean {
-                        search(query)
-                        return true
-                    }
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                search(query)
+                return true
+            }
 
-                    override fun onQueryTextChange(s: String) = false
-                })
+            override fun onQueryTextChange(s: String) = false
+        })
 
         return true
     }
@@ -50,8 +47,8 @@ class ShelfActivity : AppCompatActivity() {
 
 
     fun search(string: String) {
-        Log.d("Query",string)
-//        SearchActivity.launch(this, string)
+        Log.d("Query", string)
+        SearchActivity.launch(this, string)
     }
 
     fun openProfile() {

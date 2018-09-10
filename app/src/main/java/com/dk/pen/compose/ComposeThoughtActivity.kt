@@ -27,7 +27,7 @@ import org.blockstack.android.sdk.PutFileOptions
 import org.json.JSONArray
 import org.json.JSONObject
 
-class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
+class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
@@ -124,26 +124,26 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
                             Log.d("Final content", my_book.toString())
                             val options_put = PutFileOptions()
                             runOnUiThread {
-                            blockstackSession().putFile("MyThoughts.json", my_book.toString(), options_put,
-                                    { readURLResult ->
-                                        if (readURLResult.hasValue) {
-                                            userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                            val blockstack_id = PreferencesHelper(this).deviceToken
-                                            val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                                            val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
-                                            user.thoughts.add(thought)
-                                            userBox.put(user)
-                                            Log.d("thought owner ", userBox.find(User_.blockstackId, blockstack_id).first().thoughts.size.toString())
-                                            KBus.post(NewMyThoughtEvent(thought))
-                                            val readURL = readURLResult.value!!
-                                            Log.d("Gaia URL", "File stored at: ${readURL}")
-                                            val intent = Intent(this, MyBookActivity::class.java)
-                                            startActivity(intent)
-                                        } else {
-                                            Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
-                                        }
-                                    })
-                        }
+                                blockstackSession().putFile("MyThoughts.json", my_book.toString(), options_put,
+                                        { readURLResult ->
+                                            if (readURLResult.hasValue) {
+                                                userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                                val blockstack_id = PreferencesHelper(this).deviceToken
+                                                val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                                                val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
+                                                user.thoughts.add(thought)
+                                                userBox.put(user)
+                                                Log.d("thought owner ", userBox.find(User_.blockstackId, blockstack_id).first().thoughts.size.toString())
+                                                KBus.post(NewMyThoughtEvent(thought))
+                                                val readURL = readURLResult.value!!
+                                                Log.d("Gaia URL", "File stored at: ${readURL}")
+                                                val intent = Intent(this, MyBookActivity::class.java)
+                                                startActivity(intent)
+                                            } else {
+                                                Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                            }
+                                        })
+                            }
 
                         } else {
                             Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
@@ -152,7 +152,7 @@ class ComposeThoughtActivity : AppCompatActivity(),ComposeThoughtMvpView {
                 }
             }
         }
-       return true
+        return true
     }
 
     override fun refreshToolbar() {

@@ -10,7 +10,7 @@ import com.dk.pen.mybook.holder.BaseViewHolder
 import com.dk.pen.mybook.holder.StatusViewHolder
 import java.util.*
 
-open class MyBookAdapter :RecyclerView.Adapter<BaseViewHolder>() {
+open class MyBookAdapter : RecyclerView.Adapter<BaseViewHolder>() {
 
     var thoughts: MutableList<Thought> = ArrayList()
 

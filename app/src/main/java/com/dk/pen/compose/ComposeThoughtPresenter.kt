@@ -23,7 +23,7 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
     private fun sendThought(status: String?) {
         if (status != null)
 //            TweetsQueue.add(TweetsQueue.StatusUpdate.valueOf(status))
-        mvpView?.close()
+            mvpView?.close()
     }
 
     private fun checkLength(text: String) {
@@ -36,9 +36,6 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
     }
 
     private fun isUrl(text: String) = Patterns.WEB_URL.matcher(text).matches()
-
-
-
 
 
 }

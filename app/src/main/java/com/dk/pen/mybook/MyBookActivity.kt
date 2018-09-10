@@ -15,8 +15,8 @@ import android.widget.TextView
 import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
-import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
+import com.dk.pen.common.loadAvatar
 import com.dk.pen.common.visible
 import com.dk.pen.compose.ComposeThoughtActivity
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
@@ -27,42 +27,70 @@ import com.dk.pen.model.User_
 import io.objectbox.Box
 
 
-class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
 
+class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
     companion object {
         private val ARG_QUERY = "query"
+        const val TAG_USER_blockstackId = "user_blockstackId"
+        const val TAG_USER_avatarImage = "user_avatarImage"
+        const val TAG_USER_description = "user_description"
+        const val TAG_USER_name = "user_name"
+
+        private var user: User? = null
+
 
         fun launch(context: Context, query: String) {
             val intent = Intent(context, MyBookActivity::class.java)
             intent.putExtra(ARG_QUERY, query)
             context.startActivity(intent)
         }
+
+        fun launch(context: Context, user: User) {
+            val intent = Intent(context, MyBookActivity::class.java)
+            intent.putExtra(TAG_USER_blockstackId,user.blockstackId)
+            intent.putExtra(TAG_USER_description,user.description)
+            intent.putExtra(TAG_USER_avatarImage,user.avatarImage)
+            intent.putExtra(TAG_USER_name,user.name)
+            context.startActivity(intent)
+        }
     }
 
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var userBox: Box<User>
-    private val presenter: MyBookPresenter by lazy {getMyBookPresenter()}
+    private val presenter: MyBookPresenter by lazy { getMyBookPresenter() }
     private lateinit var adapter: MyBookAdapter
     private lateinit var avatar: ImageView
     private lateinit var tcountvalue: TextView
     private lateinit var icountvalue: TextView
+    private lateinit var name: TextView
+    private lateinit var blockstack_name: TextView
+    private lateinit var about_me: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var floatingActionButton: FloatingActionButton
     private fun getMyBookPresenter() = MyBookPresenter()
-    private lateinit var query: String
+    private lateinit var blockstack_id: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
 
-        query = intent.getStringExtra(ARG_QUERY)
-        title = query
 
-
+        if (intent.hasExtra(ARG_QUERY)) {
+            blockstack_id = intent.getStringExtra(ARG_QUERY)
+            userBox = ObjectBox.boxStore.boxFor(User::class.java)
+            user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
+        } else {
+            user = User(intent.getStringExtra(TAG_USER_blockstackId))
+            user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
+            user!!.name = intent.getStringExtra(TAG_USER_name)
+            user!!.description = intent.getStringExtra(TAG_USER_description)
+            Log.d("errrrrr-->>", user!!.name)
+        }
+        title = user!!.blockstackId
         presenter.attachView(this)
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
@@ -72,7 +100,16 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
         avatar = findViewById(R.id.avatar)
         tcountvalue = findViewById(R.id.tcountvalue)
         icountvalue = findViewById(R.id.icountvalue)
+        name = findViewById(R.id.name)
+        blockstack_name = findViewById(R.id.blockstack_id)
+        about_me = findViewById(R.id.about_me)
 
+        tcountvalue.text = user!!.thoughts.size.toString()
+        icountvalue.text = 3.toString()
+        name.text = user!!.name
+        blockstack_name.text = user!!.blockstackId
+        about_me.text = user!!.description
+        avatar.loadAvatar(user!!.avatarImage)
 
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
@@ -92,28 +129,16 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 //        })
 
 
-        swipeRefreshLayout.setOnRefreshListener { presenter.onRefresh(this) }
+        swipeRefreshLayout.setOnRefreshListener { presenter.onRefresh(this, blockstack_id) }
 
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         Log.d("total thoughts-->>", thoughtBox.count().toString())
 
-                if (adapter.thoughts.isEmpty())
-                    {
-                        // Get a instance of PreferencesHelper class
-                        val preferencesHelper = PreferencesHelper(this)
-
-                        // save token on preferences
-                        val blockstack_id = preferencesHelper.deviceToken
-
-                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                        val user = userBox.find(User_.blockstackId,blockstack_id).firstOrNull()
-
-                        if (user != null) {
-                            tcountvalue.text = user.thoughts.size.toString()
-                            icountvalue.text = 3.toString()
-                            showThoughts(user.thoughts as MutableList<Thought>)
-                        }
-                    }
+        if (adapter.thoughts.isEmpty()) {
+            if (user != null) {
+                showThoughts(user!!.thoughts as MutableList<Thought>)
+            }
+        }
 
         floatingActionButton.setOnClickListener { view ->
             val intent = Intent(this, ComposeThoughtActivity::class.java)
@@ -132,8 +157,7 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
 
     override fun showThought(thought: Thought) {
         var removedPosition = 0
-        if (adapter.thoughts.isNotEmpty())
-        {
+        if (adapter.thoughts.isNotEmpty()) {
             removedPosition = adapter.thoughts.size - 1
         }
         adapter.thoughts.removeAt(removedPosition)
@@ -172,7 +196,7 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     override fun onStart() {
         super.onStart()
         KBus.subscribe<NewMyThoughtEvent>(this) {
-           showThought(it.thought)
+            showThought(it.thought)
         }
 
 
@@ -184,4 +208,4 @@ class MyBookActivity : AppCompatActivity(),MyBookMvpView {
     }
 
 
-    }
+}

@@ -7,14 +7,12 @@ import io.objectbox.relation.ToOne
 
 
 @Entity
-data class Thought(    @Json(name = "text")
-                       var text: String,
-                       @Json(name = "timestamp")
-                       var timestamp: Long)
+data class Thought(@Json(name = "text")
+                   var text: String,
+                   @Json(name = "timestamp")
+                   var timestamp: Long) {
 
-{
-
-    constructor() : this("",0)
+    constructor() : this("", 0)
 
 
     @Id

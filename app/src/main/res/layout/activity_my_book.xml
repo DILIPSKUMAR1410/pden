@@ -27,11 +27,12 @@
                     android:gravity="center"
                     android:orientation="vertical">
 
-                    <ImageView
+                    <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/avatar"
-                        android:layout_width="match_parent"
                         android:layout_height="100dp"
+                        android:layout_width="match_parent"
                         android:layout_marginTop="30dp"
+                        android:contentDescription="@string/profile_pic_contentDescriptor"
                         android:src="@drawable/default_avatar" />
 
                     <LinearLayout
@@ -77,13 +78,23 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="3dp"
-                            android:text="3"
                             android:gravity="center"
                             android:singleLine="true"
+                            android:text="3"
                             android:textColor="#ffffff"
                             android:textSize="18sp" />
 
                     </LinearLayout>
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white" />
+                    <TextView
+                        android:id="@+id/blockstack_id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -92,17 +103,17 @@
                         android:textColor="@color/white" />
 
                     <TextView
+                        android:id="@+id/about_me"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="there are no solutions only trade offs"
                         android:textColor="@color/white" />
 
                     <ToggleButton
                         android:id="@+id/toggleButton"
-                        android:layout_marginTop="10dp"
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
+                        android:layout_marginTop="10dp"
                         android:layout_weight="1"
                         android:background="@color/colorAccent"
                         android:text="Add to shelf" />

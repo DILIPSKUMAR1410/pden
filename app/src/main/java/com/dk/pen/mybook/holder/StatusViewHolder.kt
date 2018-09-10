@@ -26,9 +26,4 @@ open class StatusViewHolder(container: View) :
     }
 
 
-
-
-
-
-
 }

@@ -9,7 +9,8 @@ import android.view.View
 import android.widget.Toast
 import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.model.User
-import com.dk.pen.mybook.MyBookActivity
+import com.dk.pen.model.User_
+import com.dk.pen.shelf.ShelfActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.content_main.*
 import org.blockstack.android.sdk.*
@@ -17,16 +18,14 @@ import org.blockstack.android.sdk.*
 class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var userBox: Box<User>
-    private val textFileName = "message.json"
-    private val imageFileName = "team.jpg"
-
     private var _blockstackSession: BlockstackSession? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Get a instance of PreferencesHelper class
-        ObjectBox.build(this)
-        if (PreferencesHelper(this).deviceToken.isNotEmpty()) {
-            val intent = Intent(this, MyBookActivity::class.java)
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+
+        if (userBox.find(User_.blockstackId, PreferencesHelper(this).deviceToken).isNotEmpty()) {
+            val intent = Intent(this, ShelfActivity::class.java)
             startActivity(intent)
         }
 
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 onLoadedCallback = {
                     // Wait until this callback fires before using any of the
                     // BlockstackSession API methods
-                        signInButton.isEnabled = true
+                    signInButton.isEnabled = true
                 })
 //        getStringFileButton.isEnabled = false
 //        putStringFileButton.isEnabled = false
@@ -182,6 +181,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
     }
+
     private fun onSignIn(userData: UserData) {
         signInButton.isEnabled = false
         // Get a instance of PreferencesHelper class
@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity() {
         userBox.put(user)
         Log.d("User count", userBox.count().toString())
 
-        val intent = Intent(this, MyBookActivity::class.java)
+        val intent = Intent(this, ShelfActivity::class.java)
         startActivity(intent)
 
 //        userDataTextView.text = "Signed in as ${userData.decentralizedID}"

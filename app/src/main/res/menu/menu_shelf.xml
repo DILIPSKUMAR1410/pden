@@ -8,7 +8,7 @@
         android:icon="@drawable/ic_account_circle"
         android:orderInCategory="100"
         android:title="My Book"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_search"
