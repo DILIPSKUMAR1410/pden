@@ -12,7 +12,6 @@ import io.reactivex.schedulers.Schedulers
 
 class SearchUsersPresenter(private val textQuery: String) : BasePresenter<SearchUsersMvpView>() {
 
-    var page: Int = 1
     private var isLoading: Boolean = false
     private val disposables = CompositeDisposable()
     private val apiService by lazy {
@@ -41,15 +40,15 @@ class SearchUsersPresenter(private val textQuery: String) : BasePresenter<Search
                             it.users.forEach {
                                 var user = User(it.get("fullyQualifiedName").asString.trim())
                                 var profile = it.getAsJsonObject("profile")
-
-                                if (profile.has("image") && profile.getAsJsonArray("image").size() == 1 && profile.has("name")) {
-                                    Log.d("error-->>", profile.getAsJsonArray("image").toString())
-                                    var url = profile.getAsJsonArray("image").asJsonArray.get(0).asJsonObject.get("contentUrl").toString().trim()
-                                    user.avatarImage = url.substring(1,url.length-1)
-                                    user.name = profile.get("name").toString().trim()
-                                    if (profile.has("description"))
-                                        user.description = profile.get("description").toString().trim()
+                                if (profile.has("image")) {
+                                    var url = profile.getAsJsonArray("image").get(0).asJsonObject.get("contentUrl").toString()
+                                    user.avatarImage = url.substring(1, url.length - 1)
                                 }
+                                if (profile.has("description"))
+                                    user.description = profile.get("description").toString().trim()
+                                if (profile.has("name"))
+                                    user.name = profile.get("name").toString().trim()
+
                                 users.add(user)
                             }
 

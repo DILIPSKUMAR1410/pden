@@ -4,6 +4,9 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+
+
 
 
 
@@ -18,7 +21,8 @@ fun View.visible(show: Boolean = true) {
 fun ImageView.loadAvatar(url: CharSequence?) {
     // TODO placeholder
     Log.d("url-->>", url.toString())
-
-    Glide.with(context).load(url).into(this)
+    val options = RequestOptions()
+    options.fitCenter()
+    Glide.with(context).load(url).apply(options).into(this)
 }
 
