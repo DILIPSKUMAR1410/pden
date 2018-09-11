@@ -8,10 +8,11 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.ToggleButton
 import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
@@ -25,8 +26,6 @@ import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
 import io.objectbox.Box
-
-
 
 
 class MyBookActivity : AppCompatActivity(), MyBookMvpView {
@@ -49,15 +48,14 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
         fun launch(context: Context, user: User) {
             val intent = Intent(context, MyBookActivity::class.java)
-            intent.putExtra(TAG_USER_blockstackId,user.blockstackId)
-            intent.putExtra(TAG_USER_description,user.description)
-            intent.putExtra(TAG_USER_avatarImage,user.avatarImage)
-            intent.putExtra(TAG_USER_name,user.name)
+            intent.putExtra(TAG_USER_blockstackId, user.blockstackId)
+            intent.putExtra(TAG_USER_description, user.description)
+            intent.putExtra(TAG_USER_avatarImage, user.avatarImage)
+            intent.putExtra(TAG_USER_name, user.name)
             context.startActivity(intent)
         }
     }
 
-    private lateinit var thoughtBox: Box<Thought>
     private lateinit var userBox: Box<User>
     private val presenter: MyBookPresenter by lazy { getMyBookPresenter() }
     private lateinit var adapter: MyBookAdapter
@@ -71,6 +69,9 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var floatingActionButton: FloatingActionButton
+    private lateinit var toggleAddToShelf: ToggleButton
+
+
     private fun getMyBookPresenter() = MyBookPresenter()
     private lateinit var blockstack_id: String
 
@@ -78,25 +79,13 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
 
-
-        if (intent.hasExtra(ARG_QUERY)) {
-            blockstack_id = intent.getStringExtra(ARG_QUERY)
-            userBox = ObjectBox.boxStore.boxFor(User::class.java)
-            user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
-        } else {
-            user = User(intent.getStringExtra(TAG_USER_blockstackId))
-            user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
-            user!!.name = intent.getStringExtra(TAG_USER_name)
-            user!!.description = intent.getStringExtra(TAG_USER_description)
-            Log.d("errrrrr-->>", user!!.name)
-        }
-        title = user!!.blockstackId
         presenter.attachView(this)
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         floatingActionButton = findViewById(R.id.fab_compose)
+        toggleAddToShelf = findViewById(R.id.toggleAddToShelf)
         avatar = findViewById(R.id.avatar)
         tcountvalue = findViewById(R.id.tcountvalue)
         icountvalue = findViewById(R.id.icountvalue)
@@ -104,12 +93,30 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         blockstack_name = findViewById(R.id.blockstack_id)
         about_me = findViewById(R.id.about_me)
 
+        if (intent.hasExtra(ARG_QUERY)) {
+            blockstack_id = intent.getStringExtra(ARG_QUERY)
+            userBox = ObjectBox.boxStore.boxFor(User::class.java)
+            user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
+            toggleAddToShelf.setVisibility(View.INVISIBLE)
+            floatingActionButton.setOnClickListener { view ->
+                val intent = Intent(this, ComposeThoughtActivity::class.java)
+                startActivity(intent)
+            }
+
+        } else {
+            user = User(intent.getStringExtra(TAG_USER_blockstackId))
+            user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
+            user!!.name = intent.getStringExtra(TAG_USER_name)
+            user!!.description = intent.getStringExtra(TAG_USER_description)
+            floatingActionButton.hide()
+        }
         tcountvalue.text = user!!.thoughts.size.toString()
-        icountvalue.text = 3.toString()
-        name.text = user!!.name
+        icountvalue.text =  "-NA-"
+        name.text = if (user!!.name.isNotEmpty()) user!!.name else "-NA-"
         blockstack_name.text = user!!.blockstackId
-        about_me.text = user!!.description
+        about_me.text = if (user!!.description.isNotEmpty()) user!!.description else "-NA-"
         avatar.loadAvatar(user!!.avatarImage)
+
 
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
@@ -131,19 +138,12 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
         swipeRefreshLayout.setOnRefreshListener { presenter.onRefresh(this, blockstack_id) }
 
-        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-        Log.d("total thoughts-->>", thoughtBox.count().toString())
-
         if (adapter.thoughts.isEmpty()) {
             if (user != null) {
                 showThoughts(user!!.thoughts as MutableList<Thought>)
             }
         }
 
-        floatingActionButton.setOnClickListener { view ->
-            val intent = Intent(this, ComposeThoughtActivity::class.java)
-            startActivity(intent)
-        }
     }
 
 

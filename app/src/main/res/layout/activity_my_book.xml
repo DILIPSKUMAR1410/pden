@@ -31,7 +31,7 @@
                         android:id="@+id/avatar"
                         android:layout_height="100dp"
                         android:layout_width="match_parent"
-                        android:layout_marginTop="30dp"
+                        android:layout_marginTop="10dp"
                         android:contentDescription="@string/profile_pic_contentDescriptor"
                         android:src="@drawable/default_avatar" />
 
@@ -107,16 +107,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
+                        android:textAlignment="center"
                         android:textColor="@color/white" />
 
                     <ToggleButton
-                        android:id="@+id/toggleButton"
+                        android:id="@+id/toggleAddToShelf"
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_marginTop="10dp"
                         android:layout_weight="1"
-                        android:background="@color/colorAccent"
-                        android:text="Add to shelf" />
+                        android:background="@color/colorAccent"/>
                 </LinearLayout>
             </android.support.design.widget.CollapsingToolbarLayout>
 
