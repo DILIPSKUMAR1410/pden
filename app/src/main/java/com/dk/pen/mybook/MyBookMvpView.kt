@@ -2,6 +2,8 @@ package com.dk.pen.mybook
 
 import com.dk.pen.base.MvpView
 import com.dk.pen.model.Thought
+import org.blockstack.android.sdk.BlockstackSession
+import org.blockstack.android.sdk.GetFileOptions
 
 
 /**
@@ -24,5 +26,7 @@ interface MyBookMvpView : MvpView {
     fun hideLoading()
 
     fun updateRecyclerViewView()
+
+    fun getactivity(bs: BlockstackSession, options: GetFileOptions)
 
 }

@@ -1,6 +1,6 @@
 package com.dk.pen.mybook
 
-import android.content.Context
+import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import com.dk.pen.ObjectBox
@@ -13,6 +13,7 @@ import io.objectbox.Box
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
 import org.json.JSONArray
+import java.net.URL
 
 
 open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
@@ -83,9 +84,10 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 //                }))
 //    }
 
-    open fun onRefresh(context: Context, blockstack_id: String) {
+    open fun onRefresh(context: Activity, blockstack_id: String, self: Boolean) {
 
         checkViewAttached()
+        var options = GetFileOptions()
 //        val sinceId = mvpView?.getLastMyThoughtId()
 //        if (sinceId != null && sinceId > 0) {
 //            val page = Paging(1, 200)
@@ -106,42 +108,62 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 //                        mvpView?.showSnackBar(R.string.error_refreshing_timeline)
 //                    }))
 //        } else mvpView?.stopRefresh()
-        Log.d(">>>>>>>>", "Working")
+
+
         _blockstackSession = BlockstackSession(context, config,
                 onLoadedCallback = {
                     // Wait until this callback fires before using any of the
                     // BlockstackSession API methods
-                    val options = GetFileOptions()
-                    blockstackSession().getFile("MyThoughts.json", options, { contentResult ->
-                        if (contentResult.hasValue) {
-                            val content = contentResult.value!!.toString()
-                            var thoughts = mutableListOf<Thought>()
-                            for (i in 0..(JSONArray(content).length() - 1)) {
-                                val item = JSONArray(content).getJSONObject(i)
+                    if (self) {
+                        blockstackSession().getFile("MyThoughts.json", options, { contentResult ->
+                            if (contentResult.hasValue) {
+                                val content = contentResult.value!!.toString()
+                                var thoughts = mutableListOf<Thought>()
+                                for (i in 0..(JSONArray(content).length() - 1)) {
+                                    val item = JSONArray(content).getJSONObject(i)
 
-                                // Your code here
-                                val thought = Thought(item.getString("text"), item.getLong("timestamp"))
-                                Log.d("thought", thought.toString())
-                                thoughts.add(thought)
+                                    // Your code here
+                                    val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                    Log.d("thought", thought.toString())
+                                    thoughts.add(thought)
 
+                                }
+                                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+                                userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                                thoughtBox.query().run {
+                                    equal(Thought_.userId, user.id)
+                                    build().remove()
+                                }
+                                user.thoughts.addAll(thoughts)
+                                userBox.put(user)
+                                mvpView?.stopRefresh()
+                                mvpView?.showThoughts(thoughts)
+
+
+                            } else {
+                                Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                             }
-                            thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-                            userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                            val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                            thoughtBox.query().run {
-                                equal(Thought_.userId, user.id)
-                                build().remove()
+                        })
+                    } else {
+                        val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
+                        options = GetFileOptions(username = blockstack_id,
+                                zoneFileLookupURL = zoneFileLookupUrl,
+                                app = "https://condescending-fermat-e43740.netlify.com",
+                                decrypt = false)
+                        blockstackSession().lookupProfile(blockstack_id, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
+                            if (profileResult.hasValue) {
+                                val profile = profileResult.value!!
+                                mvpView?.getactivity(blockstackSession(), options)
+
+                            } else {
+                                val errorMsg = "error: " + profileResult.error
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                             }
-                            user.thoughts.addAll(thoughts)
-                            userBox.put(user)
-                            mvpView?.stopRefresh()
-                            mvpView?.showThoughts(thoughts)
-
-
-                        } else {
-                            Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                         }
-                    })
+
+                    }
+
                 })
 
 
@@ -157,4 +179,5 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
             throw IllegalStateException("No session.")
         }
     }
+
 }
