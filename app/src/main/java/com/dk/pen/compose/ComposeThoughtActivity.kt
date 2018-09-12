@@ -113,10 +113,10 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     val options_get = GetFileOptions()
                     blockstackSession().getFile("MyThoughts.json", options_get) { contentResult ->
                         if (contentResult.hasValue) {
-                            val content = contentResult.value!!.toString()
+                            val content =  contentResult.value as ByteArray
                             if (content.isNotEmpty()) {
                                 my_book = JSONArray(content)
-                                Log.d("old content", content)
+                                Log.d("old content", my_book.toString())
                             }
 
                             my_book.put(rootObject)
