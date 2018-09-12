@@ -110,61 +110,63 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 //        } else mvpView?.stopRefresh()
 
 
-        _blockstackSession = BlockstackSession(context, config,
-                onLoadedCallback = {
-                    // Wait until this callback fires before using any of the
-                    // BlockstackSession API methods
-                    if (self) {
-                        blockstackSession().getFile("MyThoughts.json", options, { contentResult ->
-                            if (contentResult.hasValue) {
-                                val content = contentResult.value!!.toString()
-                                var thoughts = mutableListOf<Thought>()
-                                for (i in 0..(JSONArray(content).length() - 1)) {
-                                    val item = JSONArray(content).getJSONObject(i)
+        _blockstackSession = BlockstackSession(context, config
+        ) {
+            // Wait until this callback fires before using any of the
+            // BlockstackSession API methods
+            if (self) {
+                blockstackSession().getFile("MyThoughts.json", options) { contentResult ->
+                    if (contentResult.hasValue) {
+                        val content = contentResult.value!!.toString()
+                        var thoughts = mutableListOf<Thought>()
+                        for (i in 0..(JSONArray(content).length() - 1)) {
+                            val item = JSONArray(content).getJSONObject(i)
 
-                                    // Your code here
-                                    val thought = Thought(item.getString("text"), item.getLong("timestamp"))
-                                    Log.d("thought", thought.toString())
-                                    thoughts.add(thought)
+                            // Your code here
+                            val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                            Log.d("thought", thought.toString())
+                            thoughts.add(thought)
 
-                                }
-                                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-                                userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                                thoughtBox.query().run {
-                                    equal(Thought_.userId, user.id)
-                                    build().remove()
-                                }
-                                user.thoughts.addAll(thoughts)
-                                userBox.put(user)
-                                mvpView?.stopRefresh()
-                                mvpView?.showThoughts(thoughts)
-
-
-                            } else {
-                                Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
-                            }
-                        })
-                    } else {
-                        val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
-                        options = GetFileOptions(username = blockstack_id,
-                                zoneFileLookupURL = zoneFileLookupUrl,
-                                app = "https://condescending-fermat-e43740.netlify.com",
-                                decrypt = false)
-                        blockstackSession().lookupProfile(blockstack_id, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                            if (profileResult.hasValue) {
-                                val profile = profileResult.value!!
-                                mvpView?.getactivity(blockstackSession(), options)
-
-                            } else {
-                                val errorMsg = "error: " + profileResult.error
-                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-                            }
                         }
+                        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                        val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                        thoughtBox.query().run {
+                            equal(Thought_.userId, user.id)
+                            build().remove()
+                        }
+                        user.thoughts.addAll(thoughts)
+                        userBox.put(user)
+                        mvpView?.stopRefresh()
+                        mvpView?.showThoughts(thoughts)
 
+
+                    } else {
+                        Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                     }
+                }
+            } else {
+                val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
+                options = GetFileOptions(username = blockstack_id,
+                        zoneFileLookupURL = zoneFileLookupUrl,
+                        app = "https://condescending-fermat-e43740.netlify.com",
+                        decrypt = false)
+                blockstackSession().lookupProfile(blockstack_id, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
+                    if (profileResult.hasValue) {
+                        val profile = profileResult.value!!
+                        Log.d(">>>>>>>>>>>", profile.json.toString())
 
-                })
+                        mvpView?.getactivity(blockstackSession(), options)
+
+                    } else {
+                        val errorMsg = "error: " + profileResult.error
+                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            }
+
+        }
 
 
 //        }

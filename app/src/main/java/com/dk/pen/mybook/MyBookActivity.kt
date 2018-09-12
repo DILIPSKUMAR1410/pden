@@ -215,7 +215,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
     override fun getactivity(bs: BlockstackSession, options: GetFileOptions) {
         runOnUiThread {
-            bs.getFile("MyThoughts.json", options, { contentResult: Result<Any> ->
+            bs.getFile("MyThoughts.json", options) { contentResult: Result<Any> ->
                 Log.d(">>>>>>>>>>>", "testtttt")
                 if (contentResult.hasValue) {
                     val content = contentResult.value!!.toString()
@@ -229,22 +229,22 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
                         thoughts.add(thought)
 
                     }
-//                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-//                userBox = ObjectBox.boxStore.boxFor(User::class.java)
-//                val user = userBox.find(User_.blockstackId, blockstack_id).first()
-//                thoughtBox.query().run {
-//                    equal(Thought_.userId, user.id)
-//                    build().remove()
-//                }
-//                user.thoughts.addAll(thoughts)
-//                userBox.put(user)
+                    //                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+                    //                userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                    //                val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                    //                thoughtBox.query().run {
+                    //                    equal(Thought_.userId, user.id)
+                    //                    build().remove()
+                    //                }
+                    //                user.thoughts.addAll(thoughts)
+                    //                userBox.put(user)
                     stopRefresh()
                     showThoughts(thoughts)
                 } else {
                     val errorMsg = "error: " + contentResult.error
                     Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
                 }
-            })
+            }
         }
     }
 }
