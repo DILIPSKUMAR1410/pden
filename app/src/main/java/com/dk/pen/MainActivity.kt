@@ -255,7 +255,7 @@ class MainActivity : AppCompatActivity() {
             if (authResponseTokens.size > 1) {
                 val authResponse = authResponseTokens[1]
                 Log.d(TAG, "authResponse: ${authResponse}")
-                blockstackSession().handlePendingSignIn(authResponse, { userDataResult ->
+                blockstackSession().handlePendingSignIn(authResponse) { userDataResult ->
                     if (userDataResult.hasValue) {
                         val userData = userDataResult.value!!
                         Log.d(TAG, "signed in!")
@@ -266,7 +266,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, "error: " + userDataResult.error)
                         Toast.makeText(this, "error: " + userDataResult.error, Toast.LENGTH_SHORT).show()
                     }
-                })
+                }
             }
         }
     }
