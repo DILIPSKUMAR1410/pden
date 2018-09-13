@@ -190,11 +190,10 @@ class MainActivity : AppCompatActivity() {
         preferencesHelper.deviceToken = userData.json.getString("username")
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         val user = User(userData.json.getString("username"))
-        user.name = userData.profile?.name!!
-        user.description = userData.profile?.description!!
-        user.avatarImage = userData.profile?.avatarImage!!
+        user.name = if (userData.profile?.name != null) userData.profile?.name!! else "-NA-"
+        user.description = if (userData.profile?.description != null) userData.profile?.description!! else "-NA-"
+        user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "-NA-"
         userBox.put(user)
-        Log.d("User count", userBox.count().toString())
 
         val intent = Intent(this, ShelfActivity::class.java)
         startActivity(intent)
