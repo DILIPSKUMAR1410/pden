@@ -13,6 +13,7 @@ import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
+import com.dk.pen.common.Utils.config
 import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
@@ -57,15 +58,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             }
         })
 
-
-        val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
-            org.blockstack.android.sdk.BlockstackConfig(
-                    this,
-                    java.net.URI("${this}/redirect/"),
-                    java.net.URI("${this}/manifest.json"),
-                    kotlin.arrayOf(org.blockstack.android.sdk.Scope.StoreWrite))
-        }
-
         _blockstackSession = BlockstackSession(this, config,
                 onLoadedCallback = {
                     // Wait until this callback fires before using any of the
@@ -96,22 +88,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     rootObject.put("timestamp", System.currentTimeMillis())
                     rootObject.put("text", getThought())
 
-//                    val optionsut = PutFileOptions()
-//                    blockstackSession().putFile("MyThoughts.json", "", optionsut,
-//                            { readURLResult ->
-//                                if (readURLResult.hasValue) {
-//                                    val readURL = readURLResult.value!!
-//                                    Log.d("Gaia URL", "File stored at: ${readURL}")
-//                                    val intent = Intent(this, MyBookActivity::class.java)
-//                                    startActivity(intent)
-//                                } else {
-//                                    Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
-//                                }
-//                            })
-
-
                     val options_get = GetFileOptions()
-                    blockstackSession().getFile("MyThoughts.json", options_get) { contentResult ->
+
+                    blockstackSession().getFile("book.json", options_get) { contentResult ->
                         if (contentResult.hasValue) {
                             val content: Any
                             if (contentResult.value is String) {
@@ -124,9 +103,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
 
                             my_book.put(rootObject)
                             Log.d("Final content", my_book.toString())
-                            val options_put = PutFileOptions()
+                            val options_put = PutFileOptions(false)
                             runOnUiThread {
-                                blockstackSession().putFile("MyThoughts.json", my_book.toString(), options_put)
+                                blockstackSession().putFile("book.json", my_book.toString(), options_put)
                                 { readURLResult ->
                                     if (readURLResult.hasValue) {
                                         userBox = ObjectBox.boxStore.boxFor(User::class.java)

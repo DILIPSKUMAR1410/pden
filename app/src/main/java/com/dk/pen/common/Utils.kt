@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.DisplayMetrics
 import android.util.Log
+import org.blockstack.android.sdk.Scope
 import java.io.IOException
 import java.io.InputStream
 import java.net.URL
@@ -14,6 +15,15 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 object Utils {
+
+
+    val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
+        org.blockstack.android.sdk.BlockstackConfig(
+                this,
+                java.net.URI("${this}/redirect/"),
+                java.net.URI("${this}/manifest.json"),
+                kotlin.arrayOf(Scope.StoreWrite,Scope.PublishData))
+    }
 
     fun dpToPx(context: Context, dp: Int) = Math.round(dp *
             (context.resources.displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT))
@@ -52,6 +62,9 @@ object Utils {
     }
 
     fun inputStreamFromUri(context: Context, uri: Uri): InputStream = context.contentResolver.openInputStream(uri)
+
+
+
 
 }
 

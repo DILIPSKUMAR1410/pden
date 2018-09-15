@@ -8,13 +8,13 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.dk.pen.common.PreferencesHelper
+import com.dk.pen.common.Utils.config
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
 import com.dk.pen.shelf.ShelfActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.content_main.*
 import org.blockstack.android.sdk.BlockstackSession
-import org.blockstack.android.sdk.Scope
 import org.blockstack.android.sdk.UserData
 
 class MainActivity : AppCompatActivity() {
@@ -38,14 +38,6 @@ class MainActivity : AppCompatActivity() {
         signInButton.isEnabled = false
 //        getStringFileButton.isEnabled = false
 //        putStringFileButton.isEnabled = false
-
-        val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
-            org.blockstack.android.sdk.BlockstackConfig(
-                    this,
-                    java.net.URI("${this}/redirect/"),
-                    java.net.URI("${this}/manifest.json"),
-                    kotlin.arrayOf(Scope.StoreWrite, Scope.PublishData))
-        }
 
         _blockstackSession = BlockstackSession(this, config,
                 onLoadedCallback = {
