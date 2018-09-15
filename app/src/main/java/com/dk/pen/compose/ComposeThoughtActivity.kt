@@ -88,7 +88,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     rootObject.put("timestamp", System.currentTimeMillis())
                     rootObject.put("text", getThought())
 
-                    val options_get = GetFileOptions()
+                    val options_get = GetFileOptions(false)
 
                     blockstackSession().getFile("book.json", options_get) { contentResult ->
                         if (contentResult.hasValue) {

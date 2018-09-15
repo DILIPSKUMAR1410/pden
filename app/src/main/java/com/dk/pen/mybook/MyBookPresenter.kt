@@ -85,7 +85,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     open fun onRefresh(context: Activity, blockstack_id: String, self: Boolean) {
 
         checkViewAttached()
-        var options = GetFileOptions()
+        var options = GetFileOptions(false)
 //        val sinceId = mvpView?.getLastMyThoughtId()
 //        if (sinceId != null && sinceId > 0) {
 //            val page = Paging(1, 200)
@@ -162,6 +162,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {
                                     var my_book = JSONArray()
+                                    Log.d("thoughts", my_book.toString())
                                     val content: Any
                                     if (contentResult.value is String) {
                                         content = contentResult.value as String
