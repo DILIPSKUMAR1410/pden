@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.dk.pen.model.Thought
+import com.dk.pen.model.User
 import kotlinx.android.synthetic.main.item_userinfo.view.*
 import kotlinx.android.synthetic.main.thought_basic.view.*
 
@@ -17,6 +18,6 @@ abstract class BaseViewHolder(val container: View) :
     protected val timeTextView: TextView = container.timeTextView
     protected val userProfilePicImageView: ImageView = container.userProfilePicImageView
 
-    abstract fun setup(thought: Thought)
+    abstract fun setup(thought: Thought,user: User)
 
 }

@@ -6,6 +6,7 @@ import android.view.View
 import com.dk.pen.common.Utils
 import com.dk.pen.common.loadAvatar
 import com.dk.pen.model.Thought
+import com.dk.pen.model.User
 
 open class StatusViewHolder(container: View) :
         BaseViewHolder(container) {
@@ -13,10 +14,10 @@ open class StatusViewHolder(container: View) :
 
     @SuppressLint("SetTextI18n")
     @CallSuper
-    override fun setup(thought: Thought) {
+    override fun setup(thought: Thought,user: User) {
 
         val currentThought = thought
-        val currentUser = currentThought.user.target
+        val currentUser = user
         userNameTextView.text = currentUser.blockstackId
         userScreenNameTextView.text = "@${currentUser.name}"
         timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"

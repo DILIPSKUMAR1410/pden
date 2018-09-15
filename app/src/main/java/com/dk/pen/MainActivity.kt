@@ -13,7 +13,9 @@ import com.dk.pen.model.User_
 import com.dk.pen.shelf.ShelfActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.content_main.*
-import org.blockstack.android.sdk.*
+import org.blockstack.android.sdk.BlockstackSession
+import org.blockstack.android.sdk.Scope
+import org.blockstack.android.sdk.UserData
 
 class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.java.simpleName
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
                     this,
                     java.net.URI("${this}/redirect/"),
                     java.net.URI("${this}/manifest.json"),
-                    kotlin.arrayOf(org.blockstack.android.sdk.Scope.StoreWrite))
+                    kotlin.arrayOf(Scope.StoreWrite, Scope.PublishData))
         }
 
         _blockstackSession = BlockstackSession(this, config,

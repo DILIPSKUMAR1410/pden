@@ -8,9 +8,11 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.ToggleButton
 import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
@@ -24,10 +26,6 @@ import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
 import io.objectbox.Box
-import org.blockstack.android.sdk.BlockstackSession
-import org.blockstack.android.sdk.GetFileOptions
-import org.blockstack.android.sdk.Result
-import org.json.JSONArray
 
 
 class MyBookActivity : AppCompatActivity(), MyBookMvpView {
@@ -127,6 +125,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         recyclerView.setHasFixedSize(true)
         recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
+        adapter.user = user
 
 //        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 //            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
@@ -213,38 +212,4 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         KBus.unsubscribe(this)
     }
 
-    override fun getactivity(bs: BlockstackSession, options: GetFileOptions) {
-        runOnUiThread {
-            bs.getFile("MyThoughts.json", options) { contentResult: Result<Any> ->
-                Log.d(">>>>>>>>>>>", "testtttt")
-                if (contentResult.hasValue) {
-                    val content = contentResult.value!!.toString()
-                    var thoughts = mutableListOf<Thought>()
-                    for (i in 0..(JSONArray(content).length() - 1)) {
-                        val item = JSONArray(content).getJSONObject(i)
-
-                        // Your code here
-                        val thought = Thought(item.getString("text"), item.getLong("timestamp"))
-                        Log.d("thought", thought.toString())
-                        thoughts.add(thought)
-
-                    }
-                    //                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-                    //                userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                    //                val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                    //                thoughtBox.query().run {
-                    //                    equal(Thought_.userId, user.id)
-                    //                    build().remove()
-                    //                }
-                    //                user.thoughts.addAll(thoughts)
-                    //                userBox.put(user)
-                    stopRefresh()
-                    showThoughts(thoughts)
-                } else {
-                    val errorMsg = "error: " + contentResult.error
-                    Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 }

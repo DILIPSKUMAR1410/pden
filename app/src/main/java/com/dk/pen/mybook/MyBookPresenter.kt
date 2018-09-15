@@ -10,8 +10,11 @@ import com.dk.pen.model.Thought_
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
 import io.objectbox.Box
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
+import org.blockstack.android.sdk.Result
 import org.json.JSONArray
 import java.net.URL
 
@@ -150,13 +153,42 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 options = GetFileOptions(username = blockstack_id,
                         zoneFileLookupURL = zoneFileLookupUrl,
                         app = "https://condescending-fermat-e43740.netlify.com",
-                        decrypt = false)
+                        decrypt = true)
                 blockstackSession().lookupProfile(blockstack_id, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
                         val profile = profileResult.value!!
-                        Log.d(">>>>>>>>>>>", profile.json.toString())
 
-                        mvpView?.getactivity(blockstackSession(), options)
+                        launch(UI) {
+                            blockstackSession().getFile("MyThoughts.json", options) { contentResult: Result<Any> ->
+                                if (contentResult.hasValue) {
+                                    val content = contentResult.value!!.toString()
+                                    Log.d(">>>>>>>>>>>", content)
+                                    var thoughts = mutableListOf<Thought>()
+                                    for (i in 0..(JSONArray(content).length() - 1)) {
+                                        val item = JSONArray(content).getJSONObject(i)
+
+                                        // Your code here
+                                        val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                        thoughts.add(thought)
+
+                                    }
+                                    //                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+                                    //                userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                    //                val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                                    //                thoughtBox.query().run {
+                                    //                    equal(Thought_.userId, user.id)
+                                    //                    build().remove()
+                                    //                }
+                                    //                user.thoughts.addAll(thoughts)
+                                    //                userBox.put(user)
+                                    mvpView?.stopRefresh()
+                                    mvpView?.showThoughts(thoughts)
+                                } else {
+                                    val errorMsg = "error: " + contentResult.error
+                                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
 
                     } else {
                         val errorMsg = "error: " + profileResult.error
