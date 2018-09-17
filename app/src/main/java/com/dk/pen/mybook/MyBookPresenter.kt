@@ -15,6 +15,7 @@ import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
+import org.blockstack.android.sdk.PutFileOptions
 import org.blockstack.android.sdk.Result
 import org.json.JSONArray
 import java.net.URL
@@ -85,6 +86,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     open fun onRefresh(context: Activity, blockstack_id: String, self: Boolean) {
 
         checkViewAttached()
+        mvpView?.showLoading()
         var options = GetFileOptions(false)
 //        val sinceId = mvpView?.getLastMyThoughtId()
 //        if (sinceId != null && sinceId > 0) {
@@ -142,7 +144,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         }
                         user.thoughts.addAll(thoughts)
                         userBox.put(user)
-                        mvpView?.stopRefresh()
                         mvpView?.showThoughts(thoughts)
 
 
@@ -151,6 +152,21 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                     }
                 }
             } else {
+                blockstackSession().getFile("interest_page_0.json", options) { contentResult ->
+                    launch(UI) {
+                        if (contentResult.hasValue) {
+                            var content: String? = null
+                            if (contentResult.value is String) {
+                                content = contentResult.value as String
+                                if (content!!.contains(blockstack_id)) {
+                                    mvpView?.setBorrowed()
+                                }
+                            }
+                        } else {
+                            Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
                 val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
                 options = GetFileOptions(username = blockstack_id,
                         zoneFileLookupURL = zoneFileLookupUrl,
@@ -188,13 +204,14 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     //                }
                                     //                user.thoughts.addAll(thoughts)
                                     //                userBox.put(user)
-                                    mvpView?.stopRefresh()
                                     mvpView?.showThoughts(thoughts)
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
                                     Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                                 }
+
                             }
+                            mvpView?.hideLoading()
                         }
 
                     } else {
@@ -204,13 +221,95 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 }
 
             }
-
         }
-
-
-//        }
     }
 
+    fun addInterest(context: Activity, interested_blockstack_id: String) {
+        mvpView?.showLoading()
+        var interests = JSONArray()
+        val options_get = GetFileOptions(false)
+
+        _blockstackSession = BlockstackSession(context, config
+        ) {
+            blockstackSession().getFile("interest_page_0.json", options_get) { contentResult ->
+                launch(UI) {
+                    if (contentResult.hasValue) {
+                        var content: String? = null
+                        if (contentResult.value is String) {
+                            content = contentResult.value as String
+                            if (content.isNotEmpty()) interests = JSONArray(content)
+                        }
+                        if (!content?.contains(interested_blockstack_id)!!) {
+                            interests.put(interested_blockstack_id)
+                            Log.d("Final content", interests.toString())
+                            val options_put = PutFileOptions(false)
+
+                            blockstackSession().putFile("interest_page_0.json", interests.toString(), options_put)
+                            { readURLResult ->
+                                if (readURLResult.hasValue) {
+                                    val readURL = readURLResult.value!!
+                                    Log.d("Gaia URL", "File stored at: ${readURL}")
+                                } else {
+                                    Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+
+                        } else
+                            Log.d("Already added", interests.toString())
+                        mvpView?.hideLoading()
+                    } else {
+                        Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+    }
+
+    fun removeInterest(context: Activity, interested_blockstack_id: String) {
+        mvpView?.showLoading()
+        var interests = JSONArray()
+        val options_get = GetFileOptions(false)
+
+        _blockstackSession = BlockstackSession(context, config
+        ) {
+            blockstackSession().getFile("interest_page_0.json", options_get) { contentResult ->
+                launch(UI) {
+                    if (contentResult.hasValue) {
+                        var content: String? = null
+                        if (contentResult.value is String) {
+                            content = contentResult.value as String
+                            if (content.isNotEmpty()) interests = JSONArray(content)
+                        }
+                        Log.d("old content", interests.toString())
+                        if (content?.contains(interested_blockstack_id)!!) {
+                            for (i in 0..(interests.length() - 1)) {
+                                val item = interests.getString(i)
+                                if (item.equals(interested_blockstack_id)) interests.remove(i)
+                            }
+
+                            Log.d("Final content", interests.toString())
+                            val options_put = PutFileOptions(false)
+
+                            blockstackSession().putFile("interest_page_0.json", interests.toString(), options_put)
+                            { readURLResult ->
+                                if (readURLResult.hasValue) {
+                                    val readURL = readURLResult.value!!
+                                    Log.d("Gaia URL", "File stored at: ${readURL}")
+                                } else {
+                                    Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } else
+                            Log.d("Already added", interests.toString())
+                        mvpView?.hideLoading()
+                    } else {
+                        Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
 
     fun blockstackSession(): BlockstackSession {
         val session = _blockstackSession

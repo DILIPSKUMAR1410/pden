@@ -1,5 +1,6 @@
 package com.dk.pen.mybook
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -76,6 +77,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private fun getMyBookPresenter() = MyBookPresenter()
     private lateinit var blockstack_id: String
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
@@ -98,7 +100,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
             blockstack_id = intent.getStringExtra(ARG_QUERY)
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
             user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
-            toggleAddToShelf.setVisibility(View.INVISIBLE)
+            toggleAddToShelf.visibility = View.INVISIBLE
             floatingActionButton.setOnClickListener { view ->
                 val intent = Intent(this, ComposeThoughtActivity::class.java)
                 startActivity(intent)
@@ -111,6 +113,13 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
             user!!.description = intent.getStringExtra(TAG_USER_description)
             floatingActionButton.hide()
             self = false
+            toggleAddToShelf.setOnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    presenter.addInterest(this, user!!.blockstackId)
+                } else {
+                    presenter.removeInterest(this, user!!.blockstackId)
+                }
+            }
         }
         tcountvalue.text = user!!.thoughts.size.toString()
         icountvalue.text = "-NA-"
@@ -144,10 +153,10 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         }
 
         if (adapter.thoughts.isEmpty()) {
-            if (user != null) {
-                showThoughts(user!!.thoughts as MutableList<Thought>)
-            }
+            if (user!!.thoughts.isNotEmpty()) showThoughts(user!!.thoughts as MutableList<Thought>)
+            else presenter.onRefresh(this, user!!.blockstackId, self)
         }
+
 
     }
 
@@ -185,6 +194,12 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         }
     }
 
+    override fun startRefresh() {
+        runOnUiThread {
+            swipeRefreshLayout.isRefreshing = true
+        }
+    }
+
     override fun showLoading() {
         loadingProgressBar.visible()
     }
@@ -212,4 +227,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         KBus.unsubscribe(this)
     }
 
+    override fun setBorrowed() {
+        toggleAddToShelf.isChecked = true
+    }
 }
