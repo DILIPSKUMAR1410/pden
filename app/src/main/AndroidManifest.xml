@@ -15,6 +15,7 @@
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"
+            android:noHistory="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,14 +31,20 @@
                 <data android:scheme="pden" />
             </intent-filter>
         </activity>
-        <activity android:name=".compose.ComposeThoughtActivity" />
+        <activity
+            android:name=".compose.ComposeThoughtActivity"
+            android:parentActivityName=".mybook.MyBookActivity" />
         <activity
             android:name=".mybook.MyBookActivity"
+            android:parentActivityName=".shelf.ShelfActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity android:name=".shelf.ShelfActivity">
 
-        </activity>
-        <activity android:name=".search.SearchActivity"></activity>
+        <activity android:name=".shelf.ShelfActivity" />
+
+        <activity
+            android:name=".search.SearchActivity"
+            android:parentActivityName=".shelf.ShelfActivity" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="9e0844445f0e572f99533e93eac3e4117510555e" />

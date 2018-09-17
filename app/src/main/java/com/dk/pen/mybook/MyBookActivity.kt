@@ -81,8 +81,8 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
-
         presenter.attachView(this)
+        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
@@ -218,8 +218,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         KBus.subscribe<NewMyThoughtEvent>(this) {
             showThought(it.thought)
         }
-
-
     }
 
     override fun onStop() {

@@ -145,8 +145,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         user.thoughts.addAll(thoughts)
                         userBox.put(user)
                         mvpView?.showThoughts(thoughts)
-
-
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                     }
