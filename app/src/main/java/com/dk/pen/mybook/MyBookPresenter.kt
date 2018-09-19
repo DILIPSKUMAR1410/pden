@@ -70,11 +70,11 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 }
             } else {
                 val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
-                var options = GetFileOptions(username = user.blockstackId,
+                options = GetFileOptions(username = user.blockstackId,
                         zoneFileLookupURL = zoneFileLookupUrl,
                         app = "https://condescending-fermat-e43740.netlify.com",
                         decrypt = false)
-                var thoughts = mutableListOf<Thought>()
+                thoughts = mutableListOf<Thought>()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
                         launch(UI) {
@@ -108,6 +108,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     mvpView?.stopRefresh()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
+                                    Log.d("errorMsg", errorMsg)
+
                                 }
 
                             }
@@ -115,6 +117,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 
                     } else {
                         val errorMsg = "error: " + profileResult.error
+                        Log.d("errorMsg", errorMsg)
+
                     }
                 }
             }
@@ -161,10 +165,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                     if (contentResult.hasValue) {
                                                         var my_book = JSONArray()
                                                         Log.d("thoughts", my_book.toString())
-                                                        val content: Any
                                                         if (contentResult.value is String) {
                                                             content = contentResult.value as String
-                                                            if (content.isNotEmpty()) {
+                                                            if (content!!.isNotEmpty()) {
                                                                 my_book = JSONArray(content)
                                                             }
                                                         }

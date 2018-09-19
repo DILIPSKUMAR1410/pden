@@ -101,7 +101,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         } else if (my_blockstack_id.equals(blockstack_id)) {
             self = true
             toggleAddToShelf.visibility = View.INVISIBLE
-            floatingActionButton.setOnClickListener { view ->
+            floatingActionButton.setOnClickListener { _ ->
                 val intent = Intent(this, ComposeThoughtActivity::class.java)
                 startActivity(intent)
             }
@@ -111,7 +111,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
         if (!self) {
             floatingActionButton.hide()
-            toggleAddToShelf.setOnCheckedChangeListener { buttonView, isChecked ->
+            toggleAddToShelf.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     presenter.addInterest(this, user!!)
                 } else {
