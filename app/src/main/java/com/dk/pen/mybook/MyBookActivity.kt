@@ -17,6 +17,7 @@ import android.widget.ToggleButton
 import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
+import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
 import com.dk.pen.common.loadAvatar
 import com.dk.pen.common.visible
@@ -32,7 +33,6 @@ import io.objectbox.Box
 class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
     companion object {
-        private val ARG_QUERY = "query"
         const val TAG_USER_blockstackId = "user_blockstackId"
         const val TAG_USER_avatarImage = "user_avatarImage"
         const val TAG_USER_description = "user_description"
@@ -40,12 +40,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
         private var user: User? = null
 
-
-        fun launch(context: Context, query: String) {
-            val intent = Intent(context, MyBookActivity::class.java)
-            intent.putExtra(ARG_QUERY, query)
-            context.startActivity(intent)
-        }
 
         fun launch(context: Context, user: User) {
             val intent = Intent(context, MyBookActivity::class.java)
@@ -71,9 +65,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var floatingActionButton: FloatingActionButton
     private lateinit var toggleAddToShelf: ToggleButton
-    private var self: Boolean = true
-
-
+    private var self: Boolean = false
     private fun getMyBookPresenter() = MyBookPresenter()
     private lateinit var blockstack_id: String
 
@@ -82,7 +74,8 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
         presenter.attachView(this)
-        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
+        val preferencesHelper = PreferencesHelper(this)
+        val my_blockstack_id = preferencesHelper.deviceToken
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
@@ -96,28 +89,33 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         blockstack_name = findViewById(R.id.blockstack_id)
         about_me = findViewById(R.id.about_me)
 
-        if (intent.hasExtra(ARG_QUERY)) {
-            blockstack_id = intent.getStringExtra(ARG_QUERY)
-            userBox = ObjectBox.boxStore.boxFor(User::class.java)
-            user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
+        blockstack_id = intent.getStringExtra(TAG_USER_blockstackId)
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+        user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
+
+        if (user == null) {
+            user = User(blockstack_id)
+            user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
+            user!!.name = intent.getStringExtra(TAG_USER_name)
+            user!!.description = intent.getStringExtra(TAG_USER_description)
+        } else if (my_blockstack_id.equals(blockstack_id)) {
+            self = true
             toggleAddToShelf.visibility = View.INVISIBLE
             floatingActionButton.setOnClickListener { view ->
                 val intent = Intent(this, ComposeThoughtActivity::class.java)
                 startActivity(intent)
             }
-
         } else {
-            user = User(intent.getStringExtra(TAG_USER_blockstackId))
-            user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
-            user!!.name = intent.getStringExtra(TAG_USER_name)
-            user!!.description = intent.getStringExtra(TAG_USER_description)
+            setBorrowed()
+        }
+
+        if (!self) {
             floatingActionButton.hide()
-            self = false
             toggleAddToShelf.setOnCheckedChangeListener { buttonView, isChecked ->
                 if (isChecked) {
-                    presenter.addInterest(this, user!!.blockstackId)
+                    presenter.addInterest(this, user!!)
                 } else {
-                    presenter.removeInterest(this, user!!.blockstackId)
+                    presenter.removeInterest(this, user!!)
                 }
             }
         }
@@ -149,12 +147,12 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
 
         swipeRefreshLayout.setOnRefreshListener {
-            presenter.onRefresh(this, user!!.blockstackId, self)
+            presenter.onRefresh(this, user!!, self)
         }
 
         if (adapter.thoughts.isEmpty()) {
             if (user!!.thoughts.isNotEmpty()) showThoughts(user!!.thoughts as MutableList<Thought>)
-            else presenter.onRefresh(this, user!!.blockstackId, self)
+            else presenter.onRefresh(this, user!!, self)
         }
 
 
@@ -190,7 +188,8 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
     override fun stopRefresh() {
         runOnUiThread {
-            swipeRefreshLayout.isRefreshing = false
+            if (swipeRefreshLayout.isRefreshing)
+                swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -205,7 +204,8 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     }
 
     override fun hideLoading() {
-        loadingProgressBar.visible(false)
+        if (loadingProgressBar.isShown)
+            loadingProgressBar.visible(false)
     }
 
 

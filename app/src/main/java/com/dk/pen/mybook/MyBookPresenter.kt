@@ -26,89 +26,13 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var userBox: Box<User>
 
-//    var page: Int = 1
-//    protected var isLoading: Boolean = false
-
-//    open fun getThoughts() {
-//        checkViewAttached()
-//        mvpView?.showLoading()
-//        isLoading = true
-
-
-//        disposables
-//                .add(TwitterAPI.getHomeTimeline(Paging(page, 50))
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeOn(Schedulers.io())
-//                .subscribe({
-//                    mvpView?.hideLoading()
-//
-//                    when {
-//                        it == null -> mvpView?.showError()
-//                        it.isEmpty() -> mvpView?.showEmpty()
-//                        else -> {
-//                            mvpView?.showThoughts(it.map(::Tweet).toMutableList())
-//                            page++
-//                        }
-//                    }
-//
-//                    isLoading = false
-//                }, {
-//                    Timber.e(it?.message)
-//                    mvpView?.hideLoading()
-//                    mvpView?.showError()
-//                    isLoading = false
-//                }))
-//    }
-
-//    open fun getMoreThoughts(context: Context) {
-//        if (isLoading)
-//            return
-//
-//        checkViewAttached()
-//        isLoading = true
-
-//        disposables.add(TwitterAPI.getHomeTimeline(Paging(page, 50))
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeOn(Schedulers.io())
-//                .subscribe({
-//                    if (it != null) {
-//                        if (it.isNotEmpty())
-//                            mvpView?.showMoreTweets(it.map(::Tweet).toMutableList())
-//                        page++
-//                    }
-//                    isLoading = false
-//                }, {
-//                    Timber.e(it?.message)
-//                    isLoading = false
-//                }))
-//    }
-
-    open fun onRefresh(context: Activity, blockstack_id: String, self: Boolean) {
-
+    open fun onRefresh(context: Activity, user: User, self: Boolean) {
         checkViewAttached()
         mvpView?.showLoading()
+        var thoughts = mutableListOf<Thought>()
         var options = GetFileOptions(false)
-//        val sinceId = mvpView?.getLastMyThoughtId()
-//        if (sinceId != null && sinceId > 0) {
-//            val page = Paging(1, 200)
-//            page.sinceId = sinceId
-//            disposables.add(TwitterAPI.refreshTimeLine(page)
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribeOn(Schedulers.io())
-//                    .subscribe({
-//                        mvpView?.stopRefresh()
-//                        if (it != null) {
-//                            it.reversed().forEach { status -> mvpView?.showTweet(Tweet(status)) }
-//                        } else {
-//                            mvpView?.showSnackBar(R.string.error_refreshing_timeline)
-//                        }
-//                    }, {
-//                        Timber.e(it?.message)
-//                        mvpView?.stopRefresh()
-//                        mvpView?.showSnackBar(R.string.error_refreshing_timeline)
-//                    }))
-//        } else mvpView?.stopRefresh()
-
+        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
         _blockstackSession = BlockstackSession(context, config
         ) {
@@ -125,19 +49,12 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 my_book = JSONArray(content)
                             }
                         }
-                        var thoughts = mutableListOf<Thought>()
                         for (i in 0..(my_book.length() - 1)) {
                             val item = my_book.getJSONObject(i)
-
                             // Your code here
                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
-                            Log.d("thought", thought.toString())
                             thoughts.add(thought)
-
                         }
-                        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                        val user = userBox.find(User_.blockstackId, blockstack_id).first()
                         thoughtBox.query().run {
                             equal(Thought_.userId, user.id)
                             build().remove()
@@ -145,32 +62,20 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         user.thoughts.addAll(thoughts)
                         userBox.put(user)
                         mvpView?.showThoughts(thoughts)
+                        mvpView?.hideLoading()
+                        mvpView?.stopRefresh()
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
-                blockstackSession().getFile("interest_page_0.json", options) { contentResult ->
-                    launch(UI) {
-                        if (contentResult.hasValue) {
-                            var content: String? = null
-                            if (contentResult.value is String) {
-                                content = contentResult.value as String
-                                if (content!!.contains(blockstack_id)) {
-                                    mvpView?.setBorrowed()
-                                }
-                            }
-                        } else {
-                            Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
                 val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
-                options = GetFileOptions(username = blockstack_id,
+                var options = GetFileOptions(username = user.blockstackId,
                         zoneFileLookupURL = zoneFileLookupUrl,
                         app = "https://condescending-fermat-e43740.netlify.com",
                         decrypt = false)
-                blockstackSession().lookupProfile(blockstack_id, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
+                var thoughts = mutableListOf<Thought>()
+                blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
                         launch(UI) {
                             blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
@@ -184,45 +89,42 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                             my_book = JSONArray(content)
                                         }
                                     }
-                                    var thoughts = mutableListOf<Thought>()
                                     for (i in 0..(my_book.length() - 1)) {
                                         val item = my_book.getJSONObject(i)
-
                                         // Your code here
                                         val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                         thoughts.add(thought)
-
                                     }
-                                    //                thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-                                    //                userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                    //                val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                                    //                thoughtBox.query().run {
-                                    //                    equal(Thought_.userId, user.id)
-                                    //                    build().remove()
-                                    //                }
-                                    //                user.thoughts.addAll(thoughts)
-                                    //                userBox.put(user)
+                                    if (!userBox.find(User_.blockstackId, user.blockstackId).isEmpty()) {
+                                        thoughtBox.query().run {
+                                            equal(Thought_.userId, user.id)
+                                            build().remove()
+                                        }
+                                        user.thoughts.addAll(thoughts)
+                                        userBox.put(user)
+                                    }
                                     mvpView?.showThoughts(thoughts)
+                                    mvpView?.hideLoading()
+                                    mvpView?.stopRefresh()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
-                                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                                 }
 
                             }
-                            mvpView?.hideLoading()
                         }
 
                     } else {
                         val errorMsg = "error: " + profileResult.error
-                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
+
+
         }
+
     }
 
-    fun addInterest(context: Activity, interested_blockstack_id: String) {
+    fun addInterest(context: Activity, user: User) {
         mvpView?.showLoading()
         var interests = JSONArray()
         val options_get = GetFileOptions(false)
@@ -237,8 +139,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             content = contentResult.value as String
                             if (content.isNotEmpty()) interests = JSONArray(content)
                         }
-                        if (!content?.contains(interested_blockstack_id)!!) {
-                            interests.put(interested_blockstack_id)
+                        if (!content?.contains(user.blockstackId)!!) {
+                            interests.put(user.blockstackId)
                             Log.d("Final content", interests.toString())
                             val options_put = PutFileOptions(false)
 
@@ -246,6 +148,48 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
                                     val readURL = readURLResult.value!!
+                                    val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
+                                    var options = GetFileOptions(username = user.blockstackId,
+                                            zoneFileLookupURL = zoneFileLookupUrl,
+                                            app = "https://condescending-fermat-e43740.netlify.com",
+                                            decrypt = false)
+                                    var thoughts = mutableListOf<Thought>()
+                                    blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
+                                        if (profileResult.hasValue) {
+                                            launch(UI) {
+                                                blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
+                                                    if (contentResult.hasValue) {
+                                                        var my_book = JSONArray()
+                                                        Log.d("thoughts", my_book.toString())
+                                                        val content: Any
+                                                        if (contentResult.value is String) {
+                                                            content = contentResult.value as String
+                                                            if (content.isNotEmpty()) {
+                                                                my_book = JSONArray(content)
+                                                            }
+                                                        }
+                                                        for (i in 0..(my_book.length() - 1)) {
+                                                            val item = my_book.getJSONObject(i)
+                                                            // Your code here
+                                                            val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                                            thoughts.add(thought)
+                                                        }
+                                                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                                        user.thoughts.addAll(thoughts)
+                                                        userBox.attach(user)
+                                                    } else {
+                                                        val errorMsg = "error: " + contentResult.error
+                                                        Log.d("errorMsg", errorMsg)
+                                                    }
+
+                                                }
+                                            }
+
+                                        } else {
+                                            val errorMsg = "error: " + profileResult.error
+                                            Log.d("errorMsg", errorMsg)
+                                        }
+                                    }
                                     Log.d("Gaia URL", "File stored at: ${readURL}")
                                 } else {
                                     Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
@@ -264,7 +208,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 
     }
 
-    fun removeInterest(context: Activity, interested_blockstack_id: String) {
+    fun removeInterest(context: Activity, user: User) {
         mvpView?.showLoading()
         var interests = JSONArray()
         val options_get = GetFileOptions(false)
@@ -280,10 +224,10 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             if (content.isNotEmpty()) interests = JSONArray(content)
                         }
                         Log.d("old content", interests.toString())
-                        if (content?.contains(interested_blockstack_id)!!) {
+                        if (content?.contains(user.blockstackId)!!) {
                             for (i in 0..(interests.length() - 1)) {
                                 val item = interests.getString(i)
-                                if (item.equals(interested_blockstack_id)) interests.remove(i)
+                                if (item.equals(user.blockstackId)) interests.remove(i)
                             }
 
                             Log.d("Final content", interests.toString())
@@ -294,6 +238,11 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 if (readURLResult.hasValue) {
                                     val readURL = readURLResult.value!!
                                     Log.d("Gaia URL", "File stored at: ${readURL}")
+                                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                    userBox.query().run {
+                                        equal(User_.blockstackId, user.blockstackId)
+                                        build().remove()
+                                    }
                                 } else {
                                     Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                 }
@@ -317,5 +266,4 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
             throw IllegalStateException("No session.")
         }
     }
-
 }

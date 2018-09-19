@@ -6,8 +6,11 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
+import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
+import com.dk.pen.model.User
+import com.dk.pen.model.User_
 import com.dk.pen.mybook.MyBookActivity
 import com.dk.pen.search.SearchActivity
 
@@ -54,6 +57,7 @@ class ShelfActivity : AppCompatActivity() {
     fun openProfile() {
         val preferencesHelper = PreferencesHelper(this)
         val blockstack_id = preferencesHelper.deviceToken
-        MyBookActivity.launch(this, blockstack_id)
+        val user = ObjectBox.boxStore.boxFor(User::class.java).find(User_.blockstackId, blockstack_id).firstOrNull()
+        user?.let { MyBookActivity.launch(this, it) }
     }
 }

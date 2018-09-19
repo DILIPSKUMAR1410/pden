@@ -9,7 +9,7 @@ class PreferencesHelper(context: Context) {
         private val DEVICE_TOKEN = "data.source.prefs.DEVICE_TOKEN"
     }
 
-    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
     // save device token
 
     var deviceToken = preferences.getString(DEVICE_TOKEN, "")

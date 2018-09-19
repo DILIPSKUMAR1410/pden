@@ -15,7 +15,6 @@
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"
-            android:noHistory="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,7 +38,7 @@
             android:parentActivityName=".shelf.ShelfActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
-        <activity android:name=".shelf.ShelfActivity" />
+        <activity android:name=".shelf.ShelfActivity"/>
 
         <activity
             android:name=".search.SearchActivity"

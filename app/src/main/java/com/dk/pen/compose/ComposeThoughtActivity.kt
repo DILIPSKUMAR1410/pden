@@ -118,7 +118,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         KBus.post(NewMyThoughtEvent(thought))
                                         val readURL = readURLResult.value!!
                                         Log.d("Gaia URL", "File stored at: ${readURL}")
-                                        MyBookActivity.launch(this, blockstack_id)
+                                        MyBookActivity.launch(this, user)
                                     } else {
                                         Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                     }
