@@ -28,7 +28,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 
     open fun onRefresh(context: Activity, user: User, self: Boolean) {
         checkViewAttached()
-        mvpView?.showLoading()
         var thoughts = mutableListOf<Thought>()
         var options = GetFileOptions(false)
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
@@ -62,7 +61,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         user.thoughts.addAll(thoughts)
                         userBox.put(user)
                         mvpView?.showThoughts(thoughts)
-                        mvpView?.hideLoading()
                         mvpView?.stopRefresh()
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
@@ -81,7 +79,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {
                                     var my_book = JSONArray()
-                                    Log.d("thoughts", my_book.toString())
                                     val content: Any
                                     if (contentResult.value is String) {
                                         content = contentResult.value as String
@@ -95,6 +92,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                         thoughts.add(thought)
                                     }
+                                    Log.d("thoughts -> Mybook open", my_book.toString())
                                     if (!userBox.find(User_.blockstackId, user.blockstackId).isEmpty()) {
                                         thoughtBox.query().run {
                                             equal(Thought_.userId, user.id)
@@ -104,7 +102,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         userBox.put(user)
                                     }
                                     mvpView?.showThoughts(thoughts)
-                                    mvpView?.hideLoading()
                                     mvpView?.stopRefresh()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
@@ -142,66 +139,72 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         if (contentResult.value is String) {
                             content = contentResult.value as String
                             if (content.isNotEmpty()) interests = JSONArray(content)
-                        }
-                        if (!content?.contains(user.blockstackId)!!) {
-                            interests.put(user.blockstackId)
-                            Log.d("Final content", interests.toString())
-                            val options_put = PutFileOptions(false)
 
-                            blockstackSession().putFile("interest_page_0.json", interests.toString(), options_put)
-                            { readURLResult ->
-                                if (readURLResult.hasValue) {
-                                    val readURL = readURLResult.value!!
-                                    val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
-                                    var options = GetFileOptions(username = user.blockstackId,
-                                            zoneFileLookupURL = zoneFileLookupUrl,
-                                            app = "https://condescending-fermat-e43740.netlify.com",
-                                            decrypt = false)
-                                    var thoughts = mutableListOf<Thought>()
-                                    blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                                        if (profileResult.hasValue) {
-                                            launch(UI) {
-                                                blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
-                                                    if (contentResult.hasValue) {
-                                                        var my_book = JSONArray()
-                                                        Log.d("thoughts", my_book.toString())
-                                                        if (contentResult.value is String) {
-                                                            content = contentResult.value as String
-                                                            if (content!!.isNotEmpty()) {
-                                                                my_book = JSONArray(content)
+                            if (!content?.contains(user.blockstackId)!!) {
+                                interests.put(user.blockstackId)
+                                Log.d("Final content", interests.toString())
+                                val options_put = PutFileOptions(false)
+
+                                blockstackSession().putFile("interest_page_0.json", interests.toString(), options_put)
+                                { readURLResult ->
+                                    if (readURLResult.hasValue) {
+                                        val readURL = readURLResult.value!!
+                                        val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
+                                        var options = GetFileOptions(username = user.blockstackId,
+                                                zoneFileLookupURL = zoneFileLookupUrl,
+                                                app = "https://condescending-fermat-e43740.netlify.com",
+                                                decrypt = false)
+                                        var thoughts = mutableListOf<Thought>()
+                                        launch(UI) {
+                                            blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
+                                                if (profileResult.hasValue) {
+                                                    launch(UI) {
+                                                        blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
+                                                            if (contentResult.hasValue) {
+                                                                var my_book = JSONArray()
+                                                                if (contentResult.value is String) {
+                                                                    content = contentResult.value as String
+                                                                    if (content!!.isNotEmpty()) {
+                                                                        my_book = JSONArray(content)
+                                                                    }
+                                                                }
+                                                                for (i in 0..(my_book.length() - 1)) {
+                                                                    val item = my_book.getJSONObject(i)
+                                                                    // Your code here
+                                                                    val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                                                    thoughts.add(thought)
+                                                                }
+                                                                Log.d("thoughts -> adding", my_book.toString())
+                                                                userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                                                user.thoughts.addAll(thoughts)
+                                                                userBox.put(user)
+                                                                Log.d("user id", user.id.toString())
+
+                                                            } else {
+                                                                val errorMsg = "error: " + contentResult.error
+                                                                Log.d("errorMsg", errorMsg)
                                                             }
+
                                                         }
-                                                        for (i in 0..(my_book.length() - 1)) {
-                                                            val item = my_book.getJSONObject(i)
-                                                            // Your code here
-                                                            val thought = Thought(item.getString("text"), item.getLong("timestamp"))
-                                                            thoughts.add(thought)
-                                                        }
-                                                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                                        user.thoughts.addAll(thoughts)
-                                                        userBox.attach(user)
-                                                    } else {
-                                                        val errorMsg = "error: " + contentResult.error
-                                                        Log.d("errorMsg", errorMsg)
                                                     }
 
+                                                } else {
+                                                    val errorMsg = "error: " + profileResult.error
+                                                    Log.d("errorMsg", errorMsg)
                                                 }
                                             }
-
-                                        } else {
-                                            val errorMsg = "error: " + profileResult.error
-                                            Log.d("errorMsg", errorMsg)
                                         }
-                                    }
-                                    Log.d("Gaia URL", "File stored at: ${readURL}")
-                                } else {
-                                    Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
-                                }
-                            }
 
-                        } else
-                            Log.d("Already added", interests.toString())
-                        mvpView?.hideLoading()
+                                        Log.d("Gaia URL", "File stored at: ${readURL}")
+                                    } else {
+                                        Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+
+                            } else
+                                Log.d("Already added", interests.toString())
+                            mvpView?.hideLoading()
+                        }
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                     }
@@ -251,7 +254,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 }
                             }
                         } else
-                            Log.d("Already added", interests.toString())
+                            Log.d("Already removed", interests.toString())
                         mvpView?.hideLoading()
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
