@@ -39,7 +39,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         const val TAG_USER_name = "user_name"
 
         private var user: User? = null
-        
+
         fun launch(context: Context, user: User) {
             val intent = Intent(context, MyBookActivity::class.java)
             intent.putExtra(TAG_USER_blockstackId, user.blockstackId)
@@ -200,11 +200,12 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     }
 
     override fun showLoading() {
-        loadingProgressBar.visible()
+        if (!swipeRefreshLayout.isRefreshing)
+            loadingProgressBar.visible()
     }
 
     override fun hideLoading() {
-        if (loadingProgressBar.isShown)
+        if (loadingProgressBar.isEnabled)
             loadingProgressBar.visible(false)
     }
 
