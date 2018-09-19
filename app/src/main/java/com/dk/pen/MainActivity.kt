@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         if (userBox.find(User_.blockstackId, PreferencesHelper(this).deviceToken).isNotEmpty()) {
             val intent = Intent(this, ShelfActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         super.onCreate(savedInstanceState)
@@ -72,6 +73,7 @@ class MainActivity : AppCompatActivity() {
 
         val intent = Intent(this, ShelfActivity::class.java)
         startActivity(intent)
+        finish()
     }
 
 

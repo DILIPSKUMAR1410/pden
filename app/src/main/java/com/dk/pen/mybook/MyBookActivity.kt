@@ -39,8 +39,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         const val TAG_USER_name = "user_name"
 
         private var user: User? = null
-
-
+        
         fun launch(context: Context, user: User) {
             val intent = Intent(context, MyBookActivity::class.java)
             intent.putExtra(TAG_USER_blockstackId, user.blockstackId)
@@ -48,6 +47,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
             intent.putExtra(TAG_USER_avatarImage, user.avatarImage)
             intent.putExtra(TAG_USER_name, user.name)
             context.startActivity(intent)
+
         }
     }
 

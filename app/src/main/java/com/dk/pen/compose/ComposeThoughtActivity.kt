@@ -18,7 +18,6 @@ import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
-import com.dk.pen.mybook.MyBookActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
@@ -118,7 +117,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         KBus.post(NewMyThoughtEvent(thought))
                                         val readURL = readURLResult.value!!
                                         Log.d("Gaia URL", "File stored at: ${readURL}")
-                                        MyBookActivity.launch(this, user)
+                                        close()
                                     } else {
                                         Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                     }
