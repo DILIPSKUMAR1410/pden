@@ -75,7 +75,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         setContentView(R.layout.activity_my_book)
         presenter.attachView(this)
         val preferencesHelper = PreferencesHelper(this)
-        val my_blockstack_id = preferencesHelper.deviceToken
+        val my_blockstack_id = preferencesHelper.blockstackId
         adapter = MyBookAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)

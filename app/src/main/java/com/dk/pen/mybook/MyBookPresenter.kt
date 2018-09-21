@@ -111,7 +111,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 
                             }
                         }
-
                     } else {
                         val errorMsg = "error: " + profileResult.error
                         Log.d("errorMsg", errorMsg)

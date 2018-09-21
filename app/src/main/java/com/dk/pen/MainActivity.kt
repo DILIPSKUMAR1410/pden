@@ -10,8 +10,6 @@ import android.widget.Toast
 import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils.config
 import com.dk.pen.model.User
-import com.dk.pen.model.User_
-import com.dk.pen.shelf.ShelfActivity
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.content_main.*
 import org.blockstack.android.sdk.BlockstackSession
@@ -23,15 +21,6 @@ class MainActivity : AppCompatActivity() {
     private var _blockstackSession: BlockstackSession? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Get a instance of PreferencesHelper class
-        userBox = ObjectBox.boxStore.boxFor(User::class.java)
-
-        if (userBox.find(User_.blockstackId, PreferencesHelper(this).deviceToken).isNotEmpty()) {
-            val intent = Intent(this, ShelfActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         signInButton.isEnabled = false
@@ -63,15 +52,14 @@ class MainActivity : AppCompatActivity() {
         // Get a instance of PreferencesHelper class
         val preferencesHelper = PreferencesHelper(this)
         // save token on preferences
-        preferencesHelper.deviceToken = userData.json.getString("username")
+        preferencesHelper.blockstackId = userData.json.getString("username")
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         val user = User(userData.json.getString("username"))
         user.name = if (userData.profile?.name != null) userData.profile?.name!! else "-NA-"
         user.description = if (userData.profile?.description != null) userData.profile?.description!! else "-NA-"
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "-NA-"
         userBox.put(user)
-
-        val intent = Intent(this, ShelfActivity::class.java)
+        val intent = Intent(this, InitActivity::class.java)
         startActivity(intent)
         finish()
     }

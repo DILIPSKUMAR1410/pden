@@ -17,11 +17,6 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -37,9 +32,7 @@
             android:name=".mybook.MyBookActivity"
             android:parentActivityName=".shelf.ShelfActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
-        <activity android:name=".shelf.ShelfActivity"/>
-
+        <activity android:name=".shelf.ShelfActivity" />
         <activity
             android:name=".search.SearchActivity"
             android:parentActivityName=".shelf.ShelfActivity" />
@@ -47,6 +40,22 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="9e0844445f0e572f99533e93eac3e4117510555e" />
+
+        <activity
+            android:name=".SplashActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_splash"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".InitActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_init"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
     </application>
 
 </manifest>

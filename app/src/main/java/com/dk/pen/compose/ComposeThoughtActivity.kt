@@ -13,7 +13,7 @@ import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
-import com.dk.pen.common.Utils.config
+import com.dk.pen.common.Utils
 import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
@@ -57,11 +57,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             }
         })
 
-        _blockstackSession = BlockstackSession(this, config,
-                onLoadedCallback = {
-                    // Wait until this callback fires before using any of the
-                    // BlockstackSession API methods
-                })
+
     }
 
 
@@ -70,10 +66,17 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         // Inflate the menu to use in the action bar
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_compose, menu)
-
+        menu.findItem(R.id.action_send).isEnabled = false
         val item = menu.findItem(R.id.action_chars_left)
         val charsLeft = presenter.charsLeft()
-        item.setTitle(charsLeft.toString())
+        item.title = charsLeft.toString()
+        _blockstackSession = BlockstackSession(this, Utils.config,
+                onLoadedCallback = {
+                    // Wait until this callback fires before using any of the
+                    // BlockstackSession API methods
+                    menu.findItem(R.id.action_send).isEnabled = true
+
+                })
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -108,7 +111,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 { readURLResult ->
                                     if (readURLResult.hasValue) {
                                         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                        val blockstack_id = PreferencesHelper(this).deviceToken
+                                        val blockstack_id = PreferencesHelper(this).blockstackId
                                         val user = userBox.find(User_.blockstackId, blockstack_id).first()
                                         val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
                                         user.thoughts.add(thought)
