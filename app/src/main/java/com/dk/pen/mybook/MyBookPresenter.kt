@@ -244,10 +244,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     val readURL = readURLResult.value!!
                                     Log.d("Gaia URL", "File stored at: ${readURL}")
                                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                    userBox.query().run {
-                                        equal(User_.blockstackId, user.blockstackId)
-                                        build().remove()
-                                    }
+                                    thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+                                    thoughtBox.remove(user.thoughts)
+                                    userBox.remove(user)
                                 } else {
                                     Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                 }
