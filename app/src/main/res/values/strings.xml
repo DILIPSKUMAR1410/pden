@@ -3,6 +3,4 @@
     <string name="send_tweet">send_tweet</string>
     <string name="chars_left">chars_left</string>
     <string name="profile_pic_contentDescriptor">Profile Picture</string>
-    <string name="title_activity_splash">SplashActivity</string>
-    <string name="title_activity_init">InitActivity</string>
 </resources>

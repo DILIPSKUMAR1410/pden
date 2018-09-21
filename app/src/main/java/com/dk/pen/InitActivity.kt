@@ -15,6 +15,7 @@ import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
+import org.blockstack.android.sdk.PutFileOptions
 import org.blockstack.android.sdk.Result
 import org.json.JSONArray
 import java.net.URL
@@ -34,29 +35,40 @@ class InitActivity : AppCompatActivity() {
         setContentView(R.layout.activity_init)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val blockstack_id = PreferencesHelper(this).blockstackId
-        _blockstackSession = BlockstackSession(this, Utils.config,
-                onLoadedCallback = {
-                    // Wait until this callback fires before using any of the
-                    // BlockstackSession API methods
-                    var options = GetFileOptions(false)
-                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
+        _blockstackSession = BlockstackSession(this, Utils.config) {
+            // Wait until this callback fires before using any of the
+            // BlockstackSession API methods
+            var options = GetFileOptions(false)
+            userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
-                    blockstackSession().getFile("interest_page_0.json", options) { contentResult ->
-                        var interests = JSONArray()
-                        if (contentResult.hasValue) {
-                            var content: String?
-                            if (contentResult.value is String) {
-                                content = contentResult.value as String
-                                if (content.isNotEmpty()) {
-                                    interests = JSONArray(content)
-                                    fetchBooks(interests, counter)
+            blockstackSession().getFile("interest_page_0.json", options) { contentResult ->
+                var interests = JSONArray()
+                if (contentResult.hasValue) {
+                    var content: String?
+                    if (contentResult.value is String) {
+                        content = contentResult.value as String
+                        if (content.isNotEmpty()) {
+                            interests = JSONArray(content)
+                            fetchBooks(interests, counter)
+                        }
+                    } else {
+                        val options_put = PutFileOptions(false)
+                        launch(UI) {
+                            blockstackSession().putFile("interest_page_0.json", interests.toString(), options_put)
+                            { readURLResult ->
+                                if (readURLResult.hasValue) {
+                                    close()
+                                } else {
+                                    throw IllegalStateException(readURLResult.error)
                                 }
                             }
-                        } else {
-                            Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                         }
                     }
-                })
+                } else {
+                    Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     fun blockstackSession(): BlockstackSession {
@@ -103,7 +115,7 @@ class InitActivity : AppCompatActivity() {
                                             // Your code here
                                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                             thoughts.add(thought)
-                                            Log.d(interest+">>>>>", thought.toString())
+                                            Log.d(interest + ">>>>>", thought.toString())
 
                                         }
                                         user.thoughts.addAll(thoughts)
