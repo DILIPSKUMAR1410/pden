@@ -1,4 +1,4 @@
-package com.dk.pen.service
+package com.dk.pen.service.ApiResponses
 
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName

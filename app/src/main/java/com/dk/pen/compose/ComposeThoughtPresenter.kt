@@ -1,13 +1,24 @@
 package com.dk.pen.compose
 
+import android.util.Log
 import android.util.Patterns
 import com.dk.pen.base.BasePresenter
+import com.dk.pen.service.ApiServiceFactory
+import com.google.gson.JsonObject
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
+import org.json.JSONObject
+
 
 class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
     private val MAX_URL_LENGTH = 23 // it will change
     private var charsLeft: Int = 140
     private var lastAtIndex: Int = -1
+    private val firebaseService by lazy {
+        ApiServiceFactory.createFirebaseService()
+    }
 
     fun charsLeft() = charsLeft
 
@@ -20,10 +31,26 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
     }
 
-    private fun sendThought(status: String?) {
-        if (status != null)
-//            TweetsQueue.add(TweetsQueue.StatusUpdate.valueOf(status))
-            mvpView?.close()
+    fun sendThought(blockstack_id: String, rootObject: JSONObject?) {
+        val envelopeObject = JsonObject()
+        val dataobj = JsonObject()
+        dataobj.addProperty("timestamp", rootObject?.getString("timestamp"))
+        dataobj.addProperty("text", rootObject?.getString("text"))
+        envelopeObject.addProperty("to", "/topics/" + blockstack_id)
+        envelopeObject.add("data", dataobj)
+        firebaseService.publishToTopic(envelopeObject!!)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeBy(
+                        onSuccess = {
+                            Log.d("success-->>", "Shared")
+                        },
+                        onError =
+                        {
+                            Log.d("error-->>", it.message)
+                        }
+                )
+        mvpView?.close()
     }
 
     private fun checkLength(text: String) {

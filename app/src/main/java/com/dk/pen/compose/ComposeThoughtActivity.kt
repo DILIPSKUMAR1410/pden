@@ -9,12 +9,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
-import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
-import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
@@ -102,7 +100,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 }
                             }
                             Log.d("old content", my_book.toString())
-
                             my_book.put(rootObject)
                             Log.d("Final content", my_book.toString())
                             val options_put = PutFileOptions(false)
@@ -116,10 +113,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
                                         user.thoughts.add(thought)
                                         userBox.put(user)
-                                        Log.d("thought owner ", userBox.find(User_.blockstackId, blockstack_id).first().thoughts.size.toString())
-                                        KBus.post(NewMyThoughtEvent(thought))
-                                        val readURL = readURLResult.value!!
-                                        Log.d("Gaia URL", "File stored at: ${readURL}")
+                                        presenter.sendThought(blockstack_id, rootObject)
+//                                        KBus.post(NewMyThoughtEvent(thought))
                                         close()
                                     } else {
                                         Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()

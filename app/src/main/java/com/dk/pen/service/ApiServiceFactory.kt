@@ -15,4 +15,11 @@ object ApiServiceFactory {
             .build()
             .create(ApiService::class.java)
 
+    fun createFirebaseService(): FirebaseService = Retrofit.Builder()
+            .baseUrl("https://fcm.googleapis.com/")
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .build()
+            .create(FirebaseService::class.java)
+
 }

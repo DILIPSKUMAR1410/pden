@@ -1,5 +1,6 @@
 package com.dk.pen.service
 
+import com.dk.pen.service.ApiResponses.ApiResponse
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query

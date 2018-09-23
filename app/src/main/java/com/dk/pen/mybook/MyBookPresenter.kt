@@ -10,6 +10,7 @@ import com.dk.pen.model.Thought
 import com.dk.pen.model.Thought_
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
+import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
@@ -48,11 +49,13 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 my_book = JSONArray(content)
                             }
                         }
-                        for (i in 0..(my_book.length() - 1)) {
+                        var i = 0
+                        while (i < my_book.length()) {
                             val item = my_book.getJSONObject(i)
                             // Your code here
                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                             thoughts.add(thought)
+                            i++
                         }
                         thoughtBox.query().run {
                             equal(Thought_.userId, user.id)
@@ -86,11 +89,13 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                             my_book = JSONArray(content)
                                         }
                                     }
-                                    for (i in 0..(my_book.length() - 1)) {
+                                    var i = 0
+                                    while (i < my_book.length()) {
                                         val item = my_book.getJSONObject(i)
                                         // Your code here
                                         val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                         thoughts.add(thought)
+                                        i++
                                     }
                                     Log.d("thoughts -> Mybook open", my_book.toString())
                                     if (!userBox.find(User_.blockstackId, user.blockstackId).isEmpty()) {
@@ -167,17 +172,31 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                         my_book = JSONArray(content)
                                                                     }
                                                                 }
-                                                                for (i in 0..(my_book.length() - 1)) {
+                                                                var i = 0
+                                                                while (i < my_book.length()) {
                                                                     val item = my_book.getJSONObject(i)
                                                                     // Your code here
                                                                     val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                                                     thoughts.add(thought)
+                                                                    i++
                                                                 }
                                                                 Log.d("thoughts -> adding", my_book.toString())
                                                                 userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                                                 user.thoughts.addAll(thoughts)
                                                                 userBox.put(user)
                                                                 Log.d("user id", user.id.toString())
+                                                                Log.d("MyFirebaseMsgService", "Subscribing to news topic")
+                                                                // [START subscribe_topics]
+                                                                FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + user.blockstackId)
+                                                                        .addOnCompleteListener { task ->
+                                                                            var msg = "Added"
+                                                                            if (!task.isSuccessful) {
+                                                                                msg = "Error in firebase"
+                                                                            }
+                                                                            Log.d("MyFirebaseMsgService", msg)
+                                                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                                        }
+                                                                // [END subscribe_topics]
 
                                                             } else {
                                                                 val errorMsg = "error: " + contentResult.error
@@ -230,9 +249,12 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         }
                         Log.d("old content", interests.toString())
                         if (content?.contains(user.blockstackId)!!) {
-                            for (i in 0..(interests.length() - 1)) {
+                            var i = 0
+                            while (i < interests.length()) {
+                                Log.d("i>>>>", interests[i] as String?)
                                 val item = interests.getString(i)
                                 if (item.equals(user.blockstackId)) interests.remove(i)
+                                i++
                             }
 
                             Log.d("Final content", interests.toString())
@@ -246,7 +268,18 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                     thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
                                     thoughtBox.remove(user.thoughts)
-                                    userBox.remove(user)
+                                    userBox.remove(user.id)
+                                    Log.d("removed", interests.toString())
+                                    // [START subscribe_topics]
+                                    FirebaseMessaging.getInstance().unsubscribeFromTopic("/topics/" + user.blockstackId)
+                                            .addOnCompleteListener { task ->
+                                                var msg = "Removed"
+                                                if (!task.isSuccessful) {
+                                                    msg = "Error in firebase"
+                                                }
+                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                            }
+                                    // [END subscribe_topics]
                                 } else {
                                     Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                 }
