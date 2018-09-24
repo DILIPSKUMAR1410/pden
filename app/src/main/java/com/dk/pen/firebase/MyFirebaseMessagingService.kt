@@ -49,7 +49,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
             val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
-            val user = userBox.find(User_.blockstackId, remoteMessage?.from?.removePrefix("/topics/")).firstOrNull()
+            val user = userBox.find(User_.blockstackId, remoteMessage.from?.removePrefix("/topics/")).firstOrNull()
             if (user != null) {
                 user.thoughts.add(thought)
 

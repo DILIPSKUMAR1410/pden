@@ -64,17 +64,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         // Inflate the menu to use in the action bar
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_compose, menu)
-        menu.findItem(R.id.action_send).isEnabled = false
         val item = menu.findItem(R.id.action_chars_left)
         val charsLeft = presenter.charsLeft()
         item.title = charsLeft.toString()
-        _blockstackSession = BlockstackSession(this, Utils.config,
-                onLoadedCallback = {
-                    // Wait until this callback fires before using any of the
-                    // BlockstackSession API methods
-                    menu.findItem(R.id.action_send).isEnabled = true
-
-                })
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -87,45 +79,49 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                 else -> {
                     rootObject.put("timestamp", System.currentTimeMillis())
                     rootObject.put("text", getThought())
-
-                    val options_get = GetFileOptions(false)
-
-                    blockstackSession().getFile("book.json", options_get) { contentResult ->
-                        if (contentResult.hasValue) {
-                            val content: Any
-                            if (contentResult.value is String) {
-                                content = contentResult.value as String
-                                if (content.isNotEmpty()) {
-                                    my_book = JSONArray(content)
-                                }
-                            }
-                            Log.d("old content", my_book.toString())
-                            my_book.put(rootObject)
-                            Log.d("Final content", my_book.toString())
-                            val options_put = PutFileOptions(false)
-                            runOnUiThread {
-                                blockstackSession().putFile("book.json", my_book.toString(), options_put)
-                                { readURLResult ->
-                                    if (readURLResult.hasValue) {
-                                        userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                        val blockstack_id = PreferencesHelper(this).blockstackId
-                                        val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                                        val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
-                                        user.thoughts.add(thought)
-                                        userBox.put(user)
-                                        presenter.sendThought(blockstack_id, rootObject)
+                    _blockstackSession = BlockstackSession(this, Utils.config,
+                            onLoadedCallback = {
+                                // Wait until this callback fires before using any of the
+                                // BlockstackSession API methods
+                                val options_get = GetFileOptions(false)
+                                blockstackSession().getFile("book.json", options_get) { contentResult ->
+                                    if (contentResult.hasValue) {
+                                        val content: Any
+                                        if (contentResult.value is String) {
+                                            content = contentResult.value as String
+                                            if (content.isNotEmpty()) {
+                                                my_book = JSONArray(content)
+                                            }
+                                        }
+                                        Log.d("old content", my_book.toString())
+                                        my_book.put(rootObject)
+                                        Log.d("Final content", my_book.toString())
+                                        val options_put = PutFileOptions(false)
+                                        runOnUiThread {
+                                            blockstackSession().putFile("book.json", my_book.toString(), options_put)
+                                            { readURLResult ->
+                                                if (readURLResult.hasValue) {
+                                                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                                    val blockstack_id = PreferencesHelper(this).blockstackId
+                                                    val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                                                    val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
+                                                    user.thoughts.add(thought)
+                                                    userBox.put(user)
+                                                    presenter.sendThought(blockstack_id, rootObject)
 //                                        KBus.post(NewMyThoughtEvent(thought))
-                                        close()
+                                                    close()
+                                                } else {
+                                                    Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+
                                     } else {
-                                        Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                                     }
                                 }
-                            }
+                            })
 
-                        } else {
-                            Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
-                        }
-                    }
                 }
             }
         }

@@ -38,7 +38,7 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         dataobj.addProperty("text", rootObject?.getString("text"))
         envelopeObject.addProperty("to", "/topics/" + blockstack_id)
         envelopeObject.add("data", dataobj)
-        firebaseService.publishToTopic(envelopeObject!!)
+        firebaseService.publishToTopic(envelopeObject)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribeBy(

@@ -144,7 +144,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             content = contentResult.value as String
                             if (content.isNotEmpty()) interests = JSONArray(content)
 
-                            if (!content?.contains(user.blockstackId)!!) {
+                            if (!content.contains(user.blockstackId)) {
                                 interests.put(user.blockstackId)
                                 Log.d("Final content", interests.toString())
                                 val options_put = PutFileOptions(false)
