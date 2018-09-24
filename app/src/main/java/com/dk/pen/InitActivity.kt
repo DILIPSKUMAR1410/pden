@@ -99,7 +99,7 @@ class InitActivity : AppCompatActivity() {
                     val user = User(interest)
                     user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
-                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "-NA-"
+                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                     userBox.put(user)
                     launch(UI) {
                         blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
