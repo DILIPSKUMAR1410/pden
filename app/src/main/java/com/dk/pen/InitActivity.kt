@@ -10,6 +10,7 @@ import com.dk.pen.common.Utils
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.shelf.ShelfActivity
+import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
@@ -116,16 +117,22 @@ class InitActivity : AppCompatActivity() {
                                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                             thoughts.add(thought)
                                             Log.d(interest + ">>>>>", thought.toString())
-
                                         }
                                         user.thoughts.addAll(thoughts)
                                         userBox.put(user)
                                         if (counter == interests.length() - 1) {
                                             close()
-                                        } else
-                                            fetchBooks(interests, counter + 1)
+                                        } else {
+                                            // [START subscribe_topics]
+                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
+                                                    .addOnCompleteListener { task ->
+                                                        if (task.isSuccessful) {
+                                                            fetchBooks(interests, counter + 1)
+                                                        }
+                                                    }
+                                            // [END subscribe_topics]
+                                        }
                                     }
-
                                 }
                             } else {
                                 val errorMsg = "error: " + contentResult.error
@@ -136,7 +143,6 @@ class InitActivity : AppCompatActivity() {
                 } else {
                     val errorMsg = "error: " + profileResult.error
                     Log.d("errorMsg", errorMsg)
-
                 }
             }
         }

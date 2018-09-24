@@ -1,6 +1,8 @@
 package com.dk.pen.shelf
 
+import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -16,6 +18,7 @@ import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
 import com.dk.pen.common.visible
+import com.dk.pen.compose.ComposeThoughtActivity
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
 import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
@@ -29,10 +32,10 @@ import io.objectbox.query.QueryBuilder
 
 class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 
-    private val presenter:ShelfPresenter by lazy { getShelfPresenter() }
+    private val presenter: ShelfPresenter by lazy { getShelfPresenter() }
     private lateinit var adapter: ShelfAdapter
     private lateinit var thoughtBox: Box<Thought>
-
+    private lateinit var floatingActionButton: FloatingActionButton
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
@@ -44,9 +47,13 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
         adapter = ShelfAdapter()
         recyclerView = findViewById(R.id.tweetsRecyclerView)
 //        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        floatingActionButton = findViewById(R.id.fab_compose)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-
+        floatingActionButton.setOnClickListener { _ ->
+            val intent = Intent(this, ComposeThoughtActivity::class.java)
+            startActivity(intent)
+        }
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)

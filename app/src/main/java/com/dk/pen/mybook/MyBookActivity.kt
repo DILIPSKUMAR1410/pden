@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -21,7 +20,6 @@ import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils
 import com.dk.pen.common.loadAvatar
 import com.dk.pen.common.visible
-import com.dk.pen.compose.ComposeThoughtActivity
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
 import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
@@ -63,7 +61,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
-    private lateinit var floatingActionButton: FloatingActionButton
     private lateinit var toggleAddToShelf: ToggleButton
     private var self: Boolean = false
     private fun getMyBookPresenter() = MyBookPresenter()
@@ -80,7 +77,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
-        floatingActionButton = findViewById(R.id.fab_compose)
         toggleAddToShelf = findViewById(R.id.toggleAddToShelf)
         avatar = findViewById(R.id.avatar)
         tcountvalue = findViewById(R.id.tcountvalue)
@@ -101,16 +97,11 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         } else if (my_blockstack_id.equals(blockstack_id)) {
             self = true
             toggleAddToShelf.visibility = View.INVISIBLE
-            floatingActionButton.setOnClickListener { _ ->
-                val intent = Intent(this, ComposeThoughtActivity::class.java)
-                startActivity(intent)
-            }
         } else {
             setBorrowed()
         }
 
         if (!self) {
-            floatingActionButton.hide()
             toggleAddToShelf.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     presenter.addInterest(this, user!!)
