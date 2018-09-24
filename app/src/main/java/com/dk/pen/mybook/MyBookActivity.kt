@@ -13,7 +13,6 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.ToggleButton
-import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
@@ -21,7 +20,6 @@ import com.dk.pen.common.Utils
 import com.dk.pen.common.loadAvatar
 import com.dk.pen.common.visible
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
-import com.dk.pen.events.NewMyThoughtEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
@@ -142,7 +140,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         }
 
         if (adapter.thoughts.isEmpty()) {
-            if (user!!.thoughts.isNotEmpty()) showThoughts(user!!.thoughts as MutableList<Thought>)
+            if (user!!.thoughts.isNotEmpty()) showThoughts(user!!.thoughts.asReversed() as MutableList<Thought>)
             else presenter.onRefresh(this, user!!, self)
         }
 
@@ -203,18 +201,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
     override fun updateRecyclerViewView() {
         adapter.notifyDataSetChanged()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        KBus.subscribe<NewMyThoughtEvent>(this) {
-            showThought(it.thought)
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        KBus.unsubscribe(this)
     }
 
     override fun setBorrowed() {

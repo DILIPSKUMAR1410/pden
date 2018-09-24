@@ -6,6 +6,8 @@ import android.widget.Toast
 import com.dk.pen.ObjectBox
 import com.dk.pen.base.BasePresenter
 import com.dk.pen.common.Utils.config
+import com.dk.pen.events.NewThoughtsEvent
+import com.dk.pen.events.RemoveThoughtsEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.Thought_
 import com.dk.pen.model.User
@@ -18,6 +20,7 @@ import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
 import org.blockstack.android.sdk.PutFileOptions
 import org.blockstack.android.sdk.Result
+import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
 import java.net.URL
 
@@ -184,17 +187,13 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                 userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                                                 user.thoughts.addAll(thoughts)
                                                                 userBox.put(user)
+                                                                EventBus.getDefault().post(NewThoughtsEvent(thoughts))
                                                                 Log.d("user id", user.id.toString())
                                                                 Log.d("MyFirebaseMsgService", "Subscribing to news topic")
                                                                 // [START subscribe_topics]
                                                                 FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + user.blockstackId)
                                                                         .addOnCompleteListener { task ->
-                                                                            var msg = "Added"
-                                                                            if (!task.isSuccessful) {
-                                                                                msg = "Error in firebase"
-                                                                            }
-                                                                            Log.d("MyFirebaseMsgService", msg)
-                                                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                                            Toast.makeText(context, "Subscribed", Toast.LENGTH_SHORT).show()
                                                                         }
                                                                 // [END subscribe_topics]
 
@@ -269,15 +268,11 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
                                     thoughtBox.remove(user.thoughts)
                                     userBox.remove(user.id)
-                                    Log.d("removed", interests.toString())
+                                    EventBus.getDefault().post(RemoveThoughtsEvent(user.thoughts))
                                     // [START subscribe_topics]
                                     FirebaseMessaging.getInstance().unsubscribeFromTopic("/topics/" + user.blockstackId)
                                             .addOnCompleteListener { task ->
-                                                var msg = "Removed"
-                                                if (!task.isSuccessful) {
-                                                    msg = "Error in firebase"
-                                                }
-                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Removed", Toast.LENGTH_SHORT).show()
                                             }
                                     // [END subscribe_topics]
                                 } else {

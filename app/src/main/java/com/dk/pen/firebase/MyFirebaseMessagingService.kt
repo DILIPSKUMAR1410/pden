@@ -11,6 +11,7 @@ import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
+import com.dk.pen.events.NewThoughtsEvent
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
@@ -18,6 +19,7 @@ import com.dk.pen.shelf.ShelfActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.objectbox.Box
+import org.greenrobot.eventbus.EventBus
 
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -52,10 +54,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val user = userBox.find(User_.blockstackId, remoteMessage.from?.removePrefix("/topics/")).firstOrNull()
             if (user != null) {
                 user.thoughts.add(thought)
-
-
                 userBox.put(user)
-                sendNotification(thought.text)
+                val mutableList: MutableList<Thought> = ArrayList()
+                mutableList.add(thought)
+                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                sendNotification(thought)
             }
 //            if (/* Check if data needs to be processed by long running job */ true) {
 //                // For long-running tasks (10 seconds or more) use Firebase Job Dispatcher.
@@ -131,7 +134,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
      *
      * @param messageBody FCM message body received.
      */
-    private fun sendNotification(messageBody: String) {
+    private fun sendNotification(thought: Thought) {
         val intent = Intent(this, ShelfActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -141,8 +144,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_account_circle)
-                .setContentTitle("New Post!")
-                .setContentText(messageBody)
+                .setContentTitle(thought.user.target.blockstackId+" posted new thought")
+                .setContentText(thought.text)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent)

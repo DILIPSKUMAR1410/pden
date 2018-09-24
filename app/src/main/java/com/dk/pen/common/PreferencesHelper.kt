@@ -5,7 +5,6 @@ import android.preference.PreferenceManager
 
 class PreferencesHelper(context: Context) {
     companion object {
-        val DEVELOP_MODE = false
         private val BLOCKSTACK_ID = "data.source.prefs.BLOCKSTACK_ID"
     }
 

@@ -23,4 +23,6 @@ interface ShelfMvpView : MvpView {
 
     fun startRefresh()
 
+    fun removeThoughts(thoughts: MutableList<Thought>)
+
 }

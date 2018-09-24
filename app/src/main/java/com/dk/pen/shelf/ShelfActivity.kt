@@ -12,7 +12,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.SearchView
-import cafe.adriel.kbus.KBus
 import com.dk.pen.ObjectBox
 import com.dk.pen.R
 import com.dk.pen.common.PreferencesHelper
@@ -20,15 +19,18 @@ import com.dk.pen.common.Utils
 import com.dk.pen.common.visible
 import com.dk.pen.compose.ComposeThoughtActivity
 import com.dk.pen.custom.decorators.SpaceTopItemDecoration
-import com.dk.pen.events.NewMyThoughtEvent
+import com.dk.pen.events.NewThoughtsEvent
+import com.dk.pen.events.RemoveThoughtsEvent
 import com.dk.pen.model.Thought
-import com.dk.pen.model.Thought_
 import com.dk.pen.model.User
 import com.dk.pen.model.User_
 import com.dk.pen.mybook.MyBookActivity
 import com.dk.pen.search.SearchActivity
 import io.objectbox.Box
-import io.objectbox.query.QueryBuilder
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+
 
 class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 
@@ -77,9 +79,7 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 //        }
 
         if (adapter.thoughts.isEmpty()) {
-            showThoughts(thoughtBox.query()
-                    .order(Thought_.timestamp, QueryBuilder.DESCENDING) // in ascending order, ignoring case
-                    .build().find())
+            showThoughts(thoughtBox.all.asReversed())
         }
     }
 
@@ -112,7 +112,6 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 
 
     fun search(string: String) {
-        Log.d("Query", string)
         SearchActivity.launch(this, string)
     }
 
@@ -128,6 +127,13 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 
         runOnUiThread {
             adapter.thoughts = thoughts
+            adapter.notifyDataSetChanged()
+        }
+    }
+
+    override fun removeThoughts(thoughts: MutableList<Thought>) {
+        runOnUiThread {
+            adapter.thoughts.removeAll(thoughts)
             adapter.notifyDataSetChanged()
         }
     }
@@ -179,16 +185,33 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
         adapter.notifyDataSetChanged()
     }
 
-    override fun onStart() {
-        super.onStart()
-        KBus.subscribe<NewMyThoughtEvent>(this) {
-            showThought(it.thought)
-        }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onAddEvent(event: NewThoughtsEvent) {
+        /* Do something */
+        if (event.thoughts.size > 1)
+            showMoreMyThoughts(event.thoughts)
+        else
+            showThought(event.thoughts[0])
     }
 
-    override fun onStop() {
-        super.onStop()
-        KBus.unsubscribe(this)
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onRemoveEvent(event: RemoveThoughtsEvent) {
+        /* Do something */
+        removeThoughts(event.thoughts)
+
     }
+
+    public override fun onStart() {
+        super.onStart()
+        Log.d("Eventbus -->>", "regiser")
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
+
+    }
+
+//    public override fun onStop() {
+//        super.onStop()
+//        Log.d("Eventbus -->>","stop")
+//        EventBus.getDefault().unregister(this)
+//    }
 
 }

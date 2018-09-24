@@ -11,7 +11,7 @@ import com.dk.pen.common.PreferencesHelper
 import com.dk.pen.common.Utils.config
 import com.dk.pen.model.User
 import io.objectbox.Box
-import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.activity_main.*
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.UserData
 
