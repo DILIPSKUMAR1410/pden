@@ -18,8 +18,8 @@ open class StatusViewHolder(container: View) :
 
         val currentThought = thought
         val currentUser = user
-        userNameTextView.text = currentUser.blockstackId
-        userScreenNameTextView.text = "@${currentUser.name}"
+//        userNameTextView.text = currentUser.blockstackId
+        userScreenNameTextView.text = "@${currentUser.blockstackId}"
         timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"
         userProfilePicImageView.loadAvatar(currentUser.avatarImage)
 

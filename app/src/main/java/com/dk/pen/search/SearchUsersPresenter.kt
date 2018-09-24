@@ -43,7 +43,9 @@ class SearchUsersPresenter(private val textQuery: String) : BasePresenter<Search
                                 if (profile.has("image")) {
                                     var url = profile.getAsJsonArray("image").get(0).asJsonObject.get("contentUrl").toString()
                                     user.avatarImage = url.substring(1, url.length - 1)
-                                }
+                                } else
+                                    user.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+
                                 if (profile.has("description"))
                                     user.description = profile.get("description").toString().trim()
                                 if (profile.has("name"))

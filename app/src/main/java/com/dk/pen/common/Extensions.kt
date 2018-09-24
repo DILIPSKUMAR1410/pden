@@ -1,6 +1,5 @@
 package com.dk.pen.common
 
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import com.bumptech.glide.Glide
@@ -20,7 +19,6 @@ fun View.visible(show: Boolean = true) {
 
 fun ImageView.loadAvatar(url: CharSequence?) {
     // TODO placeholder
-    Log.d("url-->>", url.toString())
     val options = RequestOptions()
     options.fitCenter()
     Glide.with(context).load(url).apply(options).into(this)
