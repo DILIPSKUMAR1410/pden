@@ -39,10 +39,12 @@ class InitActivity : AppCompatActivity() {
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
-            var options = GetFileOptions(false)
+            var options = GetFileOptions()
+            Log.d("errorMsg", options.toString())
+
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
-            blockstackSession().getFile("interest_page_0.json", options) { contentResult ->
+            blockstackSession().getFile("interest_p_0.json", options) { contentResult ->
                 var interests = JSONArray()
                 if (contentResult.hasValue) {
                     var content: String?
@@ -50,12 +52,15 @@ class InitActivity : AppCompatActivity() {
                         content = contentResult.value as String
                         if (content.isNotEmpty()) {
                             interests = JSONArray(content)
-                            fetchBooks(interests, counter)
+                            if (interests.length() > 0)
+                                fetchBooks(interests, counter)
+                            else
+                                close()
                         }
                     } else {
-                        val options_put = PutFileOptions(false)
+                        val options_put = PutFileOptions()
                         launch(UI) {
-                            blockstackSession().putFile("interest_page_0.json", interests.toString(), options_put)
+                            blockstackSession().putFile("interest_p_0.json", interests.toString(), options_put)
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
                                     close()
@@ -92,18 +97,19 @@ class InitActivity : AppCompatActivity() {
         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
         val options = GetFileOptions(username = interest,
                 zoneFileLookupURL = zoneFileLookupUrl,
-                app = "https://condescending-fermat-e43740.netlify.com",
-                decrypt = false)
+                app = "https://app.pden.xyz",
+                decrypt = true)
         launch(UI) {
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                 if (profileResult.hasValue) {
+                    Log.d("errorMsg", counter.toString())
                     val user = User(interest)
                     user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                     userBox.put(user)
                     launch(UI) {
-                        blockstackSession().getFile("book.json", options) { contentResult: Result<Any> ->
+                        blockstackSession().getFile("book_p_0.json", options) { contentResult: Result<Any> ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {

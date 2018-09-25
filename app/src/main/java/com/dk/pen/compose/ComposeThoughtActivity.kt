@@ -75,6 +75,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item?.itemId == R.id.action_send) {
+            item.setEnabled(false)
             var my_book = JSONArray()
             val rootObject = JSONObject()
             when {
@@ -86,8 +87,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     ) {
                         // Wait until this callback fires before using any of the
                         // BlockstackSession API methods
-                        val options_get = GetFileOptions(false)
-                        blockstackSession().getFile("book.json", options_get) { contentResult ->
+                        val options_get = GetFileOptions()
+                        blockstackSession().getFile("book_p_0.json", options_get) { contentResult ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {
@@ -99,9 +100,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 Log.d("old content", my_book.toString())
                                 my_book.put(rootObject)
                                 Log.d("Final content", my_book.toString())
-                                val options_put = PutFileOptions(false)
+                                val options_put = PutFileOptions()
                                 runOnUiThread {
-                                    blockstackSession().putFile("book.json", my_book.toString(), options_put)
+                                    blockstackSession().putFile("book_p_0.json", my_book.toString(), options_put)
                                     { readURLResult ->
                                         if (readURLResult.hasValue) {
                                             userBox = ObjectBox.boxStore.boxFor(User::class.java)
@@ -111,7 +112,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                             user.thoughts.add(thought)
                                             userBox.put(user)
                                             presenter.sendThought(blockstack_id, rootObject)
-                                            val mutableList : MutableList<Thought> = ArrayList()
+                                            val mutableList: MutableList<Thought> = ArrayList()
                                             mutableList.add(thought)
                                             EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                                             close()

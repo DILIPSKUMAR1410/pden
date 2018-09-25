@@ -96,25 +96,27 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
             self = true
             toggleAddToShelf.visibility = View.INVISIBLE
         } else {
-            setBorrowed()
+            setBorrowed(true)
         }
 
         if (!self) {
             toggleAddToShelf.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
+                    toggleAddToShelf.isEnabled = false
                     presenter.addInterest(this, user!!)
                 } else {
+                    toggleAddToShelf.isEnabled = false
                     presenter.removeInterest(this, user!!)
                 }
             }
         }
+
         tcountvalue.text = user!!.thoughts.size.toString()
         icountvalue.text = "-NA-"
         name.text = if (user!!.name.isNotEmpty()) user!!.name else "-NA-"
         blockstack_name.text = user!!.blockstackId
         about_me.text = if (user!!.description.isNotEmpty()) user!!.description else "-NA-"
         avatar.loadAvatar(user!!.avatarImage)
-
 
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
@@ -152,6 +154,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
         runOnUiThread {
             adapter.thoughts = thoughts
+            tcountvalue.text = adapter.thoughts.size.toString()
             adapter.notifyDataSetChanged()
         }
     }
@@ -165,12 +168,15 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         adapter.notifyItemRemoved(removedPosition)
 
         adapter.thoughts.add(0, thought)
+        tcountvalue.text = adapter.thoughts.size.toString()
         adapter.notifyItemInserted(0)
         recyclerView.scrollToPosition(0)
     }
 
     override fun showMoreMyThoughts(thoughts: MutableList<Thought>) {
         adapter.thoughts.addAll(thoughts)
+        tcountvalue.text = adapter.thoughts.size.toString()
+
     }
 
     override fun getLastMyThoughtId(): Long = if (adapter.thoughts.size > 0) adapter.thoughts[0].id else -1
@@ -203,7 +209,8 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         adapter.notifyDataSetChanged()
     }
 
-    override fun setBorrowed() {
-        toggleAddToShelf.isChecked = true
+    override fun setBorrowed(flag: Boolean) {
+        toggleAddToShelf.isEnabled = true
+        toggleAddToShelf.isChecked = flag
     }
 }

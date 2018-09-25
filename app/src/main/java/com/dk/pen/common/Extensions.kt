@@ -6,10 +6,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 
 
-
-
-
-
 /**
  * Created by andrea on 27/09/16.
  */

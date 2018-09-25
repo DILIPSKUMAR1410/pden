@@ -20,7 +20,7 @@ android {
         applicationId "com.dk.pen"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 10
+        versionCode 11
         versionName "0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -66,6 +66,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     implementation 'com.google.firebase:firebase-core:16.0.3'
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
+    implementation 'com.airbnb.android:lottie:2.7.0'
+
 }
 kotlin {
     experimental {

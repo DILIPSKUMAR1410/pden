@@ -22,7 +22,7 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
         holder.screenNameTextView.text = "@${user.blockstackId}"
         holder.descriptionTextView.text = user.description
         holder.container.setOnClickListener {
-                        MyBookActivity.launch(holder.container.context!!, user)
+            MyBookActivity.launch(holder.container.context!!, user)
         }
 //        if (user.isVerified)
 //            holder?.userNameTextView

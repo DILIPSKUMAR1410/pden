@@ -5,7 +5,6 @@ import com.crashlytics.android.Crashlytics
 import io.fabric.sdk.android.Fabric
 
 
-
 class App : Application() {
 
     companion object Constants {

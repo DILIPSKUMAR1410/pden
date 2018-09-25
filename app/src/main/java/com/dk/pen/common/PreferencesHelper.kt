@@ -8,7 +8,7 @@ class PreferencesHelper(context: Context) {
         private val BLOCKSTACK_ID = "data.source.prefs.BLOCKSTACK_ID"
     }
 
-     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
     // save device token
 
     var blockstackId = preferences.getString(BLOCKSTACK_ID, "")

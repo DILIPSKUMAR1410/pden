@@ -26,5 +26,6 @@ interface MyBookMvpView : MvpView {
     fun updateRecyclerViewView()
 
     fun startRefresh()
-    fun setBorrowed()
+
+    fun setBorrowed(flag: Boolean)
 }

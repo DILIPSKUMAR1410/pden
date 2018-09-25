@@ -4,16 +4,16 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.dk.pen.R
-import com.dk.pen.mybook.holder.BaseViewHolder
-import com.dk.pen.mybook.holder.StatusViewHolder
 import com.dk.pen.model.Thought
 import com.dk.pen.model.User
+import com.dk.pen.mybook.holder.BaseViewHolder
+import com.dk.pen.mybook.holder.StatusViewHolder
 import java.util.*
 
 open class MyBookAdapter : RecyclerView.Adapter<BaseViewHolder>() {
 
     var thoughts: MutableList<Thought> = ArrayList()
-    var user : User? = null
+    var user: User? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder =
             StatusViewHolder(

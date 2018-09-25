@@ -14,7 +14,7 @@ open class StatusViewHolder(container: View) :
 
     @SuppressLint("SetTextI18n")
     @CallSuper
-    override fun setup(thought: Thought,user: User) {
+    override fun setup(thought: Thought, user: User) {
 
         val currentThought = thought
         val currentUser = user

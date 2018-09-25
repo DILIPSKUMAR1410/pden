@@ -21,7 +21,7 @@ class SplashActivity : AppCompatActivity() {
 
         // Get a instance of PreferencesHelper class
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        val intent:Intent
+        val intent: Intent
         if (userBox.find(User_.blockstackId, PreferencesHelper(this).blockstackId).isNotEmpty()) {
             intent = Intent(this, ShelfActivity::class.java)
         } else {

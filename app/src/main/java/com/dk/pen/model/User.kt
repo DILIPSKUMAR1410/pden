@@ -7,7 +7,7 @@ import io.objectbox.relation.ToMany
 import java.io.Serializable
 
 @Entity
-data class User(val blockstackId: String): Serializable {
+data class User(val blockstackId: String) : Serializable {
     constructor() : this("")
 
 

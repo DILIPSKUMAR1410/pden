@@ -29,8 +29,8 @@
 
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/avatar"
-                        android:layout_height="100dp"
                         android:layout_width="match_parent"
+                        android:layout_height="100dp"
                         android:layout_marginTop="10dp"
                         android:contentDescription="@string/profile_pic_contentDescriptor"
                         android:src="@drawable/default_avatar" />
@@ -47,7 +47,7 @@
                             android:layout_marginStart="30dp"
                             android:gravity="center"
                             android:singleLine="true"
-                            android:text="Thughts"
+                            android:text="Thoughts"
                             android:textColor="#ffffff"
                             android:textSize="18sp" />
 
@@ -69,7 +69,7 @@
                             android:layout_marginStart="140dp"
                             android:gravity="center"
                             android:singleLine="true"
-                            android:text="Interests"
+                            android:text="Books"
                             android:textColor="#ffffff"
                             android:textSize="18sp" />
 
@@ -85,21 +85,17 @@
                             android:textSize="18sp" />
 
                     </LinearLayout>
+
                     <TextView
                         android:id="@+id/name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/white" />
+
                     <TextView
                         android:id="@+id/blockstack_id"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/white" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="About me"
                         android:textColor="@color/white" />
 
                     <TextView
@@ -118,7 +114,7 @@
                         android:layout_weight="1"
                         android:background="@color/colorAccent"
                         android:textOff="Borrow"
-                        android:textOn="Borrowed"/>
+                        android:textOn="Borrowed" />
                 </LinearLayout>
             </android.support.design.widget.CollapsingToolbarLayout>
 

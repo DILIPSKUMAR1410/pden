@@ -140,7 +140,7 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 
     override fun showThought(thought: Thought) {
         var removedPosition = 0
-        if (adapter.thoughts.isNotEmpty()) {
+        if (adapter.thoughts.size > 0) {
             removedPosition = adapter.thoughts.size - 1
         }
         adapter.thoughts.removeAt(removedPosition)

@@ -144,7 +144,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_account_circle)
-                .setContentTitle(thought.user.target.blockstackId+" posted new thought")
+                .setContentTitle(thought.user.target.blockstackId + " posted new thought")
                 .setContentText(thought.text)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

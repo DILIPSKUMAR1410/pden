@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit
 object Utils {
 
 
-    val config = java.net.URI("https://condescending-fermat-e43740.netlify.com").run {
+    val config = java.net.URI("https://app.pden.xyz").run {
         org.blockstack.android.sdk.BlockstackConfig(
                 this,
                 java.net.URI("${this}/redirect/"),
                 java.net.URI("${this}/manifest.json"),
-                kotlin.arrayOf(Scope.StoreWrite,Scope.PublishData))
+                kotlin.arrayOf(Scope.StoreWrite, Scope.PublishData))
     }
 
     fun dpToPx(context: Context, dp: Int) = Math.round(dp *
@@ -62,8 +62,6 @@ object Utils {
     }
 
     fun inputStreamFromUri(context: Context, uri: Uri): InputStream = context.contentResolver.openInputStream(uri)
-
-
 
 
 }
