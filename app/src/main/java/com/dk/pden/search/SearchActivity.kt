@@ -44,7 +44,7 @@ class SearchActivity : AppCompatActivity(), SearchUsersMvpView {
         presenter.attachView(this)
 
 //        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
 //        toolbar.setNavigationOnClickListener { finish() }
         title = query
 

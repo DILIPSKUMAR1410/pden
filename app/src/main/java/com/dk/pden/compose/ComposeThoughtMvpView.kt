@@ -18,4 +18,5 @@ interface ComposeThoughtMvpView : MvpView {
 
     fun close()
 
+    fun showLoading()
 }

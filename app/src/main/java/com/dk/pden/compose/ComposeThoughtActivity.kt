@@ -7,12 +7,14 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
+import com.dk.pden.common.visible
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
@@ -31,6 +33,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
+    private lateinit var loadingProgressBar: ProgressBar
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +47,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         actionBar!!.title = "Compose"
         actionBar.elevation = 4.0F
         presenter.attachView(this)
+        loadingProgressBar = findViewById(R.id.loadingProgressBar)
 
         composeThoughtEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -76,6 +80,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item?.itemId == R.id.action_send) {
             item.setEnabled(false)
+            composeThoughtEditText.isEnabled = false
+            showLoading()
             var my_book = JSONArray()
             val rootObject = JSONObject()
             when {
@@ -141,6 +147,10 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
 
     override fun close() {
         finish()
+    }
+
+    override fun showLoading() {
+        loadingProgressBar.visible(true)
     }
 
     override fun getThought() = composeThoughtEditText.text.toString()
