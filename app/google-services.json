@@ -1,35 +1,35 @@
 {
   "project_info": {
-    "project_number": "77709669908",
-    "firebase_url": "https://pden-3beb8.firebaseio.com",
-    "project_id": "pden-3beb8",
-    "storage_bucket": "pden-3beb8.appspot.com"
+    "project_number": "904445962429",
+    "firebase_url": "https://pden-c9d1f.firebaseio.com",
+    "project_id": "pden-c9d1f",
+    "storage_bucket": "pden-c9d1f.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:77709669908:android:4980219383fd0766",
+        "mobilesdk_app_id": "1:904445962429:android:abec2e536adb90a4",
         "android_client_info": {
-          "package_name": "com.dk.pen"
+          "package_name": "com.dk.pden"
         }
       },
       "oauth_client": [
         {
-          "client_id": "77709669908-eefjndnhoj3si1l4jraln2fv0dhe2pvk.apps.googleusercontent.com",
+          "client_id": "904445962429-a7261qt5270m6s6cjlml9i5pp6j9p2vv.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.dk.pen",
+            "package_name": "com.dk.pden",
             "certificate_hash": "270644255b392e880940acff1d7a551767854ea8"
           }
         },
         {
-          "client_id": "77709669908-g0s2k7teufkk8o08phjkh79k6nn2l6bv.apps.googleusercontent.com",
+          "client_id": "904445962429-l9ll32qk9lrpv4aajcr1mlkkpntond7h.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCcUkTnKQM_bR159dt5sP_5xtYZuw8HH2Q"
+          "current_key": "AIzaSyAMxqWTT3572H_RxpBzY7hVjW15uYTnY_0"
         }
       ],
       "services": {
@@ -40,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "77709669908-g0s2k7teufkk8o08phjkh79k6nn2l6bv.apps.googleusercontent.com",
+              "client_id": "904445962429-l9ll32qk9lrpv4aajcr1mlkkpntond7h.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

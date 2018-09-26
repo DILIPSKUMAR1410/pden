@@ -5,7 +5,6 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.objectbox'
 apply plugin: 'io.fabric'
 apply plugin: 'com.google.gms.google-services'
-
 android {
     signingConfigs {
         config {
@@ -17,21 +16,27 @@ android {
     }
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.dk.pen"
+        applicationId "com.dk.pden"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 11
+        versionCode 3
         versionName "0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
         }
+        debug {
+            debuggable true
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
 }
 
 dependencies {
