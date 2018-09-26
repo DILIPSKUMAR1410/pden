@@ -7,7 +7,7 @@ apply plugin: 'io.fabric'
 apply plugin: 'com.google.gms.google-services'
 android {
     signingConfigs {
-        config {
+        release {
             keyAlias 'key0'
             keyPassword 'osmentos'
             storeFile file('/Users/dk/AndroidStudioProjects/apk-key')
@@ -19,7 +19,7 @@ android {
         applicationId "com.dk.pden"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 3
+        versionCode 5
         versionName "0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -28,7 +28,7 @@ android {
             debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
+            signingConfig signingConfigs.release
         }
         debug {
             debuggable true

@@ -33,7 +33,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     open fun onRefresh(context: Activity, user: User, self: Boolean) {
         checkViewAttached()
         var thoughts = mutableListOf<Thought>()
-        var options = GetFileOptions()
+        var options = GetFileOptions(false)
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
@@ -42,7 +42,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
             if (self) {
-                blockstackSession().getFile("book_p_0.json", options) { contentResult ->
+                blockstackSession().getFile("kitab.json", options) { contentResult ->
                     if (contentResult.hasValue) {
                         var my_book = JSONArray()
                         val content: Any
@@ -77,12 +77,12 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 options = GetFileOptions(username = user.blockstackId,
                         zoneFileLookupURL = zoneFileLookupUrl,
                         app = "https://app.pden.xyz",
-                        decrypt = true)
+                        decrypt = false)
                 thoughts = mutableListOf<Thought>()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
                         launch(UI) {
-                            blockstackSession().getFile("book_p_0.json", options) { contentResult: Result<Any> ->
+                            blockstackSession().getFile("kitab.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {
                                     var my_book = JSONArray()
                                     val content: Any
@@ -135,11 +135,11 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     fun addInterest(context: Activity, user: User) {
         mvpView?.showLoading()
         var interests = JSONArray()
-        val options_get = GetFileOptions()
+        val options_get = GetFileOptions(false)
 
         _blockstackSession = BlockstackSession(context, config
         ) {
-            blockstackSession().getFile("interest_p_0.json", options_get) { contentResult ->
+            blockstackSession().getFile("pasand.json", options_get) { contentResult ->
                 launch(UI) {
                     if (contentResult.hasValue) {
                         var content: String? = null
@@ -150,9 +150,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             if (!content.contains(user.blockstackId)) {
                                 interests.put(user.blockstackId)
                                 Log.d("Final content", interests.toString())
-                                val options_put = PutFileOptions()
+                                val options_put = PutFileOptions(false)
 
-                                blockstackSession().putFile("interest_p_0.json", interests.toString(), options_put)
+                                blockstackSession().putFile("pasand.json", interests.toString(), options_put)
                                 { readURLResult ->
                                     if (readURLResult.hasValue) {
                                         val readURL = readURLResult.value!!
@@ -160,13 +160,13 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         var options = GetFileOptions(username = user.blockstackId,
                                                 zoneFileLookupURL = zoneFileLookupUrl,
                                                 app = "https://app.pden.xyz",
-                                                decrypt = true)
+                                                decrypt = false)
                                         var thoughts = mutableListOf<Thought>()
                                         launch(UI) {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                                                 if (profileResult.hasValue) {
                                                     launch(UI) {
-                                                        blockstackSession().getFile("book_p_0.json", options) { contentResult: Result<Any> ->
+                                                        blockstackSession().getFile("kitab.json", options) { contentResult: Result<Any> ->
                                                             if (contentResult.hasValue) {
                                                                 var my_book = JSONArray()
                                                                 if (contentResult.value is String) {
@@ -187,8 +187,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                 userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                                                 user.thoughts.addAll(thoughts)
                                                                 userBox.put(user)
-                                                                EventBus.getDefault().post(NewThoughtsEvent(thoughts))
-
+                                                                if (thoughts.isNotEmpty())
+                                                                    EventBus.getDefault().post(NewThoughtsEvent(thoughts))
                                                             } else {
                                                                 val errorMsg = "error: " + contentResult.error
                                                                 Log.d("errorMsg", errorMsg)
@@ -232,11 +232,11 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     fun removeInterest(context: Activity, user: User) {
         mvpView?.showLoading()
         var interests = JSONArray()
-        val options_get = GetFileOptions()
+        val options_get = GetFileOptions(false)
 
         _blockstackSession = BlockstackSession(context, config
         ) {
-            blockstackSession().getFile("interest_p_0.json", options_get) { contentResult ->
+            blockstackSession().getFile("pasand.json", options_get) { contentResult ->
                 launch(UI) {
                     if (contentResult.hasValue) {
                         var content: String? = null
@@ -255,9 +255,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             }
 
                             Log.d("Final content", interests.toString())
-                            val options_put = PutFileOptions()
+                            val options_put = PutFileOptions(false)
 
-                            blockstackSession().putFile("interest_p_0.json", interests.toString(), options_put)
+                            blockstackSession().putFile("pasand.json", interests.toString(), options_put)
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
                                     val readURL = readURLResult.value!!
@@ -266,7 +266,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
                                     thoughtBox.remove(user.thoughts)
                                     userBox.remove(user.id)
-                                    EventBus.getDefault().post(RemoveThoughtsEvent(user.thoughts))
+                                    if (user.thoughts.isNotEmpty())
+                                        EventBus.getDefault().post(RemoveThoughtsEvent(user.thoughts))
                                 } else {
                                     Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                 }

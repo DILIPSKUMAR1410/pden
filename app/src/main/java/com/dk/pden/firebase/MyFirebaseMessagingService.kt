@@ -57,7 +57,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 userBox.put(user)
                 val mutableList: MutableList<Thought> = ArrayList()
                 mutableList.add(thought)
-                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                if (mutableList.isNotEmpty())
+                    EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                 sendNotification(thought)
             }
 //            if (/* Check if data needs to be processed by long running job */ true) {

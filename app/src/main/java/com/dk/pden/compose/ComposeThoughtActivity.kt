@@ -87,8 +87,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     ) {
                         // Wait until this callback fires before using any of the
                         // BlockstackSession API methods
-                        val options_get = GetFileOptions()
-                        blockstackSession().getFile("book_p_0.json", options_get) { contentResult ->
+                        val options_get = GetFileOptions(false)
+                        blockstackSession().getFile("kitab.json", options_get) { contentResult ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {
@@ -100,9 +100,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 Log.d("old content", my_book.toString())
                                 my_book.put(rootObject)
                                 Log.d("Final content", my_book.toString())
-                                val options_put = PutFileOptions()
+                                val options_put = PutFileOptions(false)
                                 runOnUiThread {
-                                    blockstackSession().putFile("book_p_0.json", my_book.toString(), options_put)
+                                    blockstackSession().putFile("kitab.json", my_book.toString(), options_put)
                                     { readURLResult ->
                                         if (readURLResult.hasValue) {
                                             userBox = ObjectBox.boxStore.boxFor(User::class.java)
@@ -114,7 +114,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                             presenter.sendThought(blockstack_id, rootObject)
                                             val mutableList: MutableList<Thought> = ArrayList()
                                             mutableList.add(thought)
-                                            EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                                            if (mutableList.isNotEmpty())
+                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                                             close()
                                         } else {
                                             Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()

@@ -11,7 +11,7 @@ interface FirebaseService {
 
     @Headers(
             "Content-Type: application/json",
-            "Authorization: key=AIzaSyCKtADOFB1ShFfTkIXm4_0SFP_Li3h9gck"
+            "Authorization: key=AIzaSyDdce1-B_i-BgzFWgZzkd1wRDK9p1U_OdU"
     )
     @POST("fcm/send")
     fun publishToTopic(@Body msg: JsonObject): Single<PublishStatusApiResponse>

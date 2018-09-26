@@ -39,12 +39,12 @@ class InitActivity : AppCompatActivity() {
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
-            var options = GetFileOptions()
+            var options = GetFileOptions(false)
             Log.d("errorMsg", options.toString())
 
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
-            blockstackSession().getFile("interest_p_0.json", options) { contentResult ->
+            blockstackSession().getFile("pasand.json", options) { contentResult ->
                 var interests = JSONArray()
                 if (contentResult.hasValue) {
                     var content: String?
@@ -58,9 +58,9 @@ class InitActivity : AppCompatActivity() {
                                 close()
                         }
                     } else {
-                        val options_put = PutFileOptions()
+                        val options_put = PutFileOptions(false)
                         launch(UI) {
-                            blockstackSession().putFile("interest_p_0.json", interests.toString(), options_put)
+                            blockstackSession().putFile("pasand.json", interests.toString(), options_put)
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
                                     close()
@@ -98,7 +98,7 @@ class InitActivity : AppCompatActivity() {
         val options = GetFileOptions(username = interest,
                 zoneFileLookupURL = zoneFileLookupUrl,
                 app = "https://app.pden.xyz",
-                decrypt = true)
+                decrypt = false)
         launch(UI) {
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                 if (profileResult.hasValue) {
@@ -109,7 +109,7 @@ class InitActivity : AppCompatActivity() {
                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                     userBox.put(user)
                     launch(UI) {
-                        blockstackSession().getFile("book_p_0.json", options) { contentResult: Result<Any> ->
+                        blockstackSession().getFile("kitab.json", options) { contentResult: Result<Any> ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {
@@ -126,17 +126,16 @@ class InitActivity : AppCompatActivity() {
                                         }
                                         user.thoughts.addAll(thoughts)
                                         userBox.put(user)
+                                        // [START subscribe_topics]
+                                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
+                                                .addOnCompleteListener { task ->
+                                                    if (task.isSuccessful) {
+                                                        fetchBooks(interests, counter + 1)
+                                                    }
+                                                }
+                                        // [END subscribe_topics]
                                         if (counter == interests.length() - 1) {
                                             close()
-                                        } else {
-                                            // [START subscribe_topics]
-                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
-                                                    .addOnCompleteListener { task ->
-                                                        if (task.isSuccessful) {
-                                                            fetchBooks(interests, counter + 1)
-                                                        }
-                                                    }
-                                            // [END subscribe_topics]
                                         }
                                     }
                                 }

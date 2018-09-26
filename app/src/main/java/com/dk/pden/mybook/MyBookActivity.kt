@@ -210,7 +210,9 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     }
 
     override fun setBorrowed(flag: Boolean) {
-        toggleAddToShelf.isEnabled = true
-        toggleAddToShelf.isChecked = flag
+        runOnUiThread {
+            toggleAddToShelf.isEnabled = true
+            toggleAddToShelf.isChecked = flag
+        }
     }
 }

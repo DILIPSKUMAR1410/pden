@@ -16,8 +16,12 @@ default_platform :android
 lane :internal do
 	
   	# build the release variant
-  	build_android_app(task: "assembleRelease")
+  	gradle(
+    task: 'assemble',
+    build_type: 'Release'
+  )
 
   	# upload to Google Play
-  	supply(track: "internal")
+  	supply(track: "internal",
+  		apk:"/Users/dk/AndroidStudioProjects/pden/app/build/outputs/apk/release/app-release.apk")
 end
