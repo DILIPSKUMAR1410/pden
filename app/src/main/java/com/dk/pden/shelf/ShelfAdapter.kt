@@ -10,13 +10,13 @@ import com.dk.pden.shelf.holder.StatusViewHolder
 import java.util.*
 
 
-open class ShelfAdapter : RecyclerView.Adapter<BaseViewHolder>() {
+open class ShelfAdapter(val listener: InteractionListener) : RecyclerView.Adapter<BaseViewHolder>() {
 
     var thoughts: MutableList<Thought> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder =
             StatusViewHolder(
-                    LayoutInflater.from(parent.context).inflate(R.layout.thought_basic, parent, false))
+                    LayoutInflater.from(parent.context).inflate(R.layout.thought_basic, parent, false), listener)
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         holder.setup(thoughts[position])

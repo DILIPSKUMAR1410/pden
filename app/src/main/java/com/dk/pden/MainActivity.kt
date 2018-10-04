@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         user.name = if (userData.profile?.name != null) userData.profile?.name!! else "-NA-"
         user.description = if (userData.profile?.description != null) userData.profile?.description!! else "-NA-"
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+        user.isSelf = true
         userBox.put(user)
         val intent = Intent(this, InitActivity::class.java)
         startActivity(intent)

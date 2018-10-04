@@ -9,6 +9,7 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
+import com.dk.pden.model.User_
 import com.dk.pden.shelf.ShelfActivity
 import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
@@ -30,12 +31,12 @@ class InitActivity : AppCompatActivity() {
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
     var counter = 0
+    var blockstack_id: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_init)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val blockstack_id = PreferencesHelper(this).blockstackId
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
@@ -52,6 +53,8 @@ class InitActivity : AppCompatActivity() {
                         content = contentResult.value as String
                         if (content.isNotEmpty()) {
                             interests = JSONArray(content)
+                            blockstack_id = PreferencesHelper(this).blockstackId
+                            interests.put(blockstack_id)
                             if (interests.length() > 0)
                                 fetchBooks(interests, counter)
                             else
@@ -102,14 +105,20 @@ class InitActivity : AppCompatActivity() {
         launch(UI) {
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                 if (profileResult.hasValue) {
-                    Log.d("errorMsg", counter.toString())
-                    val user = User(interest)
+                    val user: User
+                    if (interest.equals(blockstack_id)) {
+                        user = userBox.find(User_.blockstackId, blockstack_id).first()
+                    } else {
+                        user = User(interest)
+                    }
                     user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                     userBox.put(user)
+
+
                     launch(UI) {
-                        blockstackSession().getFile("kitab.json", options) { contentResult: Result<Any> ->
+                        blockstackSession().getFile("kitab14.json", options) { contentResult: Result<Any> ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {
@@ -121,23 +130,30 @@ class InitActivity : AppCompatActivity() {
                                             val item = interested_book.getJSONObject(i)
                                             // Your code here
                                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                            thought.uuid = item.getString("uuid")
                                             thoughts.add(thought)
-                                            Log.d(interest + ">>>>>", thought.toString())
                                         }
                                         user.thoughts.addAll(thoughts)
                                         userBox.put(user)
-                                        // [START subscribe_topics]
-                                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
-                                                .addOnCompleteListener { task ->
-                                                    if (task.isSuccessful) {
-                                                        fetchBooks(interests, counter + 1)
+                                        if (!user.isSelf) {
+                                            // [START subscribe_topics]
+                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
+                                                    .addOnCompleteListener { task ->
+                                                        if (counter == interests.length() - 1)
+                                                            close()
+                                                        else
+                                                            fetchBooks(interests, counter + 1)
                                                     }
-                                                }
-                                        // [END subscribe_topics]
-                                        if (counter == interests.length() - 1) {
-                                            close()
+                                            // [END subscribe_topics]
                                         }
                                     }
+                                } else {
+                                    val errorMsg = "error: Empty file"
+                                    Log.d("errorMsg", errorMsg)
+                                    if (counter == interests.length() - 1)
+                                        close()
+                                    else
+                                        fetchBooks(interests, counter + 1)
                                 }
                             } else {
                                 val errorMsg = "error: " + contentResult.error

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -27,12 +28,13 @@ import com.dk.pden.model.User_
 import com.dk.pden.mybook.MyBookActivity
 import com.dk.pden.search.SearchActivity
 import io.objectbox.Box
+import kotlinx.android.synthetic.main.item_interaction.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 
-class ShelfActivity : AppCompatActivity(), ShelfMvpView {
+class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
 
     private val presenter: ShelfPresenter by lazy { getShelfPresenter() }
     private lateinit var adapter: ShelfAdapter
@@ -46,7 +48,7 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shelf)
-        adapter = ShelfAdapter()
+        adapter = ShelfAdapter(this)
         recyclerView = findViewById(R.id.tweetsRecyclerView)
 //        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         floatingActionButton = findViewById(R.id.fab_compose)
@@ -139,10 +141,7 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
     }
 
     override fun showThought(thought: Thought) {
-        var removedPosition = 0
-        if (adapter.thoughts.size > 0) {
-            removedPosition = adapter.thoughts.size - 1
-        }
+        val removedPosition = adapter.thoughts.size - 1
         adapter.thoughts.removeAt(removedPosition)
         adapter.notifyItemRemoved(removedPosition)
 
@@ -213,5 +212,23 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView {
 //        Log.d("Eventbus -->>","stop")
 //        EventBus.getDefault().unregister(this)
 //    }
+
+
+    override fun spread(thought: Thought) {
+        AlertDialog.Builder(this)
+                .setTitle(this.getString(R.string.spread_title))
+                .setPositiveButton(this.getString(R.string.spread)
+                ) { _, _ ->
+                    spreadImageButton.setImageResource(R.drawable.ic_repeat_green)
+                    presenter.spreadThought(thought, this)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .create().show()
+    }
+
+
+    override fun showUser(user: User) {
+        Log.d("showUser -->>", "Done")
+    }
 
 }

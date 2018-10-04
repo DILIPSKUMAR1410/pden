@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp">
+
+
+    <ImageButton
+        android:id="@+id/spreadImageButton"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="3dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@string/spread_imageButton_contentDescriptor"
+        android:padding="2dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_repeat" />
+
+</LinearLayout>

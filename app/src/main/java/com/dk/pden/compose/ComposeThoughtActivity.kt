@@ -87,14 +87,19 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             when {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
-                    rootObject.put("timestamp", System.currentTimeMillis())
-                    rootObject.put("text", getThought())
+                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                    val blockstack_id = PreferencesHelper(this).blockstackId
+                    val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                    val thought = Thought(getThought(), System.currentTimeMillis())
+                    rootObject.put("timestamp", thought.timestamp)
+                    rootObject.put("text", thought.text)
+                    rootObject.put("uuid", thought.uuid)
                     _blockstackSession = BlockstackSession(this, Utils.config
                     ) {
                         // Wait until this callback fires before using any of the
                         // BlockstackSession API methods
                         val options_get = GetFileOptions(false)
-                        blockstackSession().getFile("kitab.json", options_get) { contentResult ->
+                        blockstackSession().getFile("kitab14.json", options_get) { contentResult ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {
@@ -108,13 +113,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 Log.d("Final content", my_book.toString())
                                 val options_put = PutFileOptions(false)
                                 runOnUiThread {
-                                    blockstackSession().putFile("kitab.json", my_book.toString(), options_put)
+                                    blockstackSession().putFile("kitab14.json", my_book.toString(), options_put)
                                     { readURLResult ->
                                         if (readURLResult.hasValue) {
-                                            userBox = ObjectBox.boxStore.boxFor(User::class.java)
-                                            val blockstack_id = PreferencesHelper(this).blockstackId
-                                            val user = userBox.find(User_.blockstackId, blockstack_id).first()
-                                            val thought = Thought(rootObject.getString("text"), rootObject.getString("timestamp").toLong())
                                             user.thoughts.add(thought)
                                             userBox.put(user)
                                             presenter.sendThought(blockstack_id, rootObject)
@@ -134,7 +135,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                             }
                         }
                     }
-
                 }
             }
         }

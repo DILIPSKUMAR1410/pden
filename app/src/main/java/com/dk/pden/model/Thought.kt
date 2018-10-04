@@ -4,6 +4,7 @@ import com.beust.klaxon.Json
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToOne
+import java.util.*
 
 
 @Entity
@@ -14,6 +15,8 @@ data class Thought(@Json(name = "text")
 
     constructor() : this("", 0)
 
+    @Json(ignored = true)
+    var uuid: String = UUID.randomUUID().toString()
 
     @Id
     @Json(ignored = true)
@@ -22,5 +25,9 @@ data class Thought(@Json(name = "text")
     @Json(ignored = true)
     lateinit var user: ToOne<User>
 
+    @Json(ignored = true)
+    lateinit var spreadBy: ToOne<User>
+
+    var isSpread: Boolean = false
 
 }

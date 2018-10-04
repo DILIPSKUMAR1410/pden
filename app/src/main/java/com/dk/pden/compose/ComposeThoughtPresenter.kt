@@ -1,5 +1,6 @@
 package com.dk.pden.compose
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.util.Patterns
 import com.dk.pden.base.BasePresenter
@@ -31,10 +32,12 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
     }
 
+    @SuppressLint("CheckResult")
     fun sendThought(blockstack_id: String, rootObject: JSONObject?) {
         val envelopeObject = JsonObject()
         val dataobj = JsonObject()
         dataobj.addProperty("timestamp", rootObject?.getString("timestamp"))
+        dataobj.addProperty("uuid", rootObject?.getString("uuid"))
         dataobj.addProperty("text", rootObject?.getString("text"))
         envelopeObject.addProperty("to", "/topics/" + blockstack_id)
         envelopeObject.add("data", dataobj)

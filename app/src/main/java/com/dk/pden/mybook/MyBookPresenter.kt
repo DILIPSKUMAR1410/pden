@@ -42,7 +42,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
             if (self) {
-                blockstackSession().getFile("kitab.json", options) { contentResult ->
+                blockstackSession().getFile("kitab14.json", options) { contentResult ->
                     if (contentResult.hasValue) {
                         var my_book = JSONArray()
                         val content: Any
@@ -57,6 +57,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             val item = my_book.getJSONObject(i)
                             // Your code here
                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                            thought.uuid = item.getString("uuid")
                             thoughts.add(thought)
                             i++
                         }
@@ -82,7 +83,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
                         launch(UI) {
-                            blockstackSession().getFile("kitab.json", options) { contentResult: Result<Any> ->
+                            blockstackSession().getFile("kitab14.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {
                                     var my_book = JSONArray()
                                     val content: Any
@@ -97,6 +98,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         val item = my_book.getJSONObject(i)
                                         // Your code here
                                         val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                        thought.uuid = item.getString("uuid")
                                         thoughts.add(thought)
                                         i++
                                     }
@@ -142,7 +144,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
             blockstackSession().getFile("pasand.json", options_get) { contentResult ->
                 launch(UI) {
                     if (contentResult.hasValue) {
-                        var content: String? = null
+                        var content: String?
                         if (contentResult.value is String) {
                             content = contentResult.value as String
                             if (content.isNotEmpty()) interests = JSONArray(content)
@@ -166,7 +168,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                                                 if (profileResult.hasValue) {
                                                     launch(UI) {
-                                                        blockstackSession().getFile("kitab.json", options) { contentResult: Result<Any> ->
+                                                        blockstackSession().getFile("kitab14.json", options) { contentResult: Result<Any> ->
                                                             if (contentResult.hasValue) {
                                                                 var my_book = JSONArray()
                                                                 if (contentResult.value is String) {
@@ -180,6 +182,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                     val item = my_book.getJSONObject(i)
                                                                     // Your code here
                                                                     val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                                                    thought.uuid = item.getString("uuid")
                                                                     thoughts.add(thought)
                                                                     i++
                                                                 }
@@ -210,7 +213,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     }
                                     // [START subscribe_topics]
                                     FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + user.blockstackId)
-                                            .addOnCompleteListener { task ->
+                                            .addOnCompleteListener { _ ->
                                                 Toast.makeText(context, "Subscribed", Toast.LENGTH_SHORT).show()
                                             }
                                     // [END subscribe_topics]
@@ -274,7 +277,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 mvpView?.setBorrowed(false)
                                 // [START subscribe_topics]
                                 FirebaseMessaging.getInstance().unsubscribeFromTopic("/topics/" + user.blockstackId)
-                                        .addOnCompleteListener { task ->
+                                        .addOnCompleteListener { _ ->
                                             Toast.makeText(context, "Removed", Toast.LENGTH_SHORT).show()
                                         }
                                 // [END subscribe_topics]
