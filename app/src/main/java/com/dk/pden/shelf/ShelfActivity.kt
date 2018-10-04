@@ -23,11 +23,13 @@ import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
 import com.dk.pden.model.Thought
+import com.dk.pden.model.Thought_
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.dk.pden.mybook.MyBookActivity
 import com.dk.pden.search.SearchActivity
 import io.objectbox.Box
+import io.objectbox.query.QueryBuilder
 import kotlinx.android.synthetic.main.item_interaction.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -81,7 +83,8 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
 //        }
 
         if (adapter.thoughts.isEmpty()) {
-            showThoughts(thoughtBox.all.asReversed())
+            showThoughts(thoughtBox.query()
+                    .order(Thought_.timestamp, QueryBuilder.DESCENDING).build().find())
         }
     }
 
@@ -133,6 +136,12 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
         }
     }
 
+    override fun updateAdapter() {
+        runOnUiThread {
+            adapter.notifyDataSetChanged()
+        }
+    }
+
     override fun removeThoughts(thoughts: MutableList<Thought>) {
         runOnUiThread {
             adapter.thoughts.removeAll(thoughts)
@@ -144,14 +153,16 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
         val removedPosition = adapter.thoughts.size - 1
         adapter.thoughts.removeAt(removedPosition)
         adapter.notifyItemRemoved(removedPosition)
-
         adapter.thoughts.add(0, thought)
         adapter.notifyItemInserted(0)
         recyclerView.scrollToPosition(0)
     }
 
     override fun showMoreMyThoughts(thoughts: MutableList<Thought>) {
-        adapter.thoughts.addAll(thoughts)
+        thoughts.addAll(adapter.thoughts)
+        thoughts.sortByDescending { it.timestamp }
+        adapter.thoughts = thoughts
+        adapter.notifyDataSetChanged()
     }
 
     override fun getLastMyThoughtId(): Long = if (adapter.thoughts.size > 0) adapter.thoughts[0].id else -1
@@ -215,20 +226,22 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
 
 
     override fun spread(thought: Thought) {
-        AlertDialog.Builder(this)
-                .setTitle(this.getString(R.string.spread_title))
-                .setPositiveButton(this.getString(R.string.spread)
-                ) { _, _ ->
-                    spreadImageButton.setImageResource(R.drawable.ic_repeat_green)
-                    presenter.spreadThought(thought, this)
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .create().show()
+        if (!thought.isSpread) {
+            AlertDialog.Builder(this)
+                    .setTitle(this.getString(R.string.spread_title))
+                    .setPositiveButton(this.getString(R.string.spread)
+                    ) { _, _ ->
+                        spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
+                        presenter.spreadThought(thought, this)
+                    }
+                    .setNegativeButton(R.string.cancel, null)
+                    .create().show()
+        }
     }
 
 
     override fun showUser(user: User) {
-        Log.d("showUser -->>", "Done")
+        MyBookActivity.launch(this, user)
     }
 
 }

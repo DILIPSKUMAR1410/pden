@@ -59,8 +59,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
                 thought.uuid = remoteMessage.data.get("uuid")!!
                 if (remoteMessage.data.containsKey("actual_owner")) {
-                    var actual_owner = User(remoteMessage.data.get("actual_owner")!!)
-                    actual_owner.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                    var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
+                    if (actual_owner == null) {
+                        actual_owner = User(remoteMessage.data.get("actual_owner")!!)
+                        actual_owner.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                    }
                     actual_owner.thoughts.add(thought)
                     user!!.spreaded_thoughts.add(thought)
                     userBox.put(actual_owner)

@@ -18,7 +18,5 @@
         android:background="?selectableItemBackgroundBorderless"
         android:contentDescription="@string/spread_imageButton_contentDescriptor"
         android:padding="2dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_repeat" />
-
+        android:scaleType="fitCenter" />
 </LinearLayout>

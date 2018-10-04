@@ -1,5 +1,6 @@
 package com.dk.pden.search
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.dk.pden.base.BasePresenter
 import com.dk.pden.model.User
@@ -24,6 +25,7 @@ class SearchUsersPresenter(private val textQuery: String) : BasePresenter<Search
 //        disposables.clear()
 //    }
 
+    @SuppressLint("CheckResult")
     fun getUsers() {
         checkViewAttached()
         mvpView?.showLoading()

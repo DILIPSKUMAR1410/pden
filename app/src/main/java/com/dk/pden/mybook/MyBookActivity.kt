@@ -52,7 +52,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var adapter: MyBookAdapter
     private lateinit var avatar: ImageView
     private lateinit var tcountvalue: TextView
-    private lateinit var icountvalue: TextView
     private lateinit var name: TextView
     private lateinit var blockstack_name: TextView
     private lateinit var about_me: TextView
@@ -78,7 +77,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         toggleAddToShelf = findViewById(R.id.toggleAddToShelf)
         avatar = findViewById(R.id.avatar)
         tcountvalue = findViewById(R.id.tcountvalue)
-        icountvalue = findViewById(R.id.icountvalue)
         name = findViewById(R.id.name)
         blockstack_name = findViewById(R.id.blockstack_id)
         about_me = findViewById(R.id.about_me)
@@ -95,7 +93,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         } else if (my_blockstack_id.equals(blockstack_id)) {
             self = true
             toggleAddToShelf.visibility = View.INVISIBLE
-        } else {
+        } else if (user!!.isFollowed) {
             setBorrowed(true)
         }
 
@@ -112,7 +110,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         }
 
         tcountvalue.text = user!!.thoughts.size.toString()
-        icountvalue.text = "-NA-"
         name.text = if (user!!.name.isNotEmpty()) user!!.name else "-NA-"
         blockstack_name.text = user!!.blockstackId
         about_me.text = if (user!!.description.isNotEmpty()) user!!.description else "-NA-"
@@ -136,7 +133,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 //            }
 //        })
 
-
         swipeRefreshLayout.setOnRefreshListener {
             presenter.onRefresh(this, user!!, self)
         }
@@ -145,8 +141,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
             if (user!!.thoughts.isNotEmpty()) showThoughts(user!!.thoughts.asReversed() as MutableList<Thought>)
             else presenter.onRefresh(this, user!!, self)
         }
-
-
     }
 
 
@@ -160,13 +154,12 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     }
 
     override fun showThought(thought: Thought) {
-        var removedPosition = 0
         if (adapter.thoughts.isNotEmpty()) {
+            var removedPosition = 0
             removedPosition = adapter.thoughts.size - 1
+            adapter.thoughts.removeAt(removedPosition)
+            adapter.notifyItemRemoved(removedPosition)
         }
-        adapter.thoughts.removeAt(removedPosition)
-        adapter.notifyItemRemoved(removedPosition)
-
         adapter.thoughts.add(0, thought)
         tcountvalue.text = adapter.thoughts.size.toString()
         adapter.notifyItemInserted(0)
@@ -176,7 +169,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     override fun showMoreMyThoughts(thoughts: MutableList<Thought>) {
         adapter.thoughts.addAll(thoughts)
         tcountvalue.text = adapter.thoughts.size.toString()
-
     }
 
     override fun getLastMyThoughtId(): Long = if (adapter.thoughts.size > 0) adapter.thoughts[0].id else -1

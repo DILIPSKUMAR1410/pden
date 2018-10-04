@@ -35,6 +35,7 @@ open class ShelfPresenter : BasePresenter<ShelfMvpView>() {
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         thought.isSpread = true
         thoughtBox.put(thought)
+        mvpView?.updateAdapter()
         userBox.put(me)
         val envelopeObject = JsonObject()
         val rootObject = JsonObject()

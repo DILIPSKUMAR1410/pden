@@ -28,5 +28,7 @@ data class User(val blockstackId: String) : Serializable {
 
     var isSelf: Boolean = false
 
+    var isFollowed: Boolean = false
+
 }
 

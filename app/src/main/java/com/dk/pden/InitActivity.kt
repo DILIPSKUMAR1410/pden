@@ -110,6 +110,7 @@ class InitActivity : AppCompatActivity() {
                         user = userBox.find(User_.blockstackId, blockstack_id).first()
                     } else {
                         user = User(interest)
+                        user.isFollowed = true
                     }
                     user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
@@ -145,6 +146,11 @@ class InitActivity : AppCompatActivity() {
                                                             fetchBooks(interests, counter + 1)
                                                     }
                                             // [END subscribe_topics]
+                                        } else {
+                                            if (counter == interests.length() - 1)
+                                                close()
+                                            else
+                                                fetchBooks(interests, counter + 1)
                                         }
                                     }
                                 } else {

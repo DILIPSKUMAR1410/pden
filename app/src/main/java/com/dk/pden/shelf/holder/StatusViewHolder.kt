@@ -30,9 +30,9 @@ open class StatusViewHolder(container: View, listener: InteractionListener) :
         } else {
             spreadTextView.visible()
             spreadTextView.text = container.context.getString(
-                    R.string.spread_by, thought.spreadBy.target.blockstackId)
+                    R.string.spreadDiscp)
         }
-        if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_green)
+        if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
         else spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
 
@@ -45,9 +45,13 @@ open class StatusViewHolder(container: View, listener: InteractionListener) :
 
 
         spreadImageButton.setOnClickListener {
-            if (thought.spreadBy.isNull) {
+            if (!thought.isSpread) {
                 listener.spread(thought)
             }
+        }
+
+        userProfilePicImageView.setOnClickListener {
+            listener.showUser(thought.user.target)
         }
 
 

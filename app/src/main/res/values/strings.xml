@@ -11,4 +11,5 @@
     <string name="spread_imageButton_contentDescriptor">Spread Image Button</string>
     <string name="channel_description">Pden notifications</string>
     <string name="channel_name">Pden</string>
+    <string name="spreadDiscp">This got spread</string>
 </resources>
