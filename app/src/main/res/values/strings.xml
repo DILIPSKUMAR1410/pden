@@ -3,7 +3,7 @@
     <string name="send_tweet">send_tweet</string>
     <string name="chars_left">chars_left</string>
     <string name="profile_pic_contentDescriptor">Profile Picture</string>
-    <string name="spread_title">Do you want to spread the word?</string>
+    <string name="spread_title">Do you want to spread this thought?</string>
     <string name="quote">Quote</string>
     <string name="cancel">Cancel</string>
     <string name="spread">Spread</string>

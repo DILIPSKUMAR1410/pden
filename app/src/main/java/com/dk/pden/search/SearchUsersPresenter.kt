@@ -37,11 +37,11 @@ class SearchUsersPresenter(private val textQuery: String) : BasePresenter<Search
                 .subscribeOn(Schedulers.io())
                 .subscribeBy(
 
-                        onSuccess = {
+                        onSuccess = { it ->
                             var users = mutableListOf<User>()
                             it.users.forEach {
-                                var user = User(it.get("fullyQualifiedName").asString.trim())
-                                var profile = it.getAsJsonObject("profile")
+                                val user = User(it.get("fullyQualifiedName").asString.trim())
+                                val profile = it.getAsJsonObject("profile")
                                 if (profile.has("image")) {
                                     var url = profile.getAsJsonArray("image").get(0).asJsonObject.get("contentUrl").toString()
                                     user.avatarImage = url.substring(1, url.length - 1)

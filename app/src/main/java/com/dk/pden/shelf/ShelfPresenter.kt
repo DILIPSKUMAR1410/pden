@@ -3,6 +3,7 @@ package com.dk.pden.shelf
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.base.BasePresenter
 import com.dk.pden.common.PreferencesHelper
@@ -15,6 +16,7 @@ import io.objectbox.Box
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import org.json.JSONObject
 
 open class ShelfPresenter : BasePresenter<ShelfMvpView>() {
 
@@ -39,6 +41,8 @@ open class ShelfPresenter : BasePresenter<ShelfMvpView>() {
         userBox.put(me)
         val envelopeObject = JsonObject()
         val rootObject = JsonObject()
+        val props = JSONObject()
+
         rootObject.addProperty("timestamp", thought.timestamp)
         rootObject.addProperty("text", thought.text)
         rootObject.addProperty("actual_owner", thought.user.target.blockstackId)
@@ -51,11 +55,15 @@ open class ShelfPresenter : BasePresenter<ShelfMvpView>() {
                 .subscribeOn(Schedulers.io())
                 .subscribeBy(
                         onSuccess = {
-                            Log.d("success-->>", "Spreaded")
+                            Log.d("success-->>", "Spread")
+                            props.put("Success", true)
+                            mixpanel.track("Thought spread", props)
                         },
                         onError =
                         {
                             Log.d("error-->>", it.message)
+                            props.put("Success", false)
+                            mixpanel.track("Thought spread", props)
                         }
                 )
         mvpView?.hideLoading()

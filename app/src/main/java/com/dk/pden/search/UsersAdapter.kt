@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.R
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.model.User
@@ -23,6 +24,8 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
         holder.descriptionTextView.text = user.description
         holder.container.setOnClickListener {
             MyBookActivity.launch(holder.container.context!!, user)
+            mixpanel.track("Search")
+
         }
 //        if (user.isVerified)
 //            holder?.userNameTextView

@@ -10,6 +10,7 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.util.Log
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.events.NewThoughtsEvent
@@ -22,6 +23,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.objectbox.Box
 import org.greenrobot.eventbus.EventBus
+import org.json.JSONObject
 
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -58,6 +60,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             if (thoughtBox.find(Thought_.uuid, remoteMessage.data.get("uuid")).isEmpty() and (user != null)) {
                 val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
                 thought.uuid = remoteMessage.data.get("uuid")!!
+                val props = JSONObject()
                 if (remoteMessage.data.containsKey("actual_owner")) {
                     var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
                     if (actual_owner == null) {
@@ -67,10 +70,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     actual_owner.thoughts.add(thought)
                     user!!.spreaded_thoughts.add(thought)
                     userBox.put(actual_owner)
+                    props.put("New", false)
                 } else {
                     user!!.thoughts.add(thought)
+                    props.put("New", true)
                 }
+                mixpanel.track("Thought received", props)
                 userBox.put(user)
+
                 val mutableList: MutableList<Thought> = ArrayList()
                 mutableList.add(thought)
                 EventBus.getDefault().post(NewThoughtsEvent(mutableList))

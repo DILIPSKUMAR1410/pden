@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -49,6 +50,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         presenter.attachView(this)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
 
+        mixpanel.timeEvent("Compose");
+
         composeThoughtEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 presenter.afterTextChanged(s.toString())
@@ -84,6 +87,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             showLoading()
             var my_book = JSONArray()
             val rootObject = JSONObject()
+            val props = JSONObject()
             when {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
@@ -118,6 +122,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         if (readURLResult.hasValue) {
                                             user.thoughts.add(thought)
                                             userBox.put(user)
+
+                                            props.put("Success", true)
+
                                             presenter.sendThought(blockstack_id, rootObject)
                                             val mutableList: MutableList<Thought> = ArrayList()
                                             mutableList.add(thought)
@@ -125,12 +132,17 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                                 EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                                             close()
                                         } else {
+                                            props.put("Success", false)
                                             Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                         }
+                                        mixpanel.track("Post", props)
+
                                     }
                                 }
 
                             } else {
+                                props.put("Success", false)
+                                mixpanel.track("Post", props)
                                 Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                             }
                         }
@@ -146,6 +158,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     }
 
     override fun close() {
+        mixpanel.track("Compose")
         finish()
     }
 
@@ -153,7 +166,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         loadingProgressBar.visible(true)
     }
 
-    override fun getThought() = composeThoughtEditText.text.toString()
+    override fun getThought() = composeThoughtEditText.text.toString().trim()
 
     override fun showSendTweetError() {
         Toast.makeText(this, "sending_message_error", Toast.LENGTH_SHORT).show()

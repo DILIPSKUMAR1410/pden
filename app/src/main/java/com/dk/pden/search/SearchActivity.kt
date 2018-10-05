@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.widget.ProgressBar
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.R
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
@@ -39,10 +40,11 @@ class SearchActivity : AppCompatActivity(), SearchUsersMvpView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
+
         adapter = UsersAdapter()
         query = intent.getStringExtra(ARG_QUERY)
         presenter.attachView(this)
-
+        mixpanel.timeEvent("Search");
 //        setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 //        toolbar.setNavigationOnClickListener { finish() }

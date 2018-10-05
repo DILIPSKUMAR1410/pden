@@ -3,6 +3,7 @@ package com.dk.pden.mybook
 import android.app.Activity
 import android.util.Log
 import android.widget.Toast
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.base.BasePresenter
 import com.dk.pden.common.Utils.config
@@ -22,6 +23,7 @@ import org.blockstack.android.sdk.PutFileOptions
 import org.blockstack.android.sdk.Result
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URL
 
 
@@ -67,7 +69,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         }
                         user.thoughts.addAll(thoughts)
                         userBox.put(user)
-                        mvpView?.showThoughts(thoughts)
+                        mvpView?.showThoughts(thoughts.asReversed())
                         mvpView?.stopRefresh()
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
@@ -79,7 +81,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         zoneFileLookupURL = zoneFileLookupUrl,
                         app = "https://app.pden.xyz",
                         decrypt = false)
-                thoughts = mutableListOf<Thought>()
+                thoughts = mutableListOf()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
                         launch(UI) {
@@ -111,7 +113,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         user.thoughts.addAll(thoughts)
                                         userBox.put(user)
                                     }
-                                    mvpView?.showThoughts(thoughts)
+                                    mvpView?.showThoughts(thoughts.asReversed())
                                     mvpView?.stopRefresh()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
@@ -138,6 +140,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         mvpView?.showLoading()
         var interests = JSONArray()
         val options_get = GetFileOptions(false)
+        val props = JSONObject()
 
         _blockstackSession = BlockstackSession(context, config
         ) {
@@ -189,18 +192,24 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                 Log.d("thoughts -> adding", my_book.toString())
                                                                 userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                                                 user.thoughts.addAll(thoughts)
+                                                                user.isFollowed = true
                                                                 userBox.put(user)
+                                                                props.put("Success", true)
                                                                 if (thoughts.isNotEmpty())
                                                                     EventBus.getDefault().post(NewThoughtsEvent(thoughts))
                                                             } else {
+                                                                props.put("Success", false)
                                                                 val errorMsg = "error: " + contentResult.error
                                                                 Log.d("errorMsg", errorMsg)
                                                             }
+                                                            mixpanel.track("Borrow", props)
 
                                                         }
                                                     }
 
                                                 } else {
+                                                    props.put("Success", false)
+                                                    mixpanel.track("Borrow", props)
                                                     val errorMsg = "error: " + profileResult.error
                                                     Log.d("errorMsg", errorMsg)
                                                 }
@@ -209,19 +218,23 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 
                                         Log.d("Gaia URL", "File stored at: ${readURL}")
                                     } else {
+                                        props.put("Success", false)
+                                        mixpanel.track("Borrow", props)
                                         Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
                                     }
                                     // [START subscribe_topics]
                                     FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + user.blockstackId)
                                             .addOnCompleteListener { _ ->
-                                                Toast.makeText(context, "Subscribed", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Added to your shelf", Toast.LENGTH_SHORT).show()
                                             }
                                     // [END subscribe_topics]
                                     mvpView?.setBorrowed(true)
                                 }
 
-                            } else
-                                Log.d("Already added", interests.toString())
+                            } else {
+                                mvpView?.setBorrowed(true)
+                                Toast.makeText(context, "Already added to your shelf", Toast.LENGTH_SHORT).show()
+                            }
                             mvpView?.hideLoading()
                         }
                     } else {
@@ -236,6 +249,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         mvpView?.showLoading()
         var interests = JSONArray()
         val options_get = GetFileOptions(false)
+        val props = JSONObject()
 
         _blockstackSession = BlockstackSession(context, config
         ) {
@@ -271,19 +285,27 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     userBox.remove(user.id)
                                     if (user.thoughts.isNotEmpty())
                                         EventBus.getDefault().post(RemoveThoughtsEvent(user.thoughts))
+                                    props.put("Success", true)
                                 } else {
                                     Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                    props.put("Success", false)
+
                                 }
+                                mixpanel.track("UnBorrow", props)
                                 mvpView?.setBorrowed(false)
+
                                 // [START subscribe_topics]
                                 FirebaseMessaging.getInstance().unsubscribeFromTopic("/topics/" + user.blockstackId)
                                         .addOnCompleteListener { _ ->
-                                            Toast.makeText(context, "Removed", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Removed from your shelf", Toast.LENGTH_SHORT).show()
                                         }
                                 // [END subscribe_topics]
                             }
-                        } else
-                            Log.d("Already removed", interests.toString())
+                        } else {
+                            mvpView?.setBorrowed(false)
+                            mixpanel.track("UnBorrow", props)
+                            Toast.makeText(context, "Already Removed from your shelf", Toast.LENGTH_SHORT).show()
+                        }
                         mvpView?.hideLoading()
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()

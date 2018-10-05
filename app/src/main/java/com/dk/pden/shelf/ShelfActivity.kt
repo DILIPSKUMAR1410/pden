@@ -13,6 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.SearchView
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -50,6 +51,8 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shelf)
+        mixpanel.timeEvent("Feed");
+
         adapter = ShelfAdapter(this)
         recyclerView = findViewById(R.id.tweetsRecyclerView)
 //        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
@@ -218,11 +221,10 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
 
     }
 
-//    public override fun onStop() {
-//        super.onStop()
-//        Log.d("Eventbus -->>","stop")
-//        EventBus.getDefault().unregister(this)
-//    }
+    public override fun onStop() {
+        super.onStop()
+        mixpanel.track("Feed");
+    }
 
 
     override fun spread(thought: Thought) {
