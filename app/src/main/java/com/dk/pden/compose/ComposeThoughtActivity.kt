@@ -90,7 +90,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             var my_book = JSONArray()
             val rootObject = JSONObject()
             val props = JSONObject()
-            when(item.itemId == R.id.action_send) {
+            when (item.itemId == R.id.action_send) {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
@@ -151,8 +151,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     }
                 }
             }
-        }
-        else {
+        } else {
             close()
         }
         return true

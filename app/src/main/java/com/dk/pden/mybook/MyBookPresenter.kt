@@ -148,6 +148,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         val options_get = GetFileOptions(false)
         val props = JSONObject()
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
+        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
 
         _blockstackSession = BlockstackSession(context, config
         ) {
@@ -161,7 +162,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
 
                             if (!content.contains(user.blockstackId)) {
                                 interests.put(user.blockstackId)
-                                Log.d("Final content", interests.toString())
                                 val options_put = PutFileOptions(false)
 
                                 blockstackSession().putFile("pasand.json", interests.toString(), options_put)
@@ -200,8 +200,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                     thoughts.add(thought)
                                                                     i++
                                                                 }
-                                                                Log.d("thoughts -> adding", my_book.toString())
                                                                 userBox = ObjectBox.boxStore.boxFor(User::class.java)
+                                                                thoughtBox.remove(user.thoughts)
                                                                 user.thoughts.addAll(thoughts)
                                                                 user.isFollowed = true
                                                                 userBox.put(user)
