@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.AppBarLayout
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -59,6 +60,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var toggleAddToShelf: ToggleButton
+    private lateinit var appBar: AppBarLayout
     private var self: Boolean = false
     private fun getMyBookPresenter() = MyBookPresenter()
     private lateinit var blockstack_id: String
@@ -82,6 +84,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         about_me = findViewById(R.id.about_me)
 
         blockstack_id = intent.getStringExtra(TAG_USER_blockstackId)
+
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
 

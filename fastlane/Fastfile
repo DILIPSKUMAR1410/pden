@@ -14,7 +14,7 @@ default_platform :android
 # don't worry, fastlane will prompt you for required
 # info which you can add here later
 lane :internal do
-	
+
   	# build the release variant
   	gradle(
     task: 'assemble',

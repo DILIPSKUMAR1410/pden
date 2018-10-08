@@ -119,7 +119,7 @@ class InitActivity : AppCompatActivity() {
 
 
                     launch(UI) {
-                        blockstackSession().getFile("kitab14.json", options) { contentResult: Result<Any> ->
+                        blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {

@@ -1,6 +1,7 @@
 package com.dk.pden.mybook
 
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import com.dk.pden.App.Constants.mixpanel
@@ -13,6 +14,7 @@ import com.dk.pden.model.Thought
 import com.dk.pden.model.Thought_
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
+import com.dk.pden.shelf.ShelfActivity
 import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import kotlinx.coroutines.experimental.android.UI
@@ -44,7 +46,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
             if (self) {
-                blockstackSession().getFile("kitab14.json", options) { contentResult ->
+                blockstackSession().getFile("kitab141.json", options) { contentResult ->
                     if (contentResult.hasValue) {
                         var my_book = JSONArray()
                         val content: Any
@@ -84,8 +86,12 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 thoughts = mutableListOf()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
+                        user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
+                        user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
+                        user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                        userBox.put(user)
                         launch(UI) {
-                            blockstackSession().getFile("kitab14.json", options) { contentResult: Result<Any> ->
+                            blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {
                                     var my_book = JSONArray()
                                     val content: Any
@@ -141,6 +147,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         var interests = JSONArray()
         val options_get = GetFileOptions(false)
         val props = JSONObject()
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
         _blockstackSession = BlockstackSession(context, config
         ) {
@@ -170,8 +177,12 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         launch(UI) {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                                                 if (profileResult.hasValue) {
+                                                    user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
+                                                    user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
+                                                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                                                    userBox.put(user)
                                                     launch(UI) {
-                                                        blockstackSession().getFile("kitab14.json", options) { contentResult: Result<Any> ->
+                                                        blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                                                             if (contentResult.hasValue) {
                                                                 var my_book = JSONArray()
                                                                 if (contentResult.value is String) {
@@ -203,7 +214,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                 Log.d("errorMsg", errorMsg)
                                                             }
                                                             mixpanel.track("Borrow", props)
-
+                                                            val intent = Intent(context, ShelfActivity::class.java)
+                                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                                            context.startActivity(intent)
                                                         }
                                                     }
 
@@ -212,6 +225,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                     mixpanel.track("Borrow", props)
                                                     val errorMsg = "error: " + profileResult.error
                                                     Log.d("errorMsg", errorMsg)
+                                                    val intent = Intent(context, ShelfActivity::class.java)
+                                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                                    context.startActivity(intent)
                                                 }
                                             }
                                         }
@@ -221,6 +237,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         props.put("Success", false)
                                         mixpanel.track("Borrow", props)
                                         Toast.makeText(context, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                        val intent = Intent(context, ShelfActivity::class.java)
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                        context.startActivity(intent)
                                     }
                                     // [START subscribe_topics]
                                     FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + user.blockstackId)
@@ -250,6 +269,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         var interests = JSONArray()
         val options_get = GetFileOptions(false)
         val props = JSONObject()
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+
 
         _blockstackSession = BlockstackSession(context, config
         ) {
@@ -293,7 +314,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 }
                                 mixpanel.track("UnBorrow", props)
                                 mvpView?.setBorrowed(false)
-
+                                val intent = Intent(context, ShelfActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                context.startActivity(intent)
                                 // [START subscribe_topics]
                                 FirebaseMessaging.getInstance().unsubscribeFromTopic("/topics/" + user.blockstackId)
                                         .addOnCompleteListener { _ ->
@@ -304,6 +327,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         } else {
                             mvpView?.setBorrowed(false)
                             mixpanel.track("UnBorrow", props)
+                            val intent = Intent(context, ShelfActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            context.startActivity(intent)
                             Toast.makeText(context, "Already Removed from your shelf", Toast.LENGTH_SHORT).show()
                         }
                         mvpView?.hideLoading()

@@ -7,6 +7,7 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.MenuItem
 import android.widget.ProgressBar
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.R
@@ -46,7 +47,9 @@ class SearchActivity : AppCompatActivity(), SearchUsersMvpView {
         presenter.attachView(this)
         mixpanel.timeEvent("Search");
 //        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        val actionBar = supportActionBar
+        actionBar!!.setDisplayHomeAsUpEnabled(true)
+        actionBar.elevation = 4.0F
 //        toolbar.setNavigationOnClickListener { finish() }
         title = query
 
@@ -92,4 +95,13 @@ class SearchActivity : AppCompatActivity(), SearchUsersMvpView {
         adapter.notifyDataSetChanged()
     }
 
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        close()
+        return true
+    }
+
+    override fun close() {
+        mixpanel.track("Search")
+        finish()
+    }
 }

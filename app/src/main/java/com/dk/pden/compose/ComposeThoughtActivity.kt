@@ -47,6 +47,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         // Set the action bar title, subtitle and elevation
         actionBar!!.title = "Compose"
         actionBar.elevation = 4.0F
+        actionBar.setDisplayHomeAsUpEnabled(true)
+
         presenter.attachView(this)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
 
@@ -88,7 +90,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             var my_book = JSONArray()
             val rootObject = JSONObject()
             val props = JSONObject()
-            when {
+            when(item.itemId == R.id.action_send) {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
@@ -103,7 +105,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                         // Wait until this callback fires before using any of the
                         // BlockstackSession API methods
                         val options_get = GetFileOptions(false)
-                        blockstackSession().getFile("kitab14.json", options_get) { contentResult ->
+                        blockstackSession().getFile("kitab141.json", options_get) { contentResult ->
                             if (contentResult.hasValue) {
                                 val content: Any
                                 if (contentResult.value is String) {
@@ -117,7 +119,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 Log.d("Final content", my_book.toString())
                                 val options_put = PutFileOptions(false)
                                 runOnUiThread {
-                                    blockstackSession().putFile("kitab14.json", my_book.toString(), options_put)
+                                    blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
                                     { readURLResult ->
                                         if (readURLResult.hasValue) {
                                             user.thoughts.add(thought)
@@ -150,6 +152,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                 }
             }
         }
+        else {
+            close()
+        }
         return true
     }
 
@@ -166,7 +171,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         loadingProgressBar.visible(true)
     }
 
-    override fun getThought() = composeThoughtEditText.text.toString().trim()
+    override fun getThought() = composeThoughtEditText.text.toString().trim().replace("\"", "")
+
 
     override fun showSendTweetError() {
         Toast.makeText(this, "sending_message_error", Toast.LENGTH_SHORT).show()
@@ -193,5 +199,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             throw IllegalStateException("No session.")
         }
     }
+
 
 }

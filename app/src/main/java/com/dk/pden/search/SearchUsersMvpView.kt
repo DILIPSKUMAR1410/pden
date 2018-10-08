@@ -15,4 +15,6 @@ interface SearchUsersMvpView : MvpView {
 
     fun updateRecyclerViewView()
 
+    fun close()
+
 }
