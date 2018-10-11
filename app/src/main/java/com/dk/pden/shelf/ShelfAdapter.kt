@@ -27,5 +27,4 @@ open class ShelfAdapter(val listener: InteractionListener) : RecyclerView.Adapte
     override fun getItemViewType(position: Int): Int {
         return R.layout.thought_basic
     }
-
 }

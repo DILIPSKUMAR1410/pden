@@ -8,8 +8,8 @@ apply plugin: 'com.google.gms.google-services'
 
 ext.versionMajor = 0
 ext.versionMinor = 1
-ext.versionPatch = 6
-ext.versionClassifier = null
+ext.versionPatch = 10
+ext.versionClassifier = 'beta'
 ext.isSnapshot = true
 ext.minimumSdkVersion = 21
 

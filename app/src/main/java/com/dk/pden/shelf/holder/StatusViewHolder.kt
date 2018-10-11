@@ -2,6 +2,7 @@ package com.dk.pden.shelf.holder
 
 import android.annotation.SuppressLint
 import android.support.annotation.CallSuper
+import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
@@ -32,8 +33,9 @@ open class StatusViewHolder(container: View, listener: InteractionListener) :
             spreadTextView.text = container.context.getString(
                     R.string.spreadDiscp)
         }
+
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
-        else spreadImageButton.setImageResource(R.drawable.ic_repeat)
+        else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
 
 //        userNameTextView.text = currentUser.blockstackId
@@ -46,7 +48,17 @@ open class StatusViewHolder(container: View, listener: InteractionListener) :
 
         spreadImageButton.setOnClickListener {
             if (!thought.isSpread) {
-                listener.spread(thought)
+                if (!thought.isSpread) {
+                    AlertDialog.Builder(container.context)
+                            .setTitle(R.string.spread_title)
+                            .setPositiveButton(R.string.spread)
+                            { _, _ ->
+                                spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
+                                listener.spread(thought)
+                            }
+                            .setNegativeButton(R.string.cancel, null)
+                            .create().show()
+                }
             }
         }
 

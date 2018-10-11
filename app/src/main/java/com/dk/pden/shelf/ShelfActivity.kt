@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -31,7 +30,6 @@ import com.dk.pden.mybook.MyBookActivity
 import com.dk.pden.search.SearchActivity
 import io.objectbox.Box
 import io.objectbox.query.QueryBuilder
-import kotlinx.android.synthetic.main.item_interaction.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -153,9 +151,13 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
     }
 
     override fun showThought(thought: Thought) {
-        val removedPosition = adapter.thoughts.size - 1
-        adapter.thoughts.removeAt(removedPosition)
-        adapter.notifyItemRemoved(removedPosition)
+        var removedPosition = adapter.thoughts.size - 1
+        if (removedPosition < 0) {
+            removedPosition = 0
+            adapter.thoughts.removeAt(removedPosition)
+            adapter.notifyItemRemoved(removedPosition)
+        }
+
         adapter.thoughts.add(0, thought)
         adapter.notifyItemInserted(0)
         recyclerView.scrollToPosition(0)
@@ -228,17 +230,7 @@ class ShelfActivity : AppCompatActivity(), ShelfMvpView, InteractionListener {
 
 
     override fun spread(thought: Thought) {
-        if (!thought.isSpread) {
-            AlertDialog.Builder(this)
-                    .setTitle(this.getString(R.string.spread_title))
-                    .setPositiveButton(this.getString(R.string.spread)
-                    ) { _, _ ->
-                        spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
-                        presenter.spreadThought(thought, this)
-                    }
-                    .setNegativeButton(R.string.cancel, null)
-                    .create().show()
-        }
+        presenter.spreadThought(thought, this)
     }
 
 

@@ -84,15 +84,15 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item?.itemId == R.id.action_send) {
-            item.setEnabled(false)
-            composeThoughtEditText.isEnabled = false
-            showLoading()
-            var my_book = JSONArray()
-            val rootObject = JSONObject()
-            val props = JSONObject()
             when (item.itemId == R.id.action_send) {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
+                    var my_book = JSONArray()
+                    val rootObject = JSONObject()
+                    val props = JSONObject()
+                    item.isEnabled = false
+                    composeThoughtEditText.isEnabled = false
+                    showLoading()
                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
                     val blockstack_id = PreferencesHelper(this).blockstackId
                     val user = userBox.find(User_.blockstackId, blockstack_id).first()
@@ -124,9 +124,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         if (readURLResult.hasValue) {
                                             user.thoughts.add(thought)
                                             userBox.put(user)
-
                                             props.put("Success", true)
-
                                             presenter.sendThought(blockstack_id, rootObject)
                                             val mutableList: MutableList<Thought> = ArrayList()
                                             mutableList.add(thought)
@@ -178,7 +176,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     }
 
     override fun showEmptyThoughtError() {
-        Toast.makeText(this, "nothing_to_tweet", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Nothing to post", Toast.LENGTH_SHORT).show()
     }
 
     override fun showTooManyCharsError() {
