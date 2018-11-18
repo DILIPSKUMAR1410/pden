@@ -1,5 +1,7 @@
 package com.dk.pden.compose
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
@@ -16,10 +18,10 @@ import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
+import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
-import com.dk.pden.model.Thought
-import com.dk.pden.model.User
-import com.dk.pden.model.User_
+import com.dk.pden.model.*
+import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
@@ -34,8 +36,22 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
+    private lateinit var conversationBox: Box<Conversation>
     private lateinit var loadingProgressBar: ProgressBar
 
+    companion object {
+        var isComment: Boolean = false
+        fun launch(context: Context, uuid: String) {
+            val intent = Intent(context, ComposeThoughtActivity::class.java)
+            intent.putExtra("uuid", uuid)
+            context.startActivity(intent)
+        }
+
+        fun launch(context: Context) {
+            val intent = Intent(context, ComposeThoughtActivity::class.java)
+            context.startActivity(intent)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,9 +65,11 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         actionBar.elevation = 4.0F
         actionBar.setDisplayHomeAsUpEnabled(true)
 
+        isComment = intent.hasExtra("uuid")
         presenter.attachView(this)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
-
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+        conversationBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
         mixpanel.timeEvent("Compose");
 
         composeThoughtEditText.addTextChangedListener(object : TextWatcher {
@@ -87,66 +105,100 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
             when (item.itemId == R.id.action_send) {
                 presenter.charsLeft() == 140 -> showEmptyThoughtError()
                 else -> {
-                    var my_book = JSONArray()
                     val rootObject = JSONObject()
                     val props = JSONObject()
                     item.isEnabled = false
                     composeThoughtEditText.isEnabled = false
                     showLoading()
-                    userBox = ObjectBox.boxStore.boxFor(User::class.java)
                     val blockstack_id = PreferencesHelper(this).blockstackId
                     val user = userBox.find(User_.blockstackId, blockstack_id).first()
                     val thought = Thought(getThought(), System.currentTimeMillis())
+                    thought.isComment = isComment
                     rootObject.put("timestamp", thought.timestamp)
                     rootObject.put("text", thought.text)
                     rootObject.put("uuid", thought.uuid)
-                    _blockstackSession = BlockstackSession(this, Utils.config
-                    ) {
-                        // Wait until this callback fires before using any of the
-                        // BlockstackSession API methods
-                        val options_get = GetFileOptions(false)
-                        blockstackSession().getFile("kitab141.json", options_get) { contentResult ->
-                            if (contentResult.hasValue) {
-                                val content: Any
-                                if (contentResult.value is String) {
-                                    content = contentResult.value as String
-                                    if (content.isNotEmpty()) {
-                                        my_book = JSONArray(content)
-                                    }
-                                }
-                                Log.d("old content", my_book.toString())
-                                my_book.put(rootObject)
-                                Log.d("Final content", my_book.toString())
-                                val options_put = PutFileOptions(false)
-                                runOnUiThread {
-                                    blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
-                                    { readURLResult ->
-                                        if (readURLResult.hasValue) {
-                                            user.thoughts.add(thought)
-                                            userBox.put(user)
-                                            props.put("Success", true)
-                                            presenter.sendThought(blockstack_id, rootObject)
-                                            val mutableList: MutableList<Thought> = ArrayList()
-                                            mutableList.add(thought)
-                                            if (mutableList.isNotEmpty())
-                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                                            close()
-                                        } else {
-                                            props.put("Success", false)
-                                            Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                    if (isComment) {
+                        val conversation_id = intent.getStringExtra("uuid")
+                        var conversation = conversationBox.find(Conversation_.uuid, conversation_id).firstOrNull()
+                        if (conversation == null) {
+                            conversation = Conversation(conversation_id)
+                            // [START subscribe_topics]
+                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+                            // [END subscribe_topics]
+                        }
+                        user.thoughts.add(thought)
+                        userBox.put(user)
+                        conversation.thoughts.add(thought)
+                        conversationBox.put(conversation)
+                        rootObject.put("actual_owner", blockstack_id)
+                        presenter.sendThought(conversation_id, rootObject)
+                        val mutableList: MutableList<Thought> = ArrayList()
+                        mutableList.add(thought)
+                        if (mutableList.isNotEmpty())
+                            EventBus.getDefault().post(NewCommentEvent(mutableList))
+                        close()
+                        props.put("Success", true)
+                        mixpanel.track("Comment", props)
+                    } else {
+                        var my_book = JSONArray()
+                        _blockstackSession = BlockstackSession(this, Utils.config
+                        ) {
+                            // Wait until this callback fires before using any of the
+                            // BlockstackSession API methods
+                            val options_get = GetFileOptions(false)
+                            blockstackSession().getFile("kitab141.json", options_get) { contentResult ->
+                                if (contentResult.hasValue) {
+                                    val content: Any
+                                    if (contentResult.value is String) {
+                                        content = contentResult.value as String
+                                        if (content.isNotEmpty()) {
+                                            my_book = JSONArray(content)
                                         }
-                                        mixpanel.track("Post", props)
-
                                     }
-                                }
+                                    Log.d("old content", my_book.toString())
+                                    my_book.put(rootObject)
+                                    Log.d("Final content", my_book.toString())
+                                    val options_put = PutFileOptions(false)
+                                    runOnUiThread {
+                                        blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
+                                        { readURLResult ->
+                                            if (readURLResult.hasValue) {
+                                                user.thoughts.add(thought)
+                                                // [START subscribe_topics]
+                                                FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+                                                        .addOnCompleteListener { _ ->
+                                                            userBox.put(user)
+                                                            var conversation = Conversation(thought.uuid)
+                                                            conversation.thoughts.add(thought)
+                                                            conversationBox.put(conversation)
+                                                            presenter.sendThought(blockstack_id, rootObject)
+                                                            val mutableList: MutableList<Thought> = ArrayList()
+                                                            mutableList.add(thought)
+                                                            if (mutableList.isNotEmpty())
+                                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                                                            close()
+                                                        }
+                                                // [END subscribe_topics]
+                                            } else {
+                                                props.put("Success", false)
+                                                Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                            }
+                                            props.put("Success", true)
+                                            mixpanel.track("Post", props)
 
-                            } else {
-                                props.put("Success", false)
-                                mixpanel.track("Post", props)
-                                Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+
+                                } else {
+                                    props.put("Success", false)
+                                    mixpanel.track("Post", props)
+                                    Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
+
                     }
+
                 }
             }
         } else {

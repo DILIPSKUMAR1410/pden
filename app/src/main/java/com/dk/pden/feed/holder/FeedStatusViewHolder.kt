@@ -1,4 +1,4 @@
-package com.dk.pden.shelf.holder
+package com.dk.pden.feed.holder
 
 import android.annotation.SuppressLint
 import android.support.annotation.CallSuper
@@ -7,20 +7,21 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import com.dk.pden.R
+import com.dk.pden.base.holder.FeedBaseViewHolder
 import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.common.visible
 import com.dk.pden.model.Thought
-import com.dk.pden.shelf.InteractionListener
 import kotlinx.android.synthetic.main.item_interaction.view.*
 import kotlinx.android.synthetic.main.thought_basic.view.*
 
 
-open class StatusViewHolder(container: View, listener: InteractionListener) :
-        BaseViewHolder(container, listener) {
+open class FeedStatusViewHolder(container: View, listener: FeedInteractionListener) :
+        FeedBaseViewHolder(container, listener) {
 
     protected var spreadTextView: TextView = container.spreadTextView
     protected var spreadImageButton: ImageButton = container.spreadImageButton
+    protected var threadImageButton: ImageButton = container.threadImageButton
 
     @SuppressLint("SetTextI18n")
     @CallSuper
@@ -42,7 +43,10 @@ open class StatusViewHolder(container: View, listener: InteractionListener) :
         userScreenNameTextView.text = "@${thought.user.target.blockstackId}"
         timeTextView.text = " • ${Utils.formatDate(thought.timestamp)}"
         userProfilePicImageView.loadAvatar(thought.user.target.avatarImage)
-
+        threadImageButton.setImageResource(R.drawable.ic_thread)
+        threadImageButton.setOnClickListener {
+            listener.showThread(thought)
+        }
         statusTextView.text = thought.text
 
 

@@ -6,6 +6,18 @@
     android:paddingLeft="15dp"
     android:paddingRight="15dp">
 
+    <ImageButton
+        android:id="@+id/threadImageButton"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="3dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@string/thread_imageButton_contentDescriptor"
+        android:padding="2dp"
+        android:scaleType="fitCenter" />
 
     <ImageButton
         android:id="@+id/spreadImageButton"
@@ -19,4 +31,5 @@
         android:contentDescription="@string/spread_imageButton_contentDescriptor"
         android:padding="2dp"
         android:scaleType="fitCenter" />
+
 </LinearLayout>

@@ -7,10 +7,10 @@ import android.util.Log
 import android.widget.Toast
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
+import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
-import com.dk.pden.shelf.ShelfActivity
 import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import kotlinx.coroutines.experimental.android.UI
@@ -90,7 +90,7 @@ class InitActivity : AppCompatActivity() {
     }
 
     fun close() {
-        val intent = Intent(this, ShelfActivity::class.java)
+        val intent = Intent(this, FeedActivity::class.java)
         startActivity(intent)
         finish()
     }

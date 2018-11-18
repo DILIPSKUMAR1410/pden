@@ -33,14 +33,18 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
     }
 
     @SuppressLint("CheckResult")
-    fun sendThought(blockstack_id: String, rootObject: JSONObject?) {
+    fun sendThought(topic: String, rootObject: JSONObject?) {
         val envelopeObject = JsonObject()
         val dataobj = JsonObject()
         dataobj.addProperty("timestamp", rootObject?.getString("timestamp"))
         dataobj.addProperty("uuid", rootObject?.getString("uuid"))
         dataobj.addProperty("text", rootObject?.getString("text"))
-        envelopeObject.addProperty("to", "/topics/" + blockstack_id)
+        if (rootObject?.has("actual_owner")!!) dataobj.addProperty("actual_owner", rootObject?.getString("actual_owner"))
+
+        envelopeObject.addProperty("to", "/topics/$topic")
+        envelopeObject.addProperty("priority", "high")
         envelopeObject.add("data", dataobj)
+
         firebaseService.publishToTopic(envelopeObject)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())

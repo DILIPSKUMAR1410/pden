@@ -1,4 +1,4 @@
-package com.dk.pden.shelf
+package com.dk.pden.feed
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -18,7 +18,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 
-open class ShelfPresenter : BasePresenter<ShelfMvpView>() {
+open class FeedPresenter : BasePresenter<ConversationMvpView>() {
 
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>

@@ -1,15 +1,15 @@
-package com.dk.pden.shelf.holder
+package com.dk.pden.base.holder
 
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import com.dk.pden.feed.holder.FeedInteractionListener
 import com.dk.pden.model.Thought
-import com.dk.pden.shelf.InteractionListener
 import kotlinx.android.synthetic.main.item_userinfo.view.*
 import kotlinx.android.synthetic.main.thought_basic.view.*
 
-abstract class BaseViewHolder(val container: View, val listener: InteractionListener) :
+abstract class FeedBaseViewHolder(val container: View, val listener: FeedInteractionListener) :
         RecyclerView.ViewHolder(container) {
 
     protected val userNameTextView: TextView = container.userNameTextView

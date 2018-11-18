@@ -1,9 +1,9 @@
-package com.dk.pden.shelf
+package com.dk.pden.feed
 
 import com.dk.pden.base.MvpView
 import com.dk.pden.model.Thought
 
-interface ShelfMvpView : MvpView {
+interface FeedMvpView : MvpView {
 
     fun showThoughts(thoughts: MutableList<Thought>)
 

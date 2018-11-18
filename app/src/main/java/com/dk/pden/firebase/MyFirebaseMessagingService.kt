@@ -10,15 +10,15 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.util.Log
-import com.dk.pden.App.Constants.mixpanel
+import com.dk.pden.App
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
+import com.dk.pden.conversation.ConversationActivity
+import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
-import com.dk.pden.model.Thought
-import com.dk.pden.model.Thought_
-import com.dk.pden.model.User
-import com.dk.pden.model.User_
-import com.dk.pden.shelf.ShelfActivity
+import com.dk.pden.feed.FeedActivity
+import com.dk.pden.model.*
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.objectbox.Box
@@ -29,6 +29,8 @@ import org.json.JSONObject
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>
+    private lateinit var conversationBox: Box<Conversation>
+
     /**
      * Called when message is received.
      *
@@ -52,14 +54,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
+        conversationBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
 
         // Check if message contains a data payload.
         remoteMessage?.data?.isNotEmpty()?.let {
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
-            val user = userBox.find(User_.blockstackId, remoteMessage.from?.removePrefix("/topics/")).firstOrNull()
-            if (thoughtBox.find(Thought_.uuid, remoteMessage.data.get("uuid")).isEmpty() and (user != null)) {
+            val topic = remoteMessage.from?.removePrefix("/topics/")
+            val user = userBox.find(User_.blockstackId, topic).firstOrNull()
+            val isComment = user == null
+            val thought = thoughtBox.find(Thought_.uuid, remoteMessage.data.get("uuid"))
+            if (thought.isEmpty()) {
                 val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
                 thought.uuid = remoteMessage.data.get("uuid")!!
+                thought.isComment = isComment
                 val props = JSONObject()
                 if (remoteMessage.data.containsKey("actual_owner")) {
                     var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
@@ -68,20 +75,45 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         actual_owner.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                     }
                     actual_owner.thoughts.add(thought)
-                    user!!.spreaded_thoughts.add(thought)
+                    if (!isComment) user!!.spreaded_thoughts.add(thought)
                     userBox.put(actual_owner)
                     props.put("New", false)
                 } else {
                     user!!.thoughts.add(thought)
+                    userBox.put(user)
                     props.put("New", true)
                 }
-                mixpanel.track("Thought received", props)
-                userBox.put(user)
-
                 val mutableList: MutableList<Thought> = ArrayList()
                 mutableList.add(thought)
-                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                sendNotification(thought)
+                var conversation: Conversation
+                if (!isComment) {
+                    conversation = conversationBox.find(Conversation_.uuid, thought.uuid).firstOrNull()!!
+                    if (conversation == null) {
+                        conversation = Conversation(thought.uuid)
+                        // [START subscribe_topics]
+                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+                        // [END subscribe_topics]
+                    }
+                    EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                    App.mixpanel.track("Thought received", props)
+
+                } else {
+                    conversation = conversationBox.find(Conversation_.uuid, topic).firstOrNull()!!
+                    if (conversation == null) {
+                        conversation = Conversation(topic!!)
+                        // [START subscribe_topics]
+                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + topic)
+                        // [END subscribe_topics]
+                    }
+                    EventBus.getDefault().post(NewCommentEvent(mutableList))
+                    App.mixpanel.track("Comment received", props)
+                }
+                thought.conversation.setAndPutTarget(conversation)
+                conversation.thoughts.add(thought)
+                conversationBox.put(conversation)
+                Companion.sendNotification(this, thought)
+
+
             } else {
                 Log.d(TAG, "Already got the word")
             }
@@ -158,49 +190,56 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // TODO: Implement this method to send token to your app server.
     }
 
-    /**
-     * Create and show a simple notification containing the received FCM message.
-     *
-     * @param messageBody FCM message body received.
-     */
-    private fun sendNotification(thought: Thought) {
-        val intent = Intent(this, ShelfActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT)
-
-        val channelId = "Pden"
-        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        val notificationBuilder = NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(thought.user.target.blockstackId + " posted new thought")
-                .setContentText(thought.text)
-                .setAutoCancel(true)
-                .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent)
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val mChannel = NotificationChannel(channelId, name, importance)
-            mChannel.description = descriptionText
-            mChannel.enableLights(true);
-            mChannel.setLightColor(Color.YELLOW);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            notificationManager.createNotificationChannel(mChannel)
-        }
-
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
-    }
-
     companion object {
 
         private val TAG = "MyFirebaseMsgService"
+        /**
+         * Create and show a simple notification containing the received FCM message.
+         *
+         * @param messageBody FCM message body received.
+         */
+        private fun sendNotification(myFirebaseMessagingService: MyFirebaseMessagingService, thought: Thought) {
+            val intent: Intent
+
+            if (thought.isComment) {
+                intent = Intent(myFirebaseMessagingService, ConversationActivity::class.java)
+                intent.putExtra("uuid", thought.conversation.target.uuid)
+
+            } else {
+                intent = Intent(myFirebaseMessagingService, FeedActivity::class.java)
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            val pendingIntent = PendingIntent.getActivity(myFirebaseMessagingService, 0 /* Request code */, intent,
+                    PendingIntent.FLAG_ONE_SHOT)
+
+            val channelId = "Pden"
+            val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val notificationBuilder = NotificationCompat.Builder(myFirebaseMessagingService, channelId)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(thought.user.target.blockstackId + " posted new thought")
+                    .setContentText(thought.text)
+                    .setAutoCancel(true)
+                    .setSound(defaultSoundUri)
+                    .setContentIntent(pendingIntent)
+
+            val notificationManager = myFirebaseMessagingService.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // Since android Oreo notification channel is needed.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Create the NotificationChannel
+                val name = myFirebaseMessagingService.getString(R.string.channel_name)
+                val descriptionText = myFirebaseMessagingService.getString(R.string.channel_description)
+                val importance = NotificationManager.IMPORTANCE_HIGH
+                val mChannel = NotificationChannel(channelId, name, importance)
+                mChannel.description = descriptionText
+                mChannel.enableLights(true)
+                mChannel.lightColor = Color.YELLOW
+                // Register the channel with the system; you can't change the importance
+                // or other notification behaviors after this
+                notificationManager.createNotificationChannel(mChannel)
+            }
+
+            notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
+        }
     }
 }

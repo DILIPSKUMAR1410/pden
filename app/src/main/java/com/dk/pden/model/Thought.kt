@@ -1,11 +1,11 @@
 package com.dk.pden.model
 
 import com.beust.klaxon.Json
+import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToOne
 import java.util.*
-
 
 @Entity
 data class Thought(@Json(name = "text")
@@ -29,5 +29,10 @@ data class Thought(@Json(name = "text")
     lateinit var spreadBy: ToOne<User>
 
     var isSpread: Boolean = false
+
+    var isComment: Boolean = false
+
+    @Backlink(to = "conversation")
+    lateinit var conversation: ToOne<Conversation>
 
 }
