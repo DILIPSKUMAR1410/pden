@@ -85,26 +85,28 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 val mutableList: MutableList<Thought> = ArrayList()
                 mutableList.add(thought)
-                var conversation: Conversation
+                val conversation: Conversation
                 if (!isComment) {
-                    conversation = conversationBox.find(Conversation_.uuid, thought.uuid).firstOrNull()!!
-                    if (conversation == null) {
+                    val assert_conversation = conversationBox.find(Conversation_.uuid, thought.uuid)
+                    if (assert_conversation.isEmpty()) {
                         conversation = Conversation(thought.uuid)
                         // [START subscribe_topics]
                         FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
                         // [END subscribe_topics]
-                    }
+                    } else
+                        conversation = assert_conversation.first()
                     EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                     App.mixpanel.track("Thought received", props)
 
                 } else {
-                    conversation = conversationBox.find(Conversation_.uuid, topic).firstOrNull()!!
-                    if (conversation == null) {
+                    val assert_conversation = conversationBox.find(Conversation_.uuid, topic)
+                    if (assert_conversation.isEmpty()) {
                         conversation = Conversation(topic!!)
                         // [START subscribe_topics]
                         FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + topic)
                         // [END subscribe_topics]
-                    }
+                    } else
+                        conversation = assert_conversation.first()
                     EventBus.getDefault().post(NewCommentEvent(mutableList))
                     App.mixpanel.track("Comment received", props)
                 }
