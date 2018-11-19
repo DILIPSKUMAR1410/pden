@@ -25,6 +25,8 @@ interface ConversationMvpView : MvpView {
 
     fun removeThoughts(thoughts: MutableList<Thought>)
 
+    fun close()
+
     fun updateAdapter()
 
 }

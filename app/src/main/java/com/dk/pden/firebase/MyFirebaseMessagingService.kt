@@ -18,7 +18,6 @@ import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.*
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.objectbox.Box
@@ -85,36 +84,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 val mutableList: MutableList<Thought> = ArrayList()
                 mutableList.add(thought)
-                val conversation: Conversation
-                if (!isComment) {
-                    val assert_conversation = conversationBox.find(Conversation_.uuid, thought.uuid)
-                    if (assert_conversation.isEmpty()) {
-                        conversation = Conversation(thought.uuid)
-                        // [START subscribe_topics]
-                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
-                        // [END subscribe_topics]
-                    } else
-                        conversation = assert_conversation.first()
+                if (isComment) {
+                    val conversation = conversationBox.find(Conversation_.uuid, topic).firstOrNull()
+                    if (conversation != null) {
+                        thought.conversation.setAndPutTarget(conversation)
+                        conversation.thoughts.add(thought)
+                        conversationBox.put(conversation)
+                        EventBus.getDefault().post(NewCommentEvent(mutableList))
+                        App.mixpanel.track("Comment received", props)
+                    }
+                } else {
                     EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                     App.mixpanel.track("Thought received", props)
-
-                } else {
-                    val assert_conversation = conversationBox.find(Conversation_.uuid, topic)
-                    if (assert_conversation.isEmpty()) {
-                        conversation = Conversation(topic!!)
-                        // [START subscribe_topics]
-                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + topic)
-                        // [END subscribe_topics]
-                    } else
-                        conversation = assert_conversation.first()
-                    EventBus.getDefault().post(NewCommentEvent(mutableList))
-                    App.mixpanel.track("Comment received", props)
                 }
-                thought.conversation.setAndPutTarget(conversation)
-                conversation.thoughts.add(thought)
-                conversationBox.put(conversation)
                 Companion.sendNotification(this, thought)
-
 
             } else {
                 Log.d(TAG, "Already got the word")

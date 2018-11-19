@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.MenuItem
 import android.widget.ProgressBar
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
@@ -24,7 +25,6 @@ import com.dk.pden.feed.ConversationMvpView
 import com.dk.pden.feed.ConversationPresenter
 import com.dk.pden.model.*
 import com.dk.pden.mybook.MyBookActivity
-import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -100,16 +100,11 @@ class ConversationActivity : AppCompatActivity(), ConversationMvpView, Conversat
 //        swipeRefreshLayout.setOnRefreshListener {
 //            //            presenter.onRefresh(this, MyBookActivity.user!!, self)
 //        }
-        var conversation = conversationBox.find(Conversation_.uuid, uuid).firstOrNull()
+        val conversation = conversationBox.find(Conversation_.uuid, uuid).firstOrNull()
         if (conversation == null) {
-            conversation = Conversation(uuid)
-            conversation.thoughts.add(thoughtBox.find(Thought_.uuid, uuid).first())
-            // [START subscribe_topics]
-            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + uuid)
-            // [END subscribe_topics]
-            conversationBox.put(conversation)
-        }
-        showThoughts(conversation.thoughts.asReversed())
+            showThoughts(thoughtBox.find(Thought_.uuid, uuid))
+        } else
+            showThoughts(conversation.thoughts.asReversed())
 
 
     }
@@ -180,6 +175,10 @@ class ConversationActivity : AppCompatActivity(), ConversationMvpView, Conversat
             loadingProgressBar.visible(false)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        close()
+        return true
+    }
 
     override fun updateRecyclerViewView() {
         adapter.notifyDataSetChanged()
@@ -215,5 +214,9 @@ class ConversationActivity : AppCompatActivity(), ConversationMvpView, Conversat
 
     override fun showUser(user: User) {
         MyBookActivity.launch(this, user)
+    }
+
+    override fun close() {
+        finish()
     }
 }

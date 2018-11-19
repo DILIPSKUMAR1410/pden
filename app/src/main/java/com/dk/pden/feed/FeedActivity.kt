@@ -36,7 +36,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 
-class FeedActivity : AppCompatActivity(), ConversationMvpView, FeedInteractionListener {
+class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
     private val presenter: ConversationPresenter by lazy { getShelfPresenter() }
     private lateinit var adapter: FeedAdapter

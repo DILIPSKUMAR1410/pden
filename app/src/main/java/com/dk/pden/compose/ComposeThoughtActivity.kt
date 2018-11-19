@@ -164,21 +164,13 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         { readURLResult ->
                                             if (readURLResult.hasValue) {
                                                 user.thoughts.add(thought)
-                                                // [START subscribe_topics]
-                                                FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
-                                                        .addOnCompleteListener { _ ->
-                                                            userBox.put(user)
-                                                            var conversation = Conversation(thought.uuid)
-                                                            conversation.thoughts.add(thought)
-                                                            conversationBox.put(conversation)
-                                                            presenter.sendThought(blockstack_id, rootObject)
-                                                            val mutableList: MutableList<Thought> = ArrayList()
-                                                            mutableList.add(thought)
-                                                            if (mutableList.isNotEmpty())
-                                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                                                            close()
-                                                        }
-                                                // [END subscribe_topics]
+                                                userBox.put(user)
+                                                presenter.sendThought(blockstack_id, rootObject)
+                                                val mutableList: MutableList<Thought> = ArrayList()
+                                                mutableList.add(thought)
+                                                if (mutableList.isNotEmpty())
+                                                    EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                                                close()
                                             } else {
                                                 props.put("Success", false)
                                                 Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()

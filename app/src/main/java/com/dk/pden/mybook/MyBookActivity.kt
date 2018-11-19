@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.AppBarLayout
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -60,7 +59,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var toggleAddToShelf: ToggleButton
-    private lateinit var appBar: AppBarLayout
     private var self: Boolean = false
     private fun getMyBookPresenter() = MyBookPresenter()
     private lateinit var blockstack_id: String
@@ -141,7 +139,11 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         }
 
         if (adapter.thoughts.isEmpty()) {
-            if (user!!.thoughts.isNotEmpty()) showThoughts(user!!.thoughts.asReversed() as MutableList<Thought>)
+            if (user!!.thoughts.isNotEmpty())
+                showThoughts(user!!.thoughts
+                        .asReversed()
+                        .filter { thought -> !thought.isComment }
+                        as MutableList<Thought>)
             else presenter.onRefresh(this, user!!, self)
         }
     }
