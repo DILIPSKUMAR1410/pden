@@ -15,7 +15,7 @@ import org.json.JSONObject
 class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
     private val MAX_URL_LENGTH = 23 // it will change
-    private var charsLeft: Int = 140
+    private var charsLeft: Int = 256
     private var lastAtIndex: Int = -1
     private val firebaseService by lazy {
         ApiServiceFactory.createFirebaseService()
@@ -65,7 +65,7 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         var urls = 0
 
         text.split(" ").forEach { if (isUrl(it)) urls++ else wordsLength += it.length }
-        charsLeft = 140 - text.count { it == ' ' } - wordsLength - (urls * MAX_URL_LENGTH)
+        charsLeft = 256 - text.count { it == ' ' } - wordsLength - (urls * MAX_URL_LENGTH)
         mvpView?.refreshToolbar()
     }
 

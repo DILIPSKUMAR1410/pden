@@ -18,7 +18,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 
-open class FeedPresenter : BasePresenter<ConversationMvpView>() {
+open class FeedPresenter : BasePresenter<DiscussMvpView>() {
 
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>

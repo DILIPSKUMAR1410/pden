@@ -49,8 +49,8 @@
             android:name=".mybook.MyBookActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".feed.FeedActivity" />
-        <activity android:name=".conversation.ConversationActivity" />
-        <activity android:name=".search.SearchActivity" />
+        <activity android:name=".discuss.DiscussActivity" />
+        <activity android:name=".search.ShelfActivity" />
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

@@ -1,4 +1,4 @@
-package com.dk.pden.conversation.holder
+package com.dk.pden.discuss.holder
 
 import android.annotation.SuppressLint
 import android.support.annotation.CallSuper
@@ -12,8 +12,8 @@ import kotlinx.android.synthetic.main.item_interaction.view.*
 import kotlinx.android.synthetic.main.thought_basic.view.*
 
 
-open class ConversationStatusViewHolder(container: View, listener: ConversationInteractionListener) :
-        ConversationBaseViewHolder(container, listener) {
+open class DiscussStatusViewHolder(container: View, listener: DiscussInteractionListener) :
+        DiscussBaseViewHolder(container, listener) {
 
     protected var spreadTextView: TextView = container.spreadTextView
     protected var spreadImageButton: ImageButton = container.spreadImageButton

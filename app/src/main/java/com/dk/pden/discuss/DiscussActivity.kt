@@ -1,4 +1,4 @@
-package com.dk.pden.conversation
+package com.dk.pden.discuss
 
 import android.content.Context
 import android.content.Intent
@@ -17,12 +17,11 @@ import com.dk.pden.R
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
-import com.dk.pden.conversation.holder.ConversationInteractionListener
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
+import com.dk.pden.discuss.holder.DiscussInteractionListener
 import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.RemoveThoughtsEvent
-import com.dk.pden.feed.ConversationMvpView
-import com.dk.pden.feed.ConversationPresenter
+import com.dk.pden.feed.DiscussMvpView
 import com.dk.pden.model.*
 import com.dk.pden.mybook.MyBookActivity
 import io.objectbox.Box
@@ -31,24 +30,22 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 
-class ConversationActivity : AppCompatActivity(), ConversationMvpView, ConversationInteractionListener {
+class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionListener {
 
-    private val presenter: ConversationPresenter by lazy { getShelfPresenter() }
-    private lateinit var adapter: ConversationAdapter
+    private lateinit var adapter: DiscussAdapter
     private lateinit var conversationBox: Box<Conversation>
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var floatingActionButton: FloatingActionButton
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
-    private fun getShelfPresenter() = ConversationPresenter()
 
 
     companion object {
 
         private var uuid: String = ""
         fun launch(context: Context, uuid: String) {
-            val intent = Intent(context, ConversationActivity::class.java)
+            val intent = Intent(context, DiscussActivity::class.java)
             intent.putExtra("uuid", uuid)
             context.startActivity(intent)
         }
@@ -61,19 +58,17 @@ class ConversationActivity : AppCompatActivity(), ConversationMvpView, Conversat
         val actionBar = supportActionBar
 
         // Set the action bar title, subtitle and elevation
-        actionBar!!.title = "Conversation"
+        actionBar!!.title = "Discuss (v0.1)"
         actionBar.elevation = 4.0F
         actionBar.setDisplayHomeAsUpEnabled(true)
 
-        mixpanel.timeEvent("Conversation");
+        mixpanel.timeEvent("Discuss");
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         conversationBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
 
-//        threadBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
-        adapter = ConversationAdapter(this)
+        adapter = DiscussAdapter(this)
         uuid = intent.getStringExtra("uuid")
         recyclerView = findViewById(R.id.tweetsRecyclerView)
-//        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         floatingActionButton = findViewById(R.id.fab_compose)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         floatingActionButton.setOnClickListener { _ ->
@@ -85,21 +80,6 @@ class ConversationActivity : AppCompatActivity(), ConversationMvpView, Conversat
         recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
 
-//        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-//                super.onScrolled(recyclerView, dx, dy)
-//                if (linearLayoutManager.childCount + linearLayoutManager
-//                                .findFirstVisibleItemPosition() + 1 > linearLayoutManager.itemCount - 10)
-//                    presenter.getMoreThoughts(this)
-//                Log.d("Need more thoughts-->>", "Fixthis")
-//
-//            }
-//        })
-
-
-//        swipeRefreshLayout.setOnRefreshListener {
-//            //            presenter.onRefresh(this, MyBookActivity.user!!, self)
-//        }
         val conversation = conversationBox.find(Conversation_.uuid, uuid).firstOrNull()
         if (conversation == null) {
             showThoughts(thoughtBox.find(Thought_.uuid, uuid))
@@ -209,7 +189,7 @@ class ConversationActivity : AppCompatActivity(), ConversationMvpView, Conversat
 
     public override fun onStop() {
         super.onStop()
-        mixpanel.track("Conversation");
+        mixpanel.track("Discuss");
     }
 
     override fun showUser(user: User) {

@@ -13,4 +13,6 @@
     <string name="channel_description">Pden notifications</string>
     <string name="channel_name">Pden</string>
     <string name="spreadDiscp">This got spread</string>
+    <string name="init_msg">Intializing app, please wait.</string>
+    <string name="search_hint">Search your friend</string>
 </resources>

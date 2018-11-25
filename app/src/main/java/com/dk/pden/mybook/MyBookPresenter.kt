@@ -86,8 +86,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 thoughts = mutableListOf()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     if (profileResult.hasValue) {
-                        user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
-                        user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
+                        user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
+                        user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                         user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                         userBox.put(user)
                         launch(UI) {
@@ -177,8 +177,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         launch(UI) {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                                                 if (profileResult.hasValue) {
-                                                    user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else "-NA-"
-                                                    user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else "-NA-"
+                                                    user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
+                                                    user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                                                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                                                     userBox.put(user)
                                                     launch(UI) {

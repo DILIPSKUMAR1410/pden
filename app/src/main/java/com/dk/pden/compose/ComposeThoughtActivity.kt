@@ -103,7 +103,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item?.itemId == R.id.action_send) {
             when (item.itemId == R.id.action_send) {
-                presenter.charsLeft() == 140 -> showEmptyThoughtError()
+                presenter.charsLeft() == 256 -> showEmptyThoughtError()
                 else -> {
                     val rootObject = JSONObject()
                     val props = JSONObject()
@@ -164,13 +164,21 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         { readURLResult ->
                                             if (readURLResult.hasValue) {
                                                 user.thoughts.add(thought)
-                                                userBox.put(user)
-                                                presenter.sendThought(blockstack_id, rootObject)
-                                                val mutableList: MutableList<Thought> = ArrayList()
-                                                mutableList.add(thought)
-                                                if (mutableList.isNotEmpty())
-                                                    EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                                                close()
+                                                // [START subscribe_topics]
+                                                FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+                                                        .addOnCompleteListener { _ ->
+                                                            userBox.put(user)
+                                                            var conversation = Conversation(thought.uuid)
+                                                            conversation.thoughts.add(thought)
+                                                            conversationBox.put(conversation)
+                                                            presenter.sendThought(blockstack_id, rootObject)
+                                                            val mutableList: MutableList<Thought> = ArrayList()
+                                                            mutableList.add(thought)
+                                                            if (mutableList.isNotEmpty())
+                                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                                                            close()
+                                                        }
+                                                // [END subscribe_topics]
                                             } else {
                                                 props.put("Success", false)
                                                 Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()

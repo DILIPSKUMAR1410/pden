@@ -19,14 +19,17 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.common.visible
+import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
+import com.dk.pden.feed.FeedPresenter
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
+import com.dk.pden.mybook.holder.BookInteractionListener
 import io.objectbox.Box
 
 
-class MyBookActivity : AppCompatActivity(), MyBookMvpView {
+class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListener {
 
     companion object {
         const val TAG_USER_blockstackId = "user_blockstackId"
@@ -49,6 +52,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
 
     private lateinit var userBox: Box<User>
     private val presenter: MyBookPresenter by lazy { getMyBookPresenter() }
+    private val feedpresenter: FeedPresenter by lazy { getFeedPresenter() }
     private lateinit var adapter: MyBookAdapter
     private lateinit var avatar: ImageView
     private lateinit var tcountvalue: TextView
@@ -61,6 +65,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
     private lateinit var toggleAddToShelf: ToggleButton
     private var self: Boolean = false
     private fun getMyBookPresenter() = MyBookPresenter()
+    private fun getFeedPresenter() = FeedPresenter()
     private lateinit var blockstack_id: String
 
     @SuppressLint("SetTextI18n")
@@ -70,7 +75,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         presenter.attachView(this)
         val preferencesHelper = PreferencesHelper(this)
         val my_blockstack_id = preferencesHelper.blockstackId
-        adapter = MyBookAdapter()
+        adapter = MyBookAdapter(this)
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
@@ -111,9 +116,9 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
         }
 
         tcountvalue.text = user!!.thoughts.size.toString()
-        name.text = if (user!!.name.isNotEmpty()) user!!.name else "-NA-"
+        name.text = if (user!!.name.isNotEmpty()) user!!.name else ""
         blockstack_name.text = user!!.blockstackId
-        about_me.text = if (user!!.description.isNotEmpty()) user!!.description else "-NA-"
+        about_me.text = if (user!!.description.isNotEmpty()) user!!.description else ""
         avatar.loadAvatar(user!!.avatarImage)
 
         val linearLayoutManager = LinearLayoutManager(this)
@@ -211,5 +216,13 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView {
             toggleAddToShelf.isEnabled = true
             toggleAddToShelf.isChecked = flag
         }
+    }
+
+    override fun spread(thought: Thought) {
+        feedpresenter.spreadThought(thought, this)
+    }
+
+    override fun showThread(thought: Thought) {
+        DiscussActivity.launch(this, thought.uuid)
     }
 }

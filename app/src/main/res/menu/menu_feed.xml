@@ -4,15 +4,19 @@
     tools:context="com.andreapivetta.blu.ui.main.MainActivity">
 
     <item
+        android:id="@+id/myShelf"
+        android:icon="@drawable/shelf"
+        android:orderInCategory="100"
+        android:title="My Shelf"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/myBook"
         android:icon="@drawable/user"
         android:orderInCategory="100"
         android:title="My Book"
-        app:showAsAction="always" />
-
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_search"
-        android:icon="@drawable/ic_search"
         android:title="Search"
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always"

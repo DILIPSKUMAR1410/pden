@@ -3,7 +3,7 @@ package com.dk.pden.feed
 import com.dk.pden.base.MvpView
 import com.dk.pden.model.Thought
 
-interface ConversationMvpView : MvpView {
+interface DiscussMvpView : MvpView {
 
     fun showThoughts(thoughts: MutableList<Thought>)
 

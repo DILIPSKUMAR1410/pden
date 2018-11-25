@@ -1,14 +1,15 @@
-package com.dk.pden.conversation.holder
+package com.dk.pden.mybook.holder
 
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.dk.pden.model.Thought
+import com.dk.pden.model.User
 import kotlinx.android.synthetic.main.item_userinfo.view.*
 import kotlinx.android.synthetic.main.thought_basic.view.*
 
-abstract class ConversationBaseViewHolder(val container: View, val listener: ConversationInteractionListener) :
+abstract class BookBaseViewHolder(val container: View, val listener: BookInteractionListener) :
         RecyclerView.ViewHolder(container) {
 
     protected val userNameTextView: TextView = container.userNameTextView
@@ -17,6 +18,6 @@ abstract class ConversationBaseViewHolder(val container: View, val listener: Con
     protected val timeTextView: TextView = container.timeTextView
     protected val userProfilePicImageView: ImageView = container.userProfilePicImageView
 
-    abstract fun setup(thought: Thought)
+    abstract fun setup(thought: Thought, user: User)
 
 }

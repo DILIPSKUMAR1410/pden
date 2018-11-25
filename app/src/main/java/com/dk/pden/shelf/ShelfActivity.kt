@@ -10,20 +10,22 @@ import android.support.v7.widget.RecyclerView
 import android.view.MenuItem
 import android.widget.ProgressBar
 import com.dk.pden.App.Constants.mixpanel
+import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.model.User
+import com.dk.pden.model.User_
+import io.objectbox.Box
 
-class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
+class ShelfActivity : AppCompatActivity(), ShelfUsersMvpView {
 
     companion object {
         private val ARG_QUERY = "query"
 
-        fun launch(context: Context, query: String) {
+        fun launch(context: Context) {
             val intent = Intent(context, ShelfActivity::class.java)
-            intent.putExtra(ARG_QUERY, query)
             context.startActivity(intent)
         }
     }
@@ -33,9 +35,7 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
     private lateinit var recyclerView: RecyclerView
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private val presenter: SearchUsersPresenter by lazy {
-        SearchUsersPresenter(query)
-    }
+    private lateinit var userBox: Box<User>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,16 +43,14 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
 
 
         adapterShelf = ShelfUsersAdapter()
-        query = intent.getStringExtra(ARG_QUERY)
-        presenter.attachView(this)
-        mixpanel.timeEvent("Search");
+        mixpanel.timeEvent("Shelf");
 //        setSupportActionBar(toolbar)
         val actionBar = supportActionBar
         actionBar!!.setDisplayHomeAsUpEnabled(true)
         actionBar.elevation = 4.0F
 //        toolbar.setNavigationOnClickListener { finish() }
-        title = query
-
+        title = "Shelf"
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
@@ -69,7 +67,7 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
         })
 
         if (adapterShelf.users.isEmpty()) {
-            presenter.getUsers()
+            showUsers(userBox.query().equal(User_.isFollowed, true).build().find())
         }
 
     }
@@ -101,7 +99,7 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
     }
 
     override fun close() {
-        mixpanel.track("Search")
+        mixpanel.track("Shelf")
         finish()
     }
 }

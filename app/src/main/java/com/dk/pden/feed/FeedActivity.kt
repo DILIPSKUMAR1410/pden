@@ -18,7 +18,7 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
-import com.dk.pden.conversation.ConversationActivity
+import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
@@ -29,6 +29,7 @@ import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.dk.pden.mybook.MyBookActivity
 import com.dk.pden.search.SearchActivity
+import com.dk.pden.search.ShelfActivity
 import io.objectbox.Box
 import io.objectbox.query.QueryBuilder
 import org.greenrobot.eventbus.EventBus
@@ -38,14 +39,14 @@ import org.greenrobot.eventbus.ThreadMode
 
 class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
-    private val presenter: ConversationPresenter by lazy { getShelfPresenter() }
+    private val presenter: FeedPresenter by lazy { getFeedPresenter() }
     private lateinit var adapter: FeedAdapter
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var floatingActionButton: FloatingActionButton
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
-    private fun getShelfPresenter() = ConversationPresenter()
+    private fun getFeedPresenter() = FeedPresenter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,10 +101,12 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menu?.clear()
-        menuInflater.inflate(R.menu.menu_shelf, menu)
+        menuInflater.inflate(R.menu.menu_feed, menu)
 
         val search = menu?.findItem(R.id.action_search)
         val searchView = search?.actionView as SearchView
+        searchView.maxWidth = Integer.MAX_VALUE
+        searchView.queryHint = "Search any person"
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 search(query)
@@ -119,6 +122,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.myBook -> openProfile()
+            R.id.myShelf -> openShelf()
         }
 
         return super.onOptionsItemSelected(item)
@@ -129,11 +133,15 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         SearchActivity.launch(this, string)
     }
 
-    fun openProfile() {
+    private fun openProfile() {
         val preferencesHelper = PreferencesHelper(this)
         val blockstack_id = preferencesHelper.blockstackId
         val user = ObjectBox.boxStore.boxFor(User::class.java).find(User_.blockstackId, blockstack_id).firstOrNull()
         user?.let { MyBookActivity.launch(this, it) }
+    }
+
+    fun openShelf() {
+        ShelfActivity.launch(this)
     }
 
 
@@ -247,7 +255,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     override fun showThread(thought: Thought) {
-        ConversationActivity.launch(this, thought.uuid)
+        DiscussActivity.launch(this, thought.uuid)
     }
 
 }

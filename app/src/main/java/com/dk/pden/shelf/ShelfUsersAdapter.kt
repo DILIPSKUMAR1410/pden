@@ -1,5 +1,6 @@
 package com.dk.pden.search
 
+import android.annotation.SuppressLint
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -13,8 +14,9 @@ import com.dk.pden.model.User
 import com.dk.pden.mybook.MyBookActivity
 import kotlinx.android.synthetic.main.user.view.*
 
-class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
+class ShelfUsersAdapter : RecyclerView.Adapter<ShelfUsersAdapter.UserViewHolder>() {
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val user = users[position]
 
@@ -24,7 +26,7 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
         holder.descriptionTextView.text = user.description
         holder.container.setOnClickListener {
             MyBookActivity.launch(holder.container.context!!, user)
-            mixpanel.track("Search")
+            mixpanel.track("Shelf")
 
         }
 //        if (user.isVerified)
