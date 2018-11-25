@@ -15,4 +15,5 @@
     <string name="spreadDiscp">This got spread</string>
     <string name="init_msg">Intializing app, please wait.</string>
     <string name="search_hint">Search your friend</string>
+    <string name="compose_hint">Pen your thoughts</string>
 </resources>

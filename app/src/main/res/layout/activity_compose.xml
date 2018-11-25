@@ -21,7 +21,7 @@
             android:layout_marginRight="10dp"
             android:layout_marginBottom="10dp"
             android:background="@null"
-            android:hint="Whats in your mind"
+            android:hint="@string/compose_hint"
             android:inputType="textMultiLine"
             android:maxLength="256" />
 
