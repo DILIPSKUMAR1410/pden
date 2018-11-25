@@ -23,7 +23,7 @@
             android:background="@null"
             android:hint="Whats in your mind"
             android:inputType="textMultiLine"
-            android:maxLength="140" />
+            android:maxLength="256" />
 
     </android.support.v7.widget.CardView>
 

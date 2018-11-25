@@ -80,7 +80,7 @@ class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionL
         recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
 
-        val conversation = discussionBox.find(Conversation_.uuid, uuid).firstOrNull()
+        val conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
         if (conversation == null) {
             showThoughts(thoughtBox.find(Thought_.uuid, uuid))
         } else

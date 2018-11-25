@@ -16,20 +16,20 @@ import com.dk.pden.common.visible
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.model.User
 
-class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
+class SearchActivity : AppCompatActivity(), SearchUsersMvpView {
 
     companion object {
         private val ARG_QUERY = "query"
 
         fun launch(context: Context, query: String) {
-            val intent = Intent(context, ShelfActivity::class.java)
+            val intent = Intent(context, SearchActivity::class.java)
             intent.putExtra(ARG_QUERY, query)
             context.startActivity(intent)
         }
     }
 
     private lateinit var query: String
-    private lateinit var adapterShelf: ShelfUsersAdapter
+    private lateinit var adapterSearch: SearchUsersAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -42,15 +42,13 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
         setContentView(R.layout.activity_search)
 
 
-        adapterShelf = ShelfUsersAdapter()
+        adapterSearch = SearchUsersAdapter()
         query = intent.getStringExtra(ARG_QUERY)
         presenter.attachView(this)
         mixpanel.timeEvent("Search");
-//        setSupportActionBar(toolbar)
         val actionBar = supportActionBar
         actionBar!!.setDisplayHomeAsUpEnabled(true)
         actionBar.elevation = 4.0F
-//        toolbar.setNavigationOnClickListener { finish() }
         title = query
 
 
@@ -64,23 +62,23 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)
         recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
-        recyclerView.adapter = adapterShelf
+        recyclerView.adapter = adapterSearch
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
         })
 
-        if (adapterShelf.users.isEmpty()) {
+        if (adapterSearch.users.isEmpty()) {
             presenter.getUsers()
         }
 
     }
 
     override fun showUsers(users: MutableList<User>) {
-        adapterShelf.users = users
-        adapterShelf.notifyDataSetChanged()
+        adapterSearch.users = users
+        adapterSearch.notifyDataSetChanged()
     }
 
     override fun showMoreUsers(users: MutableList<User>) {
-        adapterShelf.users.addAll(users)
+        adapterSearch.users.addAll(users)
     }
 
     override fun showLoading() {
@@ -92,7 +90,7 @@ class SearchActivity : AppCompatActivity(), ShelfUsersMvpView {
     }
 
     override fun updateRecyclerViewView() {
-        adapterShelf.notifyDataSetChanged()
+        adapterSearch.notifyDataSetChanged()
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

@@ -11,7 +11,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 
 
-class SearchUsersPresenter(private val textQuery: String) : BasePresenter<ShelfUsersMvpView>() {
+class SearchUsersPresenter(private val textQuery: String) : BasePresenter<SearchUsersMvpView>() {
 
     private var isLoading: Boolean = false
     private val disposables = CompositeDisposable()

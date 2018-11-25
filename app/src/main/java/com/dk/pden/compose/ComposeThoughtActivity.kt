@@ -119,7 +119,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     rootObject.put("uuid", thought.uuid)
                     if (isComment) {
                         val conversation_id = intent.getStringExtra("uuid")
-                        var conversation = discussionBox.find(Conversation_.uuid, conversation_id).firstOrNull()
+                        var conversation = discussionBox.find(Discussion_.uuid, conversation_id).firstOrNull()
                         if (conversation == null) {
                             conversation = Discussion(conversation_id)
                             // [START subscribe_topics]

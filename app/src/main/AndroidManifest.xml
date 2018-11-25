@@ -49,6 +49,7 @@
             android:name=".mybook.MyBookActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".feed.FeedActivity" />
+        <activity android:name=".search.SearchActivity" />
         <activity android:name=".discuss.DiscussActivity" />
         <activity android:name=".search.ShelfActivity" />
         <activity

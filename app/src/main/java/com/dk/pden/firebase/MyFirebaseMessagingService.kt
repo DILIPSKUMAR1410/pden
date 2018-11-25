@@ -87,7 +87,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 mutableList.add(thought)
                 val discussion: Discussion
                 if (!isComment) {
-                    val assert_conversation = discussionBox.find(Conversation_.uuid, thought.uuid)
+                    val assert_conversation = discussionBox.find(Discussion_.uuid, thought.uuid)
                     if (assert_conversation.isEmpty()) {
                         discussion = Discussion(thought.uuid)
                         // [START subscribe_topics]
@@ -99,7 +99,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     App.mixpanel.track("Thought received", props)
 
                 } else {
-                    val assert_conversation = discussionBox.find(Conversation_.uuid, topic)
+                    val assert_conversation = discussionBox.find(Discussion_.uuid, topic)
                     if (assert_conversation.isEmpty()) {
                         discussion = Discussion(topic!!)
                         // [START subscribe_topics]
