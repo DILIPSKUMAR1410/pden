@@ -32,7 +32,7 @@ data class Thought(@Json(name = "text")
 
     var isComment: Boolean = false
 
-    @Backlink(to = "conversation")
-    lateinit var conversation: ToOne<Conversation>
+    @Backlink(to = "discussion")
+    lateinit var discussion: ToOne<Discussion>
 
 }

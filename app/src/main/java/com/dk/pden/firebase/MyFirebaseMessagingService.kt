@@ -29,7 +29,7 @@ import org.json.JSONObject
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>
-    private lateinit var conversationBox: Box<Conversation>
+    private lateinit var discussionBox: Box<Discussion>
 
     /**
      * Called when message is received.
@@ -54,7 +54,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        conversationBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
+        discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
 
         // Check if message contains a data payload.
         remoteMessage?.data?.isNotEmpty()?.let {
@@ -85,35 +85,35 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 val mutableList: MutableList<Thought> = ArrayList()
                 mutableList.add(thought)
-                val conversation: Conversation
+                val discussion: Discussion
                 if (!isComment) {
-                    val assert_conversation = conversationBox.find(Conversation_.uuid, thought.uuid)
+                    val assert_conversation = discussionBox.find(Conversation_.uuid, thought.uuid)
                     if (assert_conversation.isEmpty()) {
-                        conversation = Conversation(thought.uuid)
+                        discussion = Discussion(thought.uuid)
                         // [START subscribe_topics]
                         FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
                         // [END subscribe_topics]
                     } else
-                        conversation = assert_conversation.first()
+                        discussion = assert_conversation.first()
                     EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                     App.mixpanel.track("Thought received", props)
 
                 } else {
-                    val assert_conversation = conversationBox.find(Conversation_.uuid, topic)
+                    val assert_conversation = discussionBox.find(Conversation_.uuid, topic)
                     if (assert_conversation.isEmpty()) {
-                        conversation = Conversation(topic!!)
+                        discussion = Discussion(topic!!)
                         // [START subscribe_topics]
                         FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + topic)
                         // [END subscribe_topics]
                     } else
-                        conversation = assert_conversation.first()
+                        discussion = assert_conversation.first()
                     EventBus.getDefault().post(NewCommentEvent(mutableList))
                     App.mixpanel.track("Comment received", props)
                 }
-                thought.conversation.setAndPutTarget(conversation)
-                conversation.thoughts.add(thought)
-                conversationBox.put(conversation)
-                val isSelf = conversation.thoughts.hasA { thought ->
+                thought.discussion.setAndPutTarget(discussion)
+                discussion.thoughts.add(thought)
+                discussionBox.put(discussion)
+                val isSelf = discussion.thoughts.hasA { thought ->
                     thought.user.target.isSelf
                 }
                 if (isSelf or !isComment)
@@ -210,7 +210,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
             if (thought.isComment) {
                 intent = Intent(myFirebaseMessagingService, DiscussActivity::class.java)
-                intent.putExtra("uuid", thought.conversation.target.uuid)
+                intent.putExtra("uuid", thought.discussion.target.uuid)
 
             } else {
                 intent = Intent(myFirebaseMessagingService, FeedActivity::class.java)

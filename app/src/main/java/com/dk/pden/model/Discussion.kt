@@ -7,7 +7,7 @@ import io.objectbox.relation.ToMany
 
 
 @Entity
-data class Conversation(@Json(ignored = true)
+data class Discussion(@Json(ignored = true)
                         var uuid: String) {
 
     constructor() : this("")

@@ -36,7 +36,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
-    private lateinit var conversationBox: Box<Conversation>
+    private lateinit var discussionBox: Box<Discussion>
     private lateinit var loadingProgressBar: ProgressBar
 
     companion object {
@@ -69,7 +69,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         presenter.attachView(this)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        conversationBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
+        discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
         mixpanel.timeEvent("Compose");
 
         composeThoughtEditText.addTextChangedListener(object : TextWatcher {
@@ -119,9 +119,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     rootObject.put("uuid", thought.uuid)
                     if (isComment) {
                         val conversation_id = intent.getStringExtra("uuid")
-                        var conversation = conversationBox.find(Conversation_.uuid, conversation_id).firstOrNull()
+                        var conversation = discussionBox.find(Conversation_.uuid, conversation_id).firstOrNull()
                         if (conversation == null) {
-                            conversation = Conversation(conversation_id)
+                            conversation = Discussion(conversation_id)
                             // [START subscribe_topics]
                             FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
                             // [END subscribe_topics]
@@ -129,7 +129,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                         user.thoughts.add(thought)
                         userBox.put(user)
                         conversation.thoughts.add(thought)
-                        conversationBox.put(conversation)
+                        discussionBox.put(conversation)
                         rootObject.put("actual_owner", blockstack_id)
                         presenter.sendThought(conversation_id, rootObject)
                         val mutableList: MutableList<Thought> = ArrayList()
@@ -168,9 +168,9 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                                 FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
                                                         .addOnCompleteListener { _ ->
                                                             userBox.put(user)
-                                                            var conversation = Conversation(thought.uuid)
+                                                            var conversation = Discussion(thought.uuid)
                                                             conversation.thoughts.add(thought)
-                                                            conversationBox.put(conversation)
+                                                            discussionBox.put(conversation)
                                                             presenter.sendThought(blockstack_id, rootObject)
                                                             val mutableList: MutableList<Thought> = ArrayList()
                                                             mutableList.add(thought)

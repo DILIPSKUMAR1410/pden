@@ -33,7 +33,7 @@ import org.greenrobot.eventbus.ThreadMode
 class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionListener {
 
     private lateinit var adapter: DiscussAdapter
-    private lateinit var conversationBox: Box<Conversation>
+    private lateinit var discussionBox: Box<Discussion>
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var floatingActionButton: FloatingActionButton
     private lateinit var recyclerView: RecyclerView
@@ -64,7 +64,7 @@ class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionL
 
         mixpanel.timeEvent("Discuss");
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-        conversationBox = ObjectBox.boxStore.boxFor(Conversation::class.java)
+        discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
 
         adapter = DiscussAdapter(this)
         uuid = intent.getStringExtra("uuid")
@@ -80,7 +80,7 @@ class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionL
         recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
 
-        val conversation = conversationBox.find(Conversation_.uuid, uuid).firstOrNull()
+        val conversation = discussionBox.find(Conversation_.uuid, uuid).firstOrNull()
         if (conversation == null) {
             showThoughts(thoughtBox.find(Thought_.uuid, uuid))
         } else
