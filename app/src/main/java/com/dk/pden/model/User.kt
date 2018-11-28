@@ -22,6 +22,8 @@ data class User(val blockstackId: String) : Serializable {
 
     var description: String = ""
 
+    var email: String = ""
+
     var avatarImage: String = ""
 
     var name: String = ""

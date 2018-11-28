@@ -53,13 +53,16 @@ class MainActivity : AppCompatActivity() {
         val preferencesHelper = PreferencesHelper(this)
         // save token on preferences
         preferencesHelper.blockstackId = userData.json.getString("username")
+
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         val user = User(userData.json.getString("username"))
         user.name = if (userData.profile?.name != null) userData.profile?.name!! else ""
         user.description = if (userData.profile?.description != null) userData.profile?.description!! else ""
+        user.email = if (userData.profile?.email != null) userData.profile?.email!! else ""
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
         user.isSelf = true
         userBox.put(user)
+        preferencesHelper.email = user.email
         mixpanel.track("Login")
         mixpanel.identify(user.blockstackId)
         mixpanel.people.identify(user.blockstackId)
