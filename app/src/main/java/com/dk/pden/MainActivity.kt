@@ -62,7 +62,6 @@ class MainActivity : AppCompatActivity() {
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
         user.isSelf = true
         userBox.put(user)
-        preferencesHelper.email = user.email
         mixpanel.track("Login")
         mixpanel.identify(user.blockstackId)
         mixpanel.people.identify(user.blockstackId)

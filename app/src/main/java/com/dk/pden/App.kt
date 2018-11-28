@@ -31,10 +31,7 @@ class App : Application() {
         mixpanel.identify(PreferencesHelper(this).blockstackId)
         mixpanel.people.identify(PreferencesHelper(this).blockstackId)
         val name = "name"
-        val email = "email"
         mixpanel.people.set("$$name", PreferencesHelper(this).blockstackId)
-        mixpanel.people.set("$$email", PreferencesHelper(this).email)
-
 
     }
 

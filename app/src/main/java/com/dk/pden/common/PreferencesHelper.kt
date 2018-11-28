@@ -12,8 +12,6 @@ class PreferencesHelper(context: Context) {
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
     // save device token
 
-    var blockstackId = preferences.getString(BLOCKSTACK_ID, "")!!
+    var blockstackId = preferences.getString(BLOCKSTACK_ID, "")
         set(value) = preferences.edit().putString(BLOCKSTACK_ID, value).apply()
-    var email = preferences.getString(EMAIL_ID, "")!!
-        set(value) = preferences.edit().putString(EMAIL_ID, value).apply()
 }

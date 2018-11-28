@@ -148,7 +148,6 @@ class InitActivity : AppCompatActivity() {
                                                     }
                                             // [END subscribe_topics]
                                         } else {
-                                            Log.d("counter.self", counter.toString())
                                             if (counter == interests.length() - 1)
                                                 close()
                                             else
