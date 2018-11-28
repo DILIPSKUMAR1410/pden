@@ -56,16 +56,18 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_compose)
+        isComment = intent.hasExtra("uuid")
 
         // Get the support action bar
         val actionBar = supportActionBar
 
+        if (isComment) actionBar!!.title = "Comment" else actionBar!!.title = "Compose"
+
         // Set the action bar title, subtitle and elevation
-        actionBar!!.title = "Compose"
         actionBar.elevation = 4.0F
         actionBar.setDisplayHomeAsUpEnabled(true)
 
-        isComment = intent.hasExtra("uuid")
+
         presenter.attachView(this)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
@@ -139,6 +141,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                         close()
                         props.put("Success", true)
                         mixpanel.track("Comment", props)
+                        mixpanel.people.increment("Comment", 1.0)
                     } else {
                         var my_book = JSONArray()
                         _blockstackSession = BlockstackSession(this, Utils.config
@@ -185,6 +188,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                             }
                                             props.put("Success", true)
                                             mixpanel.track("Post", props)
+                                            mixpanel.people.increment("Post", 1.0)
 
                                         }
                                     }

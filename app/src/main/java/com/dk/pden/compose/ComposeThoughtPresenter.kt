@@ -39,7 +39,7 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         dataobj.addProperty("timestamp", rootObject?.getString("timestamp"))
         dataobj.addProperty("uuid", rootObject?.getString("uuid"))
         dataobj.addProperty("text", rootObject?.getString("text"))
-        if (rootObject?.has("actual_owner")!!) dataobj.addProperty("actual_owner", rootObject?.getString("actual_owner"))
+        if (rootObject?.has("actual_owner")!!) dataobj.addProperty("actual_owner", rootObject.getString("actual_owner"))
 
         envelopeObject.addProperty("to", "/topics/$topic")
         envelopeObject.addProperty("priority", "high")

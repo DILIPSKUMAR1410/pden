@@ -3,6 +3,7 @@ package com.dk.pden
 import android.annotation.SuppressLint
 import android.app.Application
 import com.crashlytics.android.Crashlytics
+import com.dk.pden.common.PreferencesHelper
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import io.fabric.sdk.android.Fabric
 
@@ -27,6 +28,11 @@ class App : Application() {
         // to your application context.
 
         mixpanel = MixpanelAPI.getInstance(this, MIXPANEL_TOKEN)
+        mixpanel.identify(PreferencesHelper(this).blockstackId)
+        mixpanel.people.identify(PreferencesHelper(this).blockstackId)
+        val name = "name"
+        mixpanel.people.set("$$name", PreferencesHelper(this).blockstackId)
+
 
     }
 

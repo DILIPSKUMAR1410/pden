@@ -40,7 +40,7 @@ class InitActivity : AppCompatActivity() {
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
-            var options = GetFileOptions(false)
+            val options = GetFileOptions(false)
             Log.d("errorMsg", options.toString())
 
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
@@ -95,7 +95,7 @@ class InitActivity : AppCompatActivity() {
         finish()
     }
 
-    fun fetchBooks(interests: JSONArray, counter: Int) {
+    private fun fetchBooks(interests: JSONArray, counter: Int) {
         val interest = interests.getString(counter)
         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
         val options = GetFileOptions(username = interest,
@@ -126,7 +126,7 @@ class InitActivity : AppCompatActivity() {
                                     content = contentResult.value as String
                                     if (content.isNotEmpty()) {
                                         val interested_book = JSONArray(content)
-                                        var thoughts = mutableListOf<Thought>()
+                                        val thoughts = mutableListOf<Thought>()
                                         for (i in 0..(interested_book.length() - 1)) {
                                             val item = interested_book.getJSONObject(i)
                                             // Your code here
@@ -136,10 +136,11 @@ class InitActivity : AppCompatActivity() {
                                         }
                                         user.thoughts.addAll(thoughts)
                                         userBox.put(user)
+
                                         if (!user.isSelf) {
                                             // [START subscribe_topics]
                                             FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
-                                                    .addOnCompleteListener { task ->
+                                                    .addOnCompleteListener {
                                                         if (counter == interests.length() - 1)
                                                             close()
                                                         else
@@ -147,6 +148,7 @@ class InitActivity : AppCompatActivity() {
                                                     }
                                             // [END subscribe_topics]
                                         } else {
+                                            Log.d("counter.self", counter.toString())
                                             if (counter == interests.length() - 1)
                                                 close()
                                             else

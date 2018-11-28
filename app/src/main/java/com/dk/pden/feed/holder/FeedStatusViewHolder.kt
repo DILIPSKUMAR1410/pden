@@ -72,7 +72,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         userProfilePicImageView.setOnClickListener {
             listener.showUser(thought.user.target)
         }
-        
+
         userScreenNameTextView.setOnClickListener {
             listener.showUser(thought.user.target)
         }

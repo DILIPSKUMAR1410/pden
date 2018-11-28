@@ -18,8 +18,8 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
-import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
+import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
 import com.dk.pden.feed.holder.FeedInteractionListener
@@ -58,8 +58,8 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         // Set the action bar title, subtitle and elevation
         actionBar!!.title = "Feed"
         actionBar.elevation = 4.0F
-
-        mixpanel.timeEvent("Feed");
+        mixpanel.timeEvent("Feed")
+        mixpanel.people.increment("Feed opened", 1.0)
 
         adapter = FeedAdapter(this)
         recyclerView = findViewById(R.id.tweetsRecyclerView)
@@ -67,7 +67,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         floatingActionButton = findViewById(R.id.fab_compose)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-        floatingActionButton.setOnClickListener { _ ->
+        floatingActionButton.setOnClickListener {
             ComposeThoughtActivity.launch(this)
         }
         val linearLayoutManager = LinearLayoutManager(this)

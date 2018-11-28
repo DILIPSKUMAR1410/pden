@@ -58,6 +58,7 @@ open class FeedPresenter : BasePresenter<DiscussMvpView>() {
                             Log.d("success-->>", "Spread")
                             props.put("Success", true)
                             mixpanel.track("Thought spread", props)
+                            mixpanel.people.increment("Spread", 1.0)
                         },
                         onError =
                         {

@@ -17,11 +17,11 @@
 
     <TextView
         android:id="@+id/textView"
-        android:textSize="25sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
         android:text="@string/init_msg"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:textSize="25sp" />
 
 </FrameLayout>

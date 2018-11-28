@@ -5,8 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.View
 import android.widget.Toast
+import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils.config
 import com.dk.pden.model.User
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                     signInButton.isEnabled = true
                 })
 
-        signInButton.setOnClickListener { _: View ->
+        signInButton.setOnClickListener {
             blockstackSession().redirectUserToSignIn { userDataResult ->
                 if (userDataResult.hasValue) {
                     Log.d(TAG, "signed in!")
@@ -60,6 +60,10 @@ class MainActivity : AppCompatActivity() {
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
         user.isSelf = true
         userBox.put(user)
+        mixpanel.track("Login")
+        mixpanel.identify(user.blockstackId)
+        mixpanel.people.identify(user.blockstackId)
+        mixpanel.people.increment("Login", 1.0)
         val intent = Intent(this, InitActivity::class.java)
         startActivity(intent)
         finish()

@@ -19,8 +19,8 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.common.visible
-import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
+import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.feed.FeedPresenter
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
@@ -165,7 +165,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
 
     override fun showThought(thought: Thought) {
         if (adapter.thoughts.isNotEmpty()) {
-            var removedPosition = 0
+            var removedPosition: Int
             removedPosition = adapter.thoughts.size - 1
             adapter.thoughts.removeAt(removedPosition)
             adapter.notifyItemRemoved(removedPosition)

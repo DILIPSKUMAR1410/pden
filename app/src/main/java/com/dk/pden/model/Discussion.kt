@@ -8,7 +8,7 @@ import io.objectbox.relation.ToMany
 
 @Entity
 data class Discussion(@Json(ignored = true)
-                        var uuid: String) {
+                      var uuid: String) {
 
     constructor() : this("")
 

@@ -206,6 +206,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                                 user.isFollowed = true
                                                                 userBox.put(user)
                                                                 props.put("Success", true)
+                                                                mixpanel.people.increment("Borrow", 1.0)
                                                                 if (thoughts.isNotEmpty())
                                                                     EventBus.getDefault().post(NewThoughtsEvent(thoughts))
                                                             } else {
@@ -312,6 +313,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     props.put("Success", false)
 
                                 }
+                                mixpanel.people.increment("Borrow", -1.0)
                                 mixpanel.track("UnBorrow", props)
                                 mvpView?.setBorrowed(false)
                                 val intent = Intent(context, FeedActivity::class.java)

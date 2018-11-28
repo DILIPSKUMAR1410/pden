@@ -219,7 +219,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val pendingIntent = PendingIntent.getActivity(myFirebaseMessagingService, 0 /* Request code */, intent,
                     PendingIntent.FLAG_ONE_SHOT)
 
-            val channelId = "Pden"
+            val channelId = myFirebaseMessagingService.getString(R.string.default_notification_channel_id)
             val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val notificationBuilder = NotificationCompat.Builder(myFirebaseMessagingService, channelId)
                     .setSmallIcon(R.mipmap.ic_launcher)
