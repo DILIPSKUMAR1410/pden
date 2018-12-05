@@ -149,7 +149,10 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
                         .asReversed()
                         .filter { thought -> !thought.isComment }
                         as MutableList<Thought>)
-            else presenter.onRefresh(this, user!!, self)
+            else {
+                showLoading()
+                presenter.onRefresh(this, user!!, self)
+            }
         }
     }
 

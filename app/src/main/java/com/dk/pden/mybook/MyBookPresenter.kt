@@ -121,6 +121,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     }
                                     mvpView?.showThoughts(thoughts.asReversed())
                                     mvpView?.stopRefresh()
+                                    mvpView?.hideLoading()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
                                     Log.d("errorMsg", errorMsg)

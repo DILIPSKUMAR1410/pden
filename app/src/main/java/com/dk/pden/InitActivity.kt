@@ -1,9 +1,11 @@
 package com.dk.pden
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
@@ -32,11 +34,16 @@ class InitActivity : AppCompatActivity() {
     private lateinit var userBox: Box<User>
     var counter = 0
     var blockstack_id: String = ""
+    private lateinit var progressText: TextView
+    private lateinit var progressPercent: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_init)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        progressText = findViewById(R.id.progressText)
+        progressPercent = findViewById(R.id.progressPercent)
+        setProgressText("Refilling ink...")
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
@@ -44,7 +51,6 @@ class InitActivity : AppCompatActivity() {
             Log.d("errorMsg", options.toString())
 
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
-
             blockstackSession().getFile("pasand.json", options) { contentResult ->
                 var interests = JSONArray()
                 if (contentResult.hasValue) {
@@ -95,8 +101,12 @@ class InitActivity : AppCompatActivity() {
         finish()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun fetchBooks(interests: JSONArray, counter: Int) {
         val interest = interests.getString(counter)
+        val percent = (counter * 100) / interests.length()
+        setProgressText("Fetching $interest thoughts")
+        progressPercent.text = "$percent %"
         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
         val options = GetFileOptions(username = interest,
                 zoneFileLookupURL = zoneFileLookupUrl,
@@ -175,5 +185,13 @@ class InitActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    fun setProgressText(text: String) {
+        launch(UI) {
+            progressText.text = text
+        }
     }
 }

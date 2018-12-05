@@ -26,6 +26,7 @@ import org.greenrobot.eventbus.EventBus
 import org.json.JSONObject
 
 
+@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "NAME_SHADOWING")
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>
@@ -76,7 +77,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                     actual_owner.thoughts.add(thought)
                     if (!isComment) user!!.spreaded_thoughts.add(thought)
-                    userBox.put(actual_owner)
+                    thought.spreadBy.setAndPutTarget(user)
+                    userBox.run {
+                        put(user)
+                        put(actual_owner)
+                    }
                     props.put("New", false)
                 } else {
                     user!!.thoughts.add(thought)
