@@ -85,7 +85,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         decrypt = false)
                 thoughts = mutableListOf()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                    if (profileResult.hasValue) {
+                    val is_exist = profileResult.value?.json?.get("apps") as JSONObject
+                    if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                         user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                         user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
@@ -121,13 +122,10 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     }
                                     mvpView?.showThoughts(thoughts.asReversed())
                                     mvpView?.stopRefresh()
-                                    mvpView?.hideLoading()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
                                     Log.d("errorMsg", errorMsg)
-
                                 }
-
                             }
                         }
                     } else {
@@ -137,8 +135,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                     }
                 }
             }
-
-
+            mvpView?.hideLoading()
         }
 
     }
@@ -170,14 +167,18 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     if (readURLResult.hasValue) {
                                         val readURL = readURLResult.value!!
                                         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
-                                        var options = GetFileOptions(username = user.blockstackId,
+                                        val options = GetFileOptions(username = user.blockstackId,
                                                 zoneFileLookupURL = zoneFileLookupUrl,
                                                 app = "https://app.pden.xyz",
                                                 decrypt = false)
-                                        var thoughts = mutableListOf<Thought>()
+                                        val thoughts = mutableListOf<Thought>()
                                         launch(UI) {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                                                if (profileResult.hasValue) {
+                                                val is_exist = profileResult.value?.json?.get("apps") as JSONObject
+                                                if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
+                                                    val x = profileResult.value?.json?.get("apps") as JSONObject
+                                                    if (x.has("https://app.pden.xyz")) {
+                                                    }
                                                     user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                                                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                                                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"

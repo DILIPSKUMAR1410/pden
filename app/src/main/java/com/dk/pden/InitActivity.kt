@@ -22,6 +22,7 @@ import org.blockstack.android.sdk.GetFileOptions
 import org.blockstack.android.sdk.PutFileOptions
 import org.blockstack.android.sdk.Result
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URL
 
 /**
@@ -34,16 +35,13 @@ class InitActivity : AppCompatActivity() {
     private lateinit var userBox: Box<User>
     var counter = 0
     var blockstack_id: String = ""
-    private lateinit var progressText: TextView
     private lateinit var progressPercent: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_init)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        progressText = findViewById(R.id.progressText)
         progressPercent = findViewById(R.id.progressPercent)
-        setProgressText("Refilling ink...")
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
@@ -54,7 +52,7 @@ class InitActivity : AppCompatActivity() {
             blockstackSession().getFile("pasand.json", options) { contentResult ->
                 var interests = JSONArray()
                 if (contentResult.hasValue) {
-                    var content: String?
+                    val content: String?
                     if (contentResult.value is String) {
                         content = contentResult.value as String
                         if (content.isNotEmpty()) {
@@ -105,16 +103,16 @@ class InitActivity : AppCompatActivity() {
     private fun fetchBooks(interests: JSONArray, counter: Int) {
         val interest = interests.getString(counter)
         val percent = (counter * 100) / interests.length()
-        setProgressText("Fetching $interest thoughts")
-        progressPercent.text = "$percent %"
         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
         val options = GetFileOptions(username = interest,
                 zoneFileLookupURL = zoneFileLookupUrl,
                 app = "https://app.pden.xyz",
                 decrypt = false)
         launch(UI) {
+            progressPercent.text = "$percent %"
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                if (profileResult.hasValue) {
+                val is_exist = profileResult.value?.json?.get("apps") as JSONObject
+                if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                     val user: User
                     if (interest.equals(blockstack_id)) {
                         user = userBox.find(User_.blockstackId, blockstack_id).first()
@@ -185,13 +183,5 @@ class InitActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-
-    @SuppressLint("SetTextI18n")
-    fun setProgressText(text: String) {
-        launch(UI) {
-            progressText.text = text
-        }
     }
 }

@@ -15,12 +15,12 @@
         app:lottie_loop="true" />
 
     <TextView
-        android:id="@+id/progressText"
+        android:text="@string/init_msg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
         android:textAlignment="center"
-        android:textSize="15sp" />
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/progressPercent"

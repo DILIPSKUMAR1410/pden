@@ -8,7 +8,7 @@ apply plugin: 'com.google.gms.google-services'
 
 ext.versionMajor = 0
 ext.versionMinor = 1
-ext.versionPatch = 20
+ext.versionPatch = 23
 ext.versionClassifier = 'beta'
 ext.isSnapshot = true
 ext.minimumSdkVersion = 21
@@ -93,8 +93,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
-    implementation 'com.google.firebase:firebase-core:16.0.5'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.6'
+    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.7'
     implementation 'com.airbnb.android:lottie:2.7.0'
     implementation 'com.mixpanel.android:mixpanel-android:5.4.1'
     implementation 'com.google.android.gms:play-services-gcm:16.0.0'
