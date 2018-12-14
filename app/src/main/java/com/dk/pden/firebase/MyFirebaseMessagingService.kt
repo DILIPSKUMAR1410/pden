@@ -77,11 +77,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                     actual_owner.thoughts.add(thought)
                     if (!isComment) user!!.spreaded_thoughts.add(thought)
-                    thought.spreadBy.setAndPutTarget(user)
                     userBox.run {
-                        put(user)
+                        if (!isComment) put(user)
                         put(actual_owner)
                     }
+                    thought.spreadBy.setAndPutTarget(user)
                     props.put("New", false)
                 } else {
                     user!!.thoughts.add(thought)
