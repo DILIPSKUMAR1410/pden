@@ -1,5 +1,6 @@
 package com.dk.pden.common
 
+import android.annotation.SuppressLint
 import android.view.View
 import android.widget.ImageView
 import com.bumptech.glide.Glide
@@ -13,6 +14,7 @@ fun View.visible(show: Boolean = true) {
     this.visibility = if (show) View.VISIBLE else View.GONE
 }
 
+@SuppressLint("CheckResult")
 fun ImageView.loadAvatar(url: CharSequence?) {
     // TODO placeholder
     val options = RequestOptions()

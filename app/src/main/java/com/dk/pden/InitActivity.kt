@@ -120,7 +120,7 @@ class InitActivity : AppCompatActivity() {
                         user = User(interest)
                         user.isFollowed = true
                     }
-                    user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
+                    user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                     userBox.put(user)

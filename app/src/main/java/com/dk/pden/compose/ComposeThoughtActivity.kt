@@ -117,7 +117,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     val thought = Thought(getThought(), System.currentTimeMillis())
                     thought.isComment = isComment
                     rootObject.put("timestamp", thought.timestamp)
-                    rootObject.put("text", thought.text)
+                    rootObject.put("text", thought.textString)
                     rootObject.put("uuid", thought.uuid)
                     if (isComment) {
                         val conversation_id = intent.getStringExtra("uuid")

@@ -21,7 +21,7 @@ class ShelfUsersAdapter : RecyclerView.Adapter<ShelfUsersAdapter.UserViewHolder>
         val user = users[position]
 
         holder.profilePicImageView.loadAvatar(user.avatarImage)
-        holder.userNameTextView.text = user.name
+        holder.userNameTextView.text = user.nameString
         holder.screenNameTextView.text = "@${user.blockstackId}"
         holder.descriptionTextView.text = user.description
         holder.container.setOnClickListener {

@@ -50,8 +50,8 @@ class SearchUsersPresenter(private val textQuery: String) : BasePresenter<Search
 
                                 if (profile.has("description"))
                                     user.description = profile.get("description").toString().trim()
-                                if (profile.has("name"))
-                                    user.name = profile.get("name").toString().trim()
+                                if (profile.has("nameString"))
+                                    user.nameString = profile.get("nameString").toString().trim()
 
                                 users.add(user)
                             }

@@ -17,4 +17,5 @@
     <string name="search_hint">Search your friend</string>
     <string name="compose_hint">Pen your thoughts</string>
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="hint_enter_a_message">Hit enter</string>
 </resources>

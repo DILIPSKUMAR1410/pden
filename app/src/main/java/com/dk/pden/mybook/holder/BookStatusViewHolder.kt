@@ -26,7 +26,7 @@ open class BookStatusViewHolder(container: View, listener: BookInteractionListen
 
         val currentThought = thought
         val currentUser = user
-//        userNameTextView.text = currentUser.blockstackId
+//        userNameTextView.textString = currentUser.blockstackId
         userScreenNameTextView.text = "@${currentUser.blockstackId}"
         timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"
         userProfilePicImageView.loadAvatar(currentUser.avatarImage)
@@ -34,7 +34,7 @@ open class BookStatusViewHolder(container: View, listener: BookInteractionListen
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
         else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
-        statusTextView.text = currentThought.text
+        statusTextView.text = currentThought.textString
 
         threadImageButton.setImageResource(R.drawable.ic_thread)
         threadImageButton.setOnClickListener {

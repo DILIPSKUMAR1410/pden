@@ -1,6 +1,7 @@
 package com.dk.pden.model
 
 import com.beust.klaxon.Json
+import com.stfalcon.chatkit.commons.models.IMessage
 import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -9,9 +10,9 @@ import java.util.*
 
 @Entity
 data class Thought(@Json(name = "text")
-                   var text: String,
+                   var textString: String,
                    @Json(name = "timestamp")
-                   var timestamp: Long) {
+                   var timestamp: Long) : IMessage {
 
     constructor() : this("", 0)
 
@@ -34,5 +35,21 @@ data class Thought(@Json(name = "text")
 
     @Backlink(to = "discussion")
     lateinit var discussion: ToOne<Discussion>
+
+    override fun getId(): String {
+        return id.toString()
+    }
+
+    override fun getText(): String {
+        return textString
+    }
+
+    override fun getUser(): User {
+        return user.target
+    }
+
+    override fun getCreatedAt(): Date {
+        return Date(timestamp)
+    }
 
 }

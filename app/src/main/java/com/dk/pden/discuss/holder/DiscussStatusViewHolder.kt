@@ -22,11 +22,11 @@ open class DiscussStatusViewHolder(container: View, listener: DiscussInteraction
     @CallSuper
     override fun setup(thought: Thought) {
 
-//        userNameTextView.text = currentUser.blockstackId
+//        userNameTextView.textString = currentUser.blockstackId
         userScreenNameTextView.text = "@${thought.user.target.blockstackId}"
         timeTextView.text = " • ${Utils.formatDate(thought.timestamp)}"
         userProfilePicImageView.loadAvatar(thought.user.target.avatarImage)
-        statusTextView.text = thought.text
+        statusTextView.text = thought.textString
         userProfilePicImageView.setOnClickListener {
             listener.showUser(thought.user.target)
         }

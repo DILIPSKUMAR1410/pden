@@ -30,7 +30,7 @@ class App : Application() {
         mixpanel = MixpanelAPI.getInstance(this, MIXPANEL_TOKEN)
         mixpanel.identify(PreferencesHelper(this).blockstackId)
         mixpanel.people.identify(PreferencesHelper(this).blockstackId)
-        val name = "name"
+        val name = "nameString"
         mixpanel.people.set("$$name", PreferencesHelper(this).blockstackId)
 
     }

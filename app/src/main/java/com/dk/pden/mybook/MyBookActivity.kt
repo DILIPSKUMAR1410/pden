@@ -44,7 +44,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
             intent.putExtra(TAG_USER_blockstackId, user.blockstackId)
             intent.putExtra(TAG_USER_description, user.description)
             intent.putExtra(TAG_USER_avatarImage, user.avatarImage)
-            intent.putExtra(TAG_USER_name, user.name)
+            intent.putExtra(TAG_USER_name, user.nameString)
             context.startActivity(intent)
 
         }
@@ -94,7 +94,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         if (user == null) {
             user = User(blockstack_id)
             user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
-            user!!.name = intent.getStringExtra(TAG_USER_name)
+            user!!.nameString = intent.getStringExtra(TAG_USER_name)
             user!!.description = intent.getStringExtra(TAG_USER_description)
         } else if (my_blockstack_id.equals(blockstack_id)) {
             self = true
@@ -116,7 +116,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         }
 
         tcountvalue.text = user!!.thoughts.size.toString()
-        name.text = if (user!!.name.isNotEmpty()) user!!.name else ""
+        name.text = if (user!!.nameString.isNotEmpty()) user!!.nameString else ""
         blockstack_name.text = user!!.blockstackId
         about_me.text = if (user!!.description.isNotEmpty()) user!!.description else ""
         avatar.loadAvatar(user!!.avatarImage)

@@ -8,7 +8,6 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.MenuItem
 import android.widget.ProgressBar
 import com.dk.pden.App.Constants.mixpanel
@@ -19,15 +18,10 @@ import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.discuss.holder.DiscussInteractionListener
-import com.dk.pden.events.NewCommentEvent
-import com.dk.pden.events.RemoveThoughtsEvent
 import com.dk.pden.feed.DiscussMvpView
 import com.dk.pden.model.*
 import com.dk.pden.mybook.MyBookActivity
 import io.objectbox.Box
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 
 class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionListener {
@@ -163,34 +157,34 @@ class DiscussActivity : AppCompatActivity(), DiscussMvpView, DiscussInteractionL
     override fun updateRecyclerViewView() {
         adapter.notifyDataSetChanged()
     }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    fun onAddEvent(event: NewCommentEvent) {
+//        /* Do something */
+//        if (event.thoughts.size > 1)
+//            showMoreMyThoughts(event.thoughts)
+//        else
+//            showThought(event.thoughts[0])
+//    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    fun onRemoveEvent(event: RemoveThoughtsEvent) {
+//        /* Do something */
+//        removeThoughts(event.thoughts)
+//
+//    }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onAddEvent(event: NewCommentEvent) {
-        /* Do something */
-        if (event.thoughts.size > 1)
-            showMoreMyThoughts(event.thoughts)
-        else
-            showThought(event.thoughts[0])
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onRemoveEvent(event: RemoveThoughtsEvent) {
-        /* Do something */
-        removeThoughts(event.thoughts)
-
-    }
-
-    public override fun onStart() {
-        super.onStart()
-        Log.d("Eventbus -->>", "regiser")
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-
-    }
-
-    public override fun onStop() {
-        super.onStop()
-        mixpanel.track("Discuss");
-    }
+//    public override fun onStart() {
+//        super.onStart()
+//        Log.d("Eventbus -->>", "regiser")
+//        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
+//
+//    }
+//
+//    public override fun onStop() {
+//        super.onStop()
+//        mixpanel.track("Discuss");
+//    }
 
     override fun showUser(user: User) {
         MyBookActivity.launch(this, user)

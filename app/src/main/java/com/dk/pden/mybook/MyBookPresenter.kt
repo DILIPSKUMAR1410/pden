@@ -66,7 +66,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                             i++
                         }
                         thoughtBox.query().run {
-                            equal(Thought_.userId, user.id)
+                            equal(Thought_.userId, user.pk)
                             build().remove()
                         }
                         user.thoughts.addAll(thoughts)
@@ -87,7 +87,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     val is_exist = profileResult.value?.json?.get("apps") as JSONObject
                     if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
-                        user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
+                        user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                         user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                         userBox.put(user)
@@ -114,7 +114,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     Log.d("thoughts -> Mybook open", my_book.toString())
                                     if (!userBox.find(User_.blockstackId, user.blockstackId).isEmpty()) {
                                         thoughtBox.query().run {
-                                            equal(Thought_.userId, user.id)
+                                            equal(Thought_.userId, user.pk)
                                             build().remove()
                                         }
                                         user.thoughts.addAll(thoughts)
@@ -179,7 +179,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                     val x = profileResult.value?.json?.get("apps") as JSONObject
                                                     if (x.has("https://app.pden.xyz")) {
                                                     }
-                                                    user.name = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
+                                                    user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                                                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                                                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
                                                     userBox.put(user)
@@ -306,7 +306,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                     userBox = ObjectBox.boxStore.boxFor(User::class.java)
                                     thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
                                     thoughtBox.remove(user.thoughts)
-                                    userBox.remove(user.id)
+                                    userBox.remove(user.pk)
                                     if (user.thoughts.isNotEmpty())
                                         EventBus.getDefault().post(RemoveThoughtsEvent(user.thoughts))
                                     props.put("Success", true)

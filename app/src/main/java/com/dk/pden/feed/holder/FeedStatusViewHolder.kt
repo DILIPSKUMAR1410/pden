@@ -39,7 +39,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
 
-//        userNameTextView.text = currentUser.blockstackId
+//        userNameTextView.textString = currentUser.blockstackId
         userScreenNameTextView.text = "@${thought.user.target.blockstackId}"
         timeTextView.text = " • ${Utils.formatDate(thought.timestamp)}"
         userProfilePicImageView.loadAvatar(thought.user.target.avatarImage)
@@ -50,7 +50,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         threadImageButton.setOnClickListener {
             listener.showThread(thought)
         }
-        statusTextView.text = thought.text
+        statusTextView.text = thought.textString
 
 
         spreadImageButton.setOnClickListener {

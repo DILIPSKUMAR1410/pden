@@ -44,7 +44,7 @@ open class FeedPresenter : BasePresenter<DiscussMvpView>() {
         val props = JSONObject()
 
         rootObject.addProperty("timestamp", thought.timestamp)
-        rootObject.addProperty("text", thought.text)
+        rootObject.addProperty("text", thought.textString)
         rootObject.addProperty("actual_owner", thought.user.target.blockstackId)
         rootObject.addProperty("uuid", thought.uuid)
 

@@ -229,7 +229,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val notificationBuilder = NotificationCompat.Builder(myFirebaseMessagingService, channelId)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle(thought.user.target.blockstackId + " posted new thought")
-                    .setContentText(thought.text)
+                    .setContentText(thought.textString)
                     .setAutoCancel(true)
                     .setSound(defaultSoundUri)
                     .setContentIntent(pendingIntent)

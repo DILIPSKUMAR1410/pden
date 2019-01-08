@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         val user = User(userData.json.getString("username"))
-        user.name = if (userData.profile?.name != null) userData.profile?.name!! else ""
+        user.nameString = if (userData.profile?.name != null) userData.profile?.name!! else ""
         user.description = if (userData.profile?.description != null) userData.profile?.description!! else ""
         user.email = if (userData.profile?.email != null) userData.profile?.email!! else ""
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
