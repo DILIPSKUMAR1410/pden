@@ -19,7 +19,7 @@ import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
 import com.dk.pden.custom.decorators.SpaceTopItemDecoration
-import com.dk.pden.discuss.Discuss2Activity
+import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
 import com.dk.pden.feed.holder.FeedInteractionListener
@@ -255,7 +255,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     override fun showThread(thought: Thought) {
-        Discuss2Activity.launch(this, thought.uuid)
+        DiscussActivity.launch(this, thought.uuid)
     }
 
 }

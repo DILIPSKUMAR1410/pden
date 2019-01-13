@@ -13,6 +13,7 @@ class App : Application() {
     companion object Constants {
         const val TAG = "ObjectBox"
         val MIXPANEL_TOKEN = "5755beb7f2e098e15d6144fe1530f8f7"
+
         @SuppressLint("StaticFieldLeak")
         lateinit var mixpanel: MixpanelAPI
     }
@@ -22,7 +23,6 @@ class App : Application() {
         ObjectBox.build(this)
         Fabric.with(this, Crashlytics())
 
-
         // Initialize the library with your
         // Mixpanel project token, MIXPANEL_TOKEN, and a reference
         // to your application context.
@@ -30,7 +30,7 @@ class App : Application() {
         mixpanel = MixpanelAPI.getInstance(this, MIXPANEL_TOKEN)
         mixpanel.identify(PreferencesHelper(this).blockstackId)
         mixpanel.people.identify(PreferencesHelper(this).blockstackId)
-        val name = "nameString"
+        val name = "name"
         mixpanel.people.set("$$name", PreferencesHelper(this).blockstackId)
 
     }

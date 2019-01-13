@@ -13,11 +13,13 @@ import android.util.Log
 import com.dk.pden.App
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
+import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.*
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -60,9 +62,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // Check if message contains a data payload.
         remoteMessage?.data?.isNotEmpty()?.let {
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
-            val topic = remoteMessage.from?.removePrefix("/topics/")
+            var topic = remoteMessage.from?.removePrefix("/topics/")
+
             val user = userBox.find(User_.blockstackId, topic).firstOrNull()
-            val isComment = user == null
+            var isComment = false
+            if (remoteMessage.data.containsKey("isComment") and remoteMessage.data.containsKey("topicId")) {
+                isComment = true
+                topic = remoteMessage.data.get("topicId")
+            }
             val thought = thoughtBox.find(Thought_.uuid, remoteMessage.data.get("uuid"))
             if (thought.isEmpty()) {
                 val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
@@ -108,7 +115,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     if (assert_conversation.isEmpty()) {
                         discussion = Discussion(topic!!)
                         // [START subscribe_topics]
-                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + topic)
+                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/$topic")
                         // [END subscribe_topics]
                     } else
                         discussion = assert_conversation.first()
@@ -118,6 +125,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 thought.discussion.setAndPutTarget(discussion)
                 discussion.thoughts.add(thought)
                 discussionBox.put(discussion)
+
                 val isSelf = discussion.thoughts.hasA { thought ->
                     thought.user.target.isSelf
                 }
@@ -200,6 +208,29 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
      */
     private fun sendRegistrationToServer(token: String?) {
         // TODO: Implement this method to send token to your app server.
+
+        // Get a instance of PreferencesHelper class
+        val preferencesHelper = PreferencesHelper(this)
+        // save token on preferences
+        preferencesHelper.registration_id = token
+
+        if (PreferencesHelper(this).blockstackId.isNotEmpty()) {
+            // Create a new comment
+            val users = HashMap<String, String?>()
+            users["registration_id"] = token
+            val db = FirebaseFirestore.getInstance()
+
+            // Add a new document with a generated ID
+            db.collection("users")
+                    .document(PreferencesHelper(this).blockstackId)
+                    .set(users as Map<*, *>)
+                    .addOnSuccessListener { documentReference ->
+                        Log.d(TAG, "DocumentSnapshot written with ID: $documentReference")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(TAG, "Error adding document", e)
+                    }
+        }
     }
 
     companion object {
@@ -210,6 +241,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
          *
          * @param messageBody FCM message body received.
          */
+
         private fun sendNotification(myFirebaseMessagingService: MyFirebaseMessagingService, thought: Thought) {
             val intent: Intent
 

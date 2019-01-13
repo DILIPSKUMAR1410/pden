@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
@@ -18,9 +17,11 @@ import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
-import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
-import com.dk.pden.model.*
+import com.dk.pden.model.Discussion
+import com.dk.pden.model.Thought
+import com.dk.pden.model.User
+import com.dk.pden.model.User_
 import com.google.firebase.messaging.FirebaseMessaging
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
@@ -40,13 +41,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     private lateinit var loadingProgressBar: ProgressBar
 
     companion object {
-        var isComment: Boolean = false
-        fun launch(context: Context, uuid: String) {
-            val intent = Intent(context, ComposeThoughtActivity::class.java)
-            intent.putExtra("uuid", uuid)
-            context.startActivity(intent)
-        }
-
         fun launch(context: Context) {
             val intent = Intent(context, ComposeThoughtActivity::class.java)
             context.startActivity(intent)
@@ -56,12 +50,11 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_compose)
-        isComment = intent.hasExtra("uuid")
 
         // Get the support action bar
         val actionBar = supportActionBar
 
-        if (isComment) actionBar!!.title = "Comment" else actionBar!!.title = "Compose"
+        actionBar!!.title = "Compose"
 
         // Set the action bar title, subtitle and elevation
         actionBar.elevation = 4.0F
@@ -115,94 +108,65 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     val blockstack_id = PreferencesHelper(this).blockstackId
                     val user = userBox.find(User_.blockstackId, blockstack_id).first()
                     val thought = Thought(getThought(), System.currentTimeMillis())
-                    thought.isComment = isComment
+                    thought.isComment = false
                     rootObject.put("timestamp", thought.timestamp)
                     rootObject.put("text", thought.textString)
                     rootObject.put("uuid", thought.uuid)
-                    if (isComment) {
-                        val conversation_id = intent.getStringExtra("uuid")
-                        var conversation = discussionBox.find(Discussion_.uuid, conversation_id).firstOrNull()
-                        if (conversation == null) {
-                            conversation = Discussion(conversation_id)
-                            // [START subscribe_topics]
-                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
-                            // [END subscribe_topics]
-                        }
-                        user.thoughts.add(thought)
-                        userBox.put(user)
-                        conversation.thoughts.add(thought)
-                        discussionBox.put(conversation)
-                        rootObject.put("actual_owner", blockstack_id)
-                        presenter.sendThought(conversation_id, rootObject)
-                        val mutableList: MutableList<Thought> = ArrayList()
-                        mutableList.add(thought)
-                        if (mutableList.isNotEmpty())
-                            EventBus.getDefault().post(NewCommentEvent(mutableList))
-                        close()
-                        props.put("Success", true)
-                        mixpanel.track("Comment", props)
-                        mixpanel.people.increment("Comment", 1.0)
-                    } else {
-                        var my_book = JSONArray()
-                        _blockstackSession = BlockstackSession(this, Utils.config
-                        ) {
-                            // Wait until this callback fires before using any of the
-                            // BlockstackSession API methods
-                            val options_get = GetFileOptions(false)
-                            blockstackSession().getFile("kitab141.json", options_get) { contentResult ->
-                                if (contentResult.hasValue) {
-                                    val content: Any
-                                    if (contentResult.value is String) {
-                                        content = contentResult.value as String
-                                        if (content.isNotEmpty()) {
-                                            my_book = JSONArray(content)
-                                        }
+                    var my_book = JSONArray()
+                    _blockstackSession = BlockstackSession(this, Utils.config
+                    ) {
+                        // Wait until this callback fires before using any of the
+                        // BlockstackSession API methods
+                        val options_get = GetFileOptions(false)
+                        blockstackSession().getFile("kitab141.json", options_get) { contentResult ->
+                            if (contentResult.hasValue) {
+                                val content: Any
+                                if (contentResult.value is String) {
+                                    content = contentResult.value as String
+                                    if (content.isNotEmpty()) {
+                                        my_book = JSONArray(content)
                                     }
-                                    Log.d("old content", my_book.toString())
-                                    my_book.put(rootObject)
-                                    Log.d("Final content", my_book.toString())
-                                    val options_put = PutFileOptions(false)
-                                    runOnUiThread {
-                                        blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
-                                        { readURLResult ->
-                                            if (readURLResult.hasValue) {
-                                                user.thoughts.add(thought)
-                                                // [START subscribe_topics]
-                                                FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
-                                                        .addOnCompleteListener { _ ->
-                                                            userBox.put(user)
-                                                            var conversation = Discussion(thought.uuid)
-                                                            conversation.thoughts.add(thought)
-                                                            discussionBox.put(conversation)
-                                                            presenter.sendThought(blockstack_id, rootObject)
-                                                            val mutableList: MutableList<Thought> = ArrayList()
-                                                            mutableList.add(thought)
-                                                            if (mutableList.isNotEmpty())
-                                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                                                            close()
-                                                        }
-                                                // [END subscribe_topics]
-                                            } else {
-                                                props.put("Success", false)
-                                                Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
-                                            }
-                                            props.put("Success", true)
-                                            mixpanel.track("Post", props)
-                                            mixpanel.people.increment("Post", 1.0)
-
-                                        }
-                                    }
-
-                                } else {
-                                    props.put("Success", false)
-                                    mixpanel.track("Post", props)
-                                    Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                                 }
+                                my_book.put(rootObject)
+                                val options_put = PutFileOptions(false)
+                                runOnUiThread {
+                                    blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
+                                    { readURLResult ->
+                                        if (readURLResult.hasValue) {
+                                            user.thoughts.add(thought)
+                                            // [START subscribe_topics]
+                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+                                                    .addOnCompleteListener { _ ->
+                                                        userBox.put(user)
+                                                        val conversation = Discussion(thought.uuid)
+                                                        conversation.thoughts.add(thought)
+                                                        discussionBox.put(conversation)
+                                                        presenter.sendThought(blockstack_id, rootObject)
+                                                        val mutableList: MutableList<Thought> = ArrayList()
+                                                        mutableList.add(thought)
+                                                        if (mutableList.isNotEmpty())
+                                                            EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                                                        close()
+                                                    }
+                                            // [END subscribe_topics]
+                                        } else {
+                                            props.put("Success", false)
+                                            Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                        }
+                                        props.put("Success", true)
+                                        mixpanel.track("Post", props)
+                                        mixpanel.people.increment("Post", 1.0)
+
+                                    }
+                                }
+
+                            } else {
+                                props.put("Success", false)
+                                mixpanel.track("Post", props)
+                                Toast.makeText(this, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                             }
                         }
-
                     }
-
                 }
             }
         } else {
