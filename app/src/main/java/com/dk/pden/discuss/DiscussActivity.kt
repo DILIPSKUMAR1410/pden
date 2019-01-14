@@ -167,6 +167,8 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         menu?.clear()
         menu = cmenu
         menuInflater.inflate(R.menu.menu_discussion, menu)
+        menu?.findItem(R.id.action_public)?.isVisible = false
+        menu?.findItem(R.id.selected_count)?.isVisible = false
         onSelectionChanged(0)
         return true
     }
