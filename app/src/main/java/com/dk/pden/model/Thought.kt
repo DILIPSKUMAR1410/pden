@@ -31,6 +31,8 @@ data class Thought(@Json(name = "text")
 
     var isSpread: Boolean = false
 
+    var isApproved: Boolean = false
+
     var isComment: Boolean = false
 
     @Backlink(to = "discussion")

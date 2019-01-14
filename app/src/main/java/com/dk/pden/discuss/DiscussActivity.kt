@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -73,15 +74,25 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         imageLoader = ImageLoader { imageView, url, _ -> imageView.loadAvatar(url) }
 
 
+        uuid = intent.getStringExtra("uuid")
+
+
+        //We can pass any data to ViewHolder with payload
+        val payload = CustomIncomingTextMessageViewHolder.Payload();
+        //For example click listener
+        payload.iamAdmin = thoughtBox.find(Thought_.uuid, uuid).first().user.targetId == user.pk
+
+
         val holdersConfig = MessageHolders()
                 .setIncomingTextConfig(
                         CustomIncomingTextMessageViewHolder::class.java,
                         R.layout.item_custom_incoming_text_message,
-                        null)
+                        payload)
         adapter = MessagesListAdapter(blockstack_id, holdersConfig, imageLoader)
-        adapter.enableSelectionMode(this)
+        if (payload.iamAdmin) {
+            adapter.enableSelectionMode(this)
+        }
         messagesList.setAdapter(adapter)
-        uuid = intent.getStringExtra("uuid")
         val conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
         if (conversation == null) {
             adapter.addToEnd(thoughtBox.find(Thought_.uuid, uuid), true)
@@ -93,8 +104,18 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     }
 
     override fun onSelectionChanged(count: Int) {
-        selectionCount = count
-        menu?.findItem(R.id.action_public)?.isVisible = count > 0
+        val v = adapter.selectedMessages.map { it.id }
+        if (adapter.selectedMessages.isNotEmpty()) {
+            adapter.selectedMessages.forEach { x ->
+                if (!x.isApproved and !x.user.target.isSelf) {
+                    selectionCount = +1
+                } else
+                    adapter.selectedMessages.removeAt(v.indexOf(x.id))
+            }
+            menu?.findItem(R.id.action_public)?.isVisible = selectionCount > 0
+            menu?.findItem(R.id.selected_count)?.isVisible = selectionCount > 0
+            menu?.findItem(R.id.selected_count)?.title = selectionCount.toString()
+        }
     }
 
     override fun onSubmit(input: CharSequence): Boolean {
@@ -153,21 +174,29 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_public -> {
-                val docsref = db.collection("thoughts").document(uuid).collection("discussion")
-                docsref.get()
-                        .addOnSuccessListener { result ->
-                            for (document in result) {
-                                if (document.data["uuid"] in adapter.selectedMessages.map { it.uuid }) {
-                                    Log.d(TAG, document.id + " => " + document.data["uuid"])
-                                    document.data["isApproved"] = true
-                                    docsref.document(document.id)
-                                            .update("isApproved", true)
+                if (adapter.selectedMessages.size > 0) {
+                    val docsref = db.collection("thoughts").document(uuid).collection("discussion")
+                    docsref.get()
+                            .addOnSuccessListener { result ->
+                                var count = 0
+                                for (document in result) {
+                                    val comment = thoughtBox.find(Thought_.uuid, document.data["uuid"].toString()).firstOrNull()
+                                    if (document.data["uuid"] in adapter.selectedMessages.map { it.uuid } && !comment?.isApproved!!) {
+                                        docsref.document(document.id)
+                                                .update("isApproved", true)
+                                        comment.isApproved = true
+                                        thoughtBox.put(comment)
+                                        adapter.update(comment)
+                                        count = +1
+                                    }
                                 }
+                                Toast.makeText(this, count.toString() + " comments made public", Toast.LENGTH_SHORT).show()
                             }
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.d(TAG, "Error getting documents: ", exception)
-                        }
+                            .addOnFailureListener { exception ->
+                                Log.d(TAG, "Error getting documents: ", exception)
+                            }
+                } else
+                    Toast.makeText(this, "Select some private comments you want to make public", Toast.LENGTH_SHORT).show()
             }
         }
         return true

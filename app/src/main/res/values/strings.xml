@@ -19,4 +19,5 @@
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="hint_enter_a_message">Hit enter</string>
     <string name="make_public">Make public</string>
+    <string name="selected_count">selected_count</string>
 </resources>
