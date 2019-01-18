@@ -147,7 +147,7 @@ class InitActivity : AppCompatActivity() {
 
                                         if (!user.isSelf) {
                                             // [START subscribe_topics]
-                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + interest)
+                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/$interest")
                                                     .addOnCompleteListener {
                                                         if (counter == interests.length() - 1)
                                                             close()

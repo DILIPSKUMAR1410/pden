@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import com.dk.pden.App
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -26,6 +27,7 @@ import kotlinx.android.synthetic.main.activity_discuss2.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.json.JSONObject
 
 
 class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListener, MessageInput.InputListener,
@@ -61,7 +63,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         val actionBar = supportActionBar
 
         // Set the action bar title, subtitle and elevation
-        actionBar!!.title = "Discuss (v0.1)"
+        actionBar!!.title = "Discuss (v0.2)"
         actionBar.elevation = 4.0F
         actionBar.setDisplayHomeAsUpEnabled(true)
         blockstack_id = PreferencesHelper(this).blockstackId
@@ -93,35 +95,62 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
             adapter.enableSelectionMode(this)
         }
         messagesList.setAdapter(adapter)
-        val conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
+        var conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
         if (conversation == null) {
-            adapter.addToEnd(thoughtBox.find(Thought_.uuid, uuid), true)
+            conversation = Discussion(uuid)
+            val docsref = db.collection("thoughts").document(uuid).collection("discussion")
+            docsref.get()
+                    .addOnSuccessListener { result ->
+                        val actual_owners = mutableListOf<User>()
+                        for (document in result) {
+                            var thought: Thought
+
+                            if (document.data.containsKey("uuid")) {
+                                thought = Thought(document.data["text"] as String, document.data["timestamp"].toString().toLong())
+                                thought.uuid = document.data["uuid"] as String
+                                thought.isComment = true
+                                var actual_owner = userBox.find(User_.blockstackId, document.data["actual_owner"] as String).firstOrNull()
+                                if (actual_owner == null) {
+                                    actual_owner = User(document.data["actual_owner"] as String)
+                                    actual_owner.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                                }
+                                actual_owner.thoughts.add(thought)
+                                actual_owners.add(actual_owner)
+                            } else {
+                                thought = thoughtBox.find(Thought_.uuid, uuid).first()
+                            }
+                            conversation.thoughts.add(thought)
+
+                        }
+                        userBox.put(actual_owners)
+                        discussionBox.put(conversation)
+                        adapter.addToEnd(conversation.thoughts, true)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.d(TAG, "Error getting documents: ", exception)
+                    }
         } else
             adapter.addToEnd(conversation.thoughts, true)
+
+
 
         input.setInputListener(this)
         input.setTypingListener(this)
     }
 
     override fun onSelectionChanged(count: Int) {
-        val v = adapter.selectedMessages.map { it.id }
-        if (adapter.selectedMessages.isNotEmpty()) {
-            adapter.selectedMessages.forEach { x ->
-                if (!x.isApproved and !x.user.target.isSelf) {
-                    selectionCount = +1
-                } else
-                    adapter.selectedMessages.removeAt(v.indexOf(x.id))
-            }
-            menu?.findItem(R.id.action_public)?.isVisible = selectionCount > 0
-            menu?.findItem(R.id.selected_count)?.isVisible = selectionCount > 0
-            menu?.findItem(R.id.selected_count)?.title = selectionCount.toString()
-        }
+        this.selectionCount = count;
+        menu?.findItem(R.id.selected_count)?.title = selectionCount.toString()
+        menu?.findItem(R.id.action_public)?.isVisible = selectionCount > 0
+        menu?.findItem(R.id.selected_count)?.isVisible = selectionCount > 0
+
     }
 
     override fun onSubmit(input: CharSequence): Boolean {
 
         val thought = Thought(input.toString(), System.currentTimeMillis())
         thought.isComment = true
+        val props = JSONObject()
 
         // Create a new comment
         val comment = HashMap<String, Any>()
@@ -147,12 +176,17 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         // Add a new document with a generated ID
         db.collection("thoughts").document(uuid).collection("discussion")
                 .add(comment)
-                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+                .addOnSuccessListener {
+                    Log.d(TAG, "DocumentSnapshot successfully written!")
+                    props.put("Success", true)
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Error writing document", e)
+                    props.put("Failure", true)
+                }
 
-//        props.put("Success", true)
-//        App.mixpanel.track("Comment", props)
-//        App.mixpanel.people.increment("Comment", 1.0)
+        App.mixpanel.track("Comment", props)
+        App.mixpanel.people.increment("Comment", 1.0)
         return true
     }
 
@@ -174,33 +208,46 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_public -> {
-                if (adapter.selectedMessages.size > 0) {
-                    val docsref = db.collection("thoughts").document(uuid).collection("discussion")
-                    docsref.get()
-                            .addOnSuccessListener { result ->
-                                var count = 0
-                                for (document in result) {
-                                    val comment = thoughtBox.find(Thought_.uuid, document.data["uuid"].toString()).firstOrNull()
-                                    if (document.data["uuid"] in adapter.selectedMessages.map { it.uuid } && !comment?.isApproved!!) {
-                                        docsref.document(document.id)
-                                                .update("isApproved", true)
-                                        comment.isApproved = true
-                                        thoughtBox.put(comment)
-                                        adapter.update(comment)
-                                        count = +1
+        if (item.itemId == R.id.action_public) {
+            when (item.itemId) {
+                R.id.action_public -> {
+                    val y = ArrayList<Thought>()
+                    adapter.selectedMessages.forEach { x ->
+                        if (!x.isApproved and !x.user.target.isSelf) {
+                            y.add(x)
+                        }
+                    }
+                    val uuids = y.map { it -> it.uuid }
+                    if (uuids.isNotEmpty()) {
+                        val docsref = db.collection("thoughts").document(uuid).collection("discussion")
+                        docsref.get()
+                                .addOnSuccessListener { result ->
+                                    var count = 0
+                                    for (document in result) {
+                                        val comment = thoughtBox.find(Thought_.uuid, document.data["uuid"].toString()).firstOrNull()
+                                        if (document.data["uuid"] in uuids && !comment?.isApproved!!) {
+                                            docsref.document(document.id)
+                                                    .update("isApproved", true)
+                                            comment.isApproved = true
+                                            thoughtBox.put(comment)
+                                            adapter.update(comment)
+                                            count += 1
+                                        }
                                     }
+                                    Toast.makeText(this, count.toString() + " comment/s made public", Toast.LENGTH_SHORT).show()
                                 }
-                                Toast.makeText(this, count.toString() + " comments made public", Toast.LENGTH_SHORT).show()
-                            }
-                            .addOnFailureListener { exception ->
-                                Log.d(TAG, "Error getting documents: ", exception)
-                            }
-                } else
-                    Toast.makeText(this, "Select some private comments you want to make public", Toast.LENGTH_SHORT).show()
+                                .addOnFailureListener { exception ->
+                                    Log.d(TAG, "Error getting documents: ", exception)
+                                }
+                    } else
+                        Toast.makeText(this, "Select some private comments you want to make public", Toast.LENGTH_SHORT).show()
+                    adapter.unselectAllItems()
+                }
             }
+        } else {
+            close()
         }
+
         return true
     }
 
@@ -212,7 +259,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
 
     public override fun onStop() {
         super.onStop()
-//        App.mixpanel.track("Discuss");
+        App.mixpanel.track("Discuss");
     }
 
     fun close() {
@@ -226,6 +273,5 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     override fun onStopTyping() {
         Log.v("Typing listener", ">>>")
     }
-
 
 }

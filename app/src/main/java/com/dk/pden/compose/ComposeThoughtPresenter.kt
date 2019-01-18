@@ -45,14 +45,11 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         val comment = HashMap<String, Any>()
         comment["timestamp"] = rootObject!!.getString("timestamp")
         comment["text"] = rootObject.getString("text")
+        comment["actual_owner"] = topic
+        comment["uuid"] = rootObject.getString("uuid")
+
         val admin = HashMap<String, Any>()
         admin["admin"] = topic
-
-        if (rootObject.has("actual_owner")) {
-            dataobj.addProperty("actual_owner", rootObject.getString("actual_owner"))
-            comment["actual_owner"] = rootObject.getString("actual_owner")
-
-        }
 
         envelopeObject.addProperty("to", "/topics/$topic")
         envelopeObject.addProperty("priority", "high")
