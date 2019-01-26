@@ -109,6 +109,8 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 thought = Thought(document.data["text"] as String, document.data["timestamp"].toString().toLong())
                                 thought.uuid = document.data["uuid"] as String
                                 thought.isComment = true
+                                if (document.data.containsKey("isApproved"))
+                                    thought.isApproved = document.data["isApproved"] as Boolean
                                 var actual_owner = userBox.find(User_.blockstackId, document.data["actual_owner"] as String).firstOrNull()
                                 if (actual_owner == null) {
                                     actual_owner = User(document.data["actual_owner"] as String)
@@ -124,13 +126,13 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                         }
                         userBox.put(actual_owners)
                         discussionBox.put(conversation)
-                        adapter.addToEnd(conversation.thoughts, true)
+                        adapter.addToEnd(conversation.thoughts.sortedByDescending { it -> it.timestamp }, false)
                     }
                     .addOnFailureListener { exception ->
                         Log.d(TAG, "Error getting documents: ", exception)
                     }
         } else
-            adapter.addToEnd(conversation.thoughts, true)
+            adapter.addToEnd(conversation.thoughts.sortedByDescending { it -> it.timestamp }, false)
 
 
 

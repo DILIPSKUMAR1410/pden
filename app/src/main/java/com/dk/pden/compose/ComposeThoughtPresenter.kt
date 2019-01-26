@@ -45,8 +45,6 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         val comment = HashMap<String, Any>()
         comment["timestamp"] = rootObject!!.getString("timestamp")
         comment["text"] = rootObject.getString("text")
-        comment["actual_owner"] = topic
-        comment["uuid"] = rootObject.getString("uuid")
 
         val admin = HashMap<String, Any>()
         admin["admin"] = topic
