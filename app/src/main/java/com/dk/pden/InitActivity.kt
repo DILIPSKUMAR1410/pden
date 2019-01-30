@@ -59,6 +59,9 @@ class InitActivity : AppCompatActivity() {
                             interests = JSONArray(content)
                             blockstack_id = PreferencesHelper(this).blockstackId
                             interests.put(blockstack_id)
+                            // Default borrowed handles
+                            interests.put("cryptoupdates.id.blockstack")
+                            interests.put("scienceandtech.id.blockstack")
                             if (interests.length() > 0)
                                 fetchBooks(interests, counter)
                             else
