@@ -5,10 +5,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.ProgressBar
 import android.widget.Toast
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils.config
+import com.dk.pden.common.visible
 import com.dk.pden.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import io.objectbox.Box
@@ -20,11 +22,14 @@ class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var userBox: Box<User>
     private var _blockstackSession: BlockstackSession? = null
+    private lateinit var loadingProgressBar: ProgressBar
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         signInButton.isEnabled = false
+        loadingProgressBar = findViewById(R.id.loadingProgressBar)
 
 
         _blockstackSession = BlockstackSession(this, config,
@@ -49,7 +54,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onSignIn(userData: UserData) {
-        signInButton.isEnabled = false
         // Get a instance of PreferencesHelper class
         val preferencesHelper = PreferencesHelper(this)
         // save token on preferences
@@ -88,6 +92,8 @@ class MainActivity : AppCompatActivity() {
         mixpanel.identify(user.blockstackId)
         mixpanel.people.identify(user.blockstackId)
         mixpanel.people.increment("Login", 1.0)
+        loadingProgressBar.visible(false)
+
         val intent = Intent(this, InitActivity::class.java)
         startActivity(intent)
         finish()
@@ -97,6 +103,8 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         Log.d(TAG, "onNewIntent")
+        signInButton.isEnabled = false
+        loadingProgressBar.visible()
 
         if (intent?.action == Intent.ACTION_MAIN) {
             blockstackSession().loadUserData { userData ->

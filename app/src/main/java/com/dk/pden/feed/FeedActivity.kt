@@ -1,12 +1,15 @@
 package com.dk.pden.feed
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
@@ -32,6 +35,8 @@ import com.dk.pden.search.SearchActivity
 import com.dk.pden.search.ShelfActivity
 import io.objectbox.Box
 import io.objectbox.query.QueryBuilder
+import me.toptas.fancyshowcase.FancyShowCaseQueue
+import me.toptas.fancyshowcase.FancyShowCaseView
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -116,6 +121,57 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
             override fun onQueryTextChange(s: String) = false
         })
 
+        Handler().postDelayed(
+                {
+                    val fancyShowCaseView0 = FancyShowCaseView.Builder(this)
+                            .title("Compose")
+                            .focusOn(floatingActionButton)
+                            .titleStyle(R.style.MyTitleStyle, Gravity.CENTER)
+                            .showOnce("Compose")
+                            .build()
+                    val fancyShowCaseView1 = FancyShowCaseView.Builder(this)
+                            .focusOn(findViewById(R.id.myBook)) // ActionBar menu item id
+                            .title("Book")
+                            .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
+                            .showOnce("Book")
+                            .build()
+                    val fancyShowCaseView2 = FancyShowCaseView.Builder(this)
+                            .focusOn(findViewById(R.id.myShelf)) // ActionBar menu item id
+                            .title("Shelf")
+                            .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
+                            .showOnce("Shelf")
+                            .build()
+                    val fancyShowCaseView3 = FancyShowCaseView.Builder(this)
+                            .focusOn(findViewById(R.id.action_search)) // ActionBar menu item id
+                            .title("Search")
+                            .titleStyle(R.style.MyTitleStyle, Gravity.FILL )
+                            .showOnce("Search")
+                            .build()
+                    val fancyShowCaseView4 = FancyShowCaseView.Builder(this)
+                            .title("Discuss")
+                            .titleStyle(R.style.MyTitleStyle, Gravity.END)
+                            .showOnce("Discuss")
+                            .focusOn(recyclerView.getChildAt(0).findViewById(R.id.threadImageButton))
+                            .build()
+                    val fancyShowCaseView5 = FancyShowCaseView.Builder(this)
+                            .title("Spread")
+                            .titleStyle(R.style.MyTitleStyle, Gravity.END)
+                            .showOnce("Spread")
+                            .focusOn(recyclerView.getChildAt(0).findViewById(R.id.spreadImageButton))
+                            .build()
+
+
+                    val mQueue = FancyShowCaseQueue()
+                            .add(fancyShowCaseView0)
+                            .add(fancyShowCaseView1)
+                            .add(fancyShowCaseView2)
+                            .add(fancyShowCaseView3)
+                            .add(fancyShowCaseView4)
+                            .add(fancyShowCaseView5)
+
+                    mQueue.show()
+                }, 1000
+        )
         return true
     }
 
@@ -123,6 +179,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         when (item?.itemId) {
             R.id.myBook -> openProfile()
             R.id.myShelf -> openShelf()
+            R.id.share_pden -> sharePden()
         }
 
         return super.onOptionsItemSelected(item)
@@ -142,6 +199,15 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
     fun openShelf() {
         ShelfActivity.launch(this)
+    }
+
+    fun sharePden() {
+        val sendIntent = Intent()
+        sendIntent.action = Intent.ACTION_SEND
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout this pden app I found it best for thoughtful expressions https://play.google.com/store/apps/details?id=com.dk.pden")
+        sendIntent.type = "text/plain"
+        sendIntent.setPackage("com.whatsapp")
+        startActivity(sendIntent)
     }
 
 

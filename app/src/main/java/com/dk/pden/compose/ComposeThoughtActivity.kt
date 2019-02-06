@@ -188,7 +188,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         loadingProgressBar.visible(true)
     }
 
-    override fun getThought() = composeThoughtEditText.text.toString().trim().replace("\"", "")
+    override fun getThought() = composeThoughtEditText.text.toString().trim().replace("\"", "").replace("\'", "")
 
 
     override fun showSendTweetError() {

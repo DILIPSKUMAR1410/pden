@@ -62,6 +62,8 @@ class InitActivity : AppCompatActivity() {
                             // Default borrowed handles
                             interests.put("cryptoupdates.id.blockstack")
                             interests.put("scienceandtech.id.blockstack")
+                            interests.put("amazingquotes.id.blockstack")
+
                             if (interests.length() > 0)
                                 fetchBooks(interests, counter)
                             else

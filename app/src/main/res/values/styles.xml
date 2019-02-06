@@ -8,4 +8,12 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="MyTitleStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textSize">40sp</item>
+        <item name="android:paddingTop">50dp</item>
+        <item name="android:layout_marginTop">50dp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:fontFamily">cursive</item>
+    </style>
+
 </resources>
