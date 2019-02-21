@@ -1,6 +1,7 @@
 package com.dk.pden.feed
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.FloatingActionButton
@@ -14,6 +15,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.SearchView
+import android.widget.Toast
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
@@ -124,40 +126,55 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         Handler().postDelayed(
                 {
                     val fancyShowCaseView0 = FancyShowCaseView.Builder(this)
-                            .title("Compose")
+                            .title("Compose\n" +
+                                    "door to the world for your thoughts")
                             .focusOn(floatingActionButton)
                             .titleStyle(R.style.MyTitleStyle, Gravity.CENTER)
                             .showOnce("Compose")
                             .build()
                     val fancyShowCaseView1 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myBook)) // ActionBar menu item id
-                            .title("Book")
+                            .title("Book\n" +
+                                    "your public short-form diary which you share with the world.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Book")
                             .build()
                     val fancyShowCaseView2 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myShelf)) // ActionBar menu item id
-                            .title("Shelf")
+                            .title("Shelf\n" +
+                                    "list of books you have borrowed.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Shelf")
                             .build()
                     val fancyShowCaseView3 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.action_search)) // ActionBar menu item id
-                            .title("Search")
-                            .titleStyle(R.style.MyTitleStyle, Gravity.FILL )
+                            .title("Search\n" +
+                                    "find your inspirations here")
+                            .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Search")
                             .build()
                     val fancyShowCaseView4 = FancyShowCaseView.Builder(this)
-                            .title("Discuss")
+                            .title("Discuss\n" +
+                                    "explain your views")
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Discuss")
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.threadImageButton))
                             .build()
                     val fancyShowCaseView5 = FancyShowCaseView.Builder(this)
-                            .title("Spread")
+                            .title("Spread\n" +
+                                    "let others have a look at thoughts that moved you")
+                            .enableAutoTextPosition()
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Spread")
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.spreadImageButton))
+                            .build()
+                    val fancyShowCaseView6 = FancyShowCaseView.Builder(this)
+                            .title("Social group\n" +
+                                    "Tell other communities about the thought ")
+                            .enableAutoTextPosition()
+                            .titleStyle(R.style.MyTitleStyle, Gravity.END)
+                            .showOnce("Social group")
+                            .focusOn(recyclerView.getChildAt(0).findViewById(R.id.spreadOutsideImageButton))
                             .build()
 
 
@@ -168,6 +185,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .add(fancyShowCaseView3)
                             .add(fancyShowCaseView4)
                             .add(fancyShowCaseView5)
+                            .add(fancyShowCaseView6)
 
                     mQueue.show()
                 }, 1000
@@ -202,14 +220,42 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     fun sharePden() {
-        val sendIntent = Intent()
-        sendIntent.action = Intent.ACTION_SEND
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout this pden app I found it best for thoughtful expressions https://play.google.com/store/apps/details?id=com.dk.pden")
-        sendIntent.type = "text/plain"
-        sendIntent.setPackage("com.whatsapp")
-        startActivity(sendIntent)
+        if (isPackageExist("com.whatsapp")) {
+            val sendIntent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
+            sendIntent.type = "text/plain"
+            sendIntent.setPackage("com.whatsapp")
+            startActivity(sendIntent)
+        } else {
+            Toast.makeText(this, "You dont have whatsapp ?", Toast.LENGTH_SHORT).show()
+        }
     }
 
+    fun isPackageExist(targetPackage: String): Boolean {
+        val pm: PackageManager = getPackageManager()
+        val packages = pm.getInstalledApplications(0);
+        for (packageInfo in packages) {
+            if (packageInfo.packageName.equals(targetPackage)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun spreadOutside(thought: Thought) {
+        if (isPackageExist("com.whatsapp")) {
+            val sendIntent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_TEXT, thought.user.target.blockstackId + " \nsays: \n" + thought.text +
+            "\nCheckout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
+            sendIntent.type = "text/plain"
+            sendIntent.setPackage("com.whatsapp")
+            startActivity(sendIntent)
+        } else {
+            Toast.makeText(this, "You dont have whatsapp ?", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun showThoughts(thoughts: MutableList<Thought>) {
 

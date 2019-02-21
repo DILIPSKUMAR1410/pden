@@ -15,7 +15,7 @@ import com.dk.pden.model.Thought
 import com.dk.pden.model.Thought_
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
-import com.google.firebase.messaging.FirebaseMessaging
+import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
@@ -245,10 +245,8 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         context.startActivity(intent)
                                     }
                                     // [START subscribe_topics]
-                                    FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + user.blockstackId)
-                                            .addOnCompleteListener { _ ->
-                                                Toast.makeText(context, "Added to your shelf", Toast.LENGTH_SHORT).show()
-                                            }
+                                    PushNotifications.addDeviceInterest(user.blockstackId)
+                                            .let { Toast.makeText(context, "Added to your shelf", Toast.LENGTH_SHORT).show() }
                                     // [END subscribe_topics]
                                     mvpView?.setBorrowed(true)
                                 }
@@ -322,9 +320,10 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 context.startActivity(intent)
                                 // [START subscribe_topics]
-                                FirebaseMessaging.getInstance().unsubscribeFromTopic("/topics/" + user.blockstackId)
-                                        .addOnCompleteListener { _ ->
-                                            Toast.makeText(context, "Removed from your shelf", Toast.LENGTH_SHORT).show()
+                                PushNotifications.removeDeviceInterest(user.blockstackId)
+                                        .let {
+                                            Toast.makeText(context, "Removed from your shelf", Toast.LENGTH_SHORT)
+                                                    .show()
                                         }
                                 // [END subscribe_topics]
                             }

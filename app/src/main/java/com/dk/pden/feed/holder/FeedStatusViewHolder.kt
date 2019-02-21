@@ -22,6 +22,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
     protected var spreadTextView: TextView = container.spreadTextView
     protected var spreadImageButton: ImageButton = container.spreadImageButton
     protected var threadImageButton: ImageButton = container.threadImageButton
+    protected var spreadOutsideImageButton: ImageButton = container.spreadOutsideImageButton
 
     @SuppressLint("SetTextI18n")
     @CallSuper
@@ -38,6 +39,8 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
         else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
+        spreadOutsideImageButton.setImageResource(R.drawable.social_group
+        )
 
 //        userNameTextView.textString = currentUser.blockstackId
         userScreenNameTextView.text = "@${thought.user.target.blockstackId}"
@@ -69,6 +72,9 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
             }
         }
 
+        spreadOutsideImageButton.setOnClickListener {
+        listener.spreadOutside(thought)
+        }
         userProfilePicImageView.setOnClickListener {
             listener.showUser(thought.user.target)
         }

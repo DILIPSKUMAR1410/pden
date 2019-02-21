@@ -13,7 +13,7 @@ import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
-import com.google.firebase.messaging.FirebaseMessaging
+import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
@@ -63,6 +63,7 @@ class InitActivity : AppCompatActivity() {
                             interests.put("cryptoupdates.id.blockstack")
                             interests.put("scienceandtech.id.blockstack")
                             interests.put("amazingquotes.id.blockstack")
+
 
                             if (interests.length() > 0)
                                 fetchBooks(interests, counter)
@@ -152,18 +153,17 @@ class InitActivity : AppCompatActivity() {
 
                                         if (!user.isSelf) {
                                             // [START subscribe_topics]
-                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/$interest")
-                                                    .addOnCompleteListener {
-                                                        if (counter == interests.length() - 1)
-                                                            close()
-                                                        else
-                                                            fetchBooks(interests, counter + 1)
-                                                    }
+                                            PushNotifications.addDeviceInterest(interest)
+                                            if (counter == interests.length() - 1) {
+                                                close()
+                                            } else
+                                                fetchBooks(interests, counter + 1)
+
                                             // [END subscribe_topics]
                                         } else {
-                                            if (counter == interests.length() - 1)
+                                            if (counter == interests.length() - 1) {
                                                 close()
-                                            else
+                                            } else
                                                 fetchBooks(interests, counter + 1)
                                         }
                                     }

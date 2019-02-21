@@ -11,4 +11,5 @@ interface FeedInteractionListener {
 
     fun showThread(thought: Thought)
 
+    fun spreadOutside(thought: Thought)
 }

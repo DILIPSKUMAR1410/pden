@@ -5,6 +5,7 @@ import android.app.Application
 import com.crashlytics.android.Crashlytics
 import com.dk.pden.common.PreferencesHelper
 import com.mixpanel.android.mpmetrics.MixpanelAPI
+import com.pusher.pushnotifications.PushNotifications
 import io.fabric.sdk.android.Fabric
 
 
@@ -32,6 +33,7 @@ class App : Application() {
         mixpanel.people.identify(PreferencesHelper(this).blockstackId)
         val name = "name"
         mixpanel.people.set("$$name", PreferencesHelper(this).blockstackId)
+        PushNotifications.start(getApplicationContext(), "246e7fe4-7a7b-4da5-9c76-d1cc8d1c4bac")
 
     }
 

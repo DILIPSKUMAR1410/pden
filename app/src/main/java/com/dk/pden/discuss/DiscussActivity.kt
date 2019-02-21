@@ -17,13 +17,13 @@ import com.dk.pden.discuss.holder.CustomIncomingTextMessageViewHolder
 import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.model.*
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
+import com.pusher.pushnotifications.PushNotifications
 import com.stfalcon.chatkit.commons.ImageLoader
 import com.stfalcon.chatkit.messages.MessageHolders
 import com.stfalcon.chatkit.messages.MessageInput
 import com.stfalcon.chatkit.messages.MessagesListAdapter
 import io.objectbox.Box
-import kotlinx.android.synthetic.main.activity_discuss2.*
+import kotlinx.android.synthetic.main.activity_discuss.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -32,6 +32,7 @@ import org.json.JSONObject
 
 class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListener, MessageInput.InputListener,
         MessageInput.TypingListener {
+    private val presenter: DiscussPresenter by lazy { DiscussPresenter() }
 
     private lateinit var discussionBox: Box<Discussion>
     private lateinit var userBox: Box<User>
@@ -44,7 +45,8 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     private val TAG = "Discussion"
     private var selectionCount: Int = 0
     private var menu: Menu? = null
-
+    //We can pass any data to ViewHolder with payload
+    val payload = CustomIncomingTextMessageViewHolder.Payload();
 
     companion object {
 
@@ -58,7 +60,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_discuss2)
+        setContentView(R.layout.activity_discuss)
         // Get the support action bar
         val actionBar = supportActionBar
 
@@ -79,8 +81,6 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         uuid = intent.getStringExtra("uuid")
 
 
-        //We can pass any data to ViewHolder with payload
-        val payload = CustomIncomingTextMessageViewHolder.Payload();
         //For example click listener
         payload.iamAdmin = thoughtBox.find(Thought_.uuid, uuid).first().user.targetId == user.pk
 
@@ -114,7 +114,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 var actual_owner = userBox.find(User_.blockstackId, document.data["actual_owner"] as String).firstOrNull()
                                 if (actual_owner == null) {
                                     actual_owner = User(document.data["actual_owner"] as String)
-                                    actual_owner.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                                    actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
                                 }
                                 actual_owner.thoughts.add(thought)
                                 actual_owners.add(actual_owner)
@@ -165,7 +165,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         if (conversation == null) {
             conversation = Discussion(uuid)
             // [START subscribe_topics]
-            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+            PushNotifications.addDeviceInterest(thought.uuid);
             // [END subscribe_topics]
         }
         user.thoughts.add(thought)
@@ -179,6 +179,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         db.collection("thoughts").document(uuid).collection("discussion")
                 .add(comment)
                 .addOnSuccessListener {
+                    presenter.sendComment(user.blockstackId, uuid, comment)
                     Log.d(TAG, "DocumentSnapshot successfully written!")
                     props.put("Success", true)
                 }
@@ -229,7 +230,14 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                         val comment = thoughtBox.find(Thought_.uuid, document.data["uuid"].toString()).firstOrNull()
                                         if (document.data["uuid"] in uuids && !comment?.isApproved!!) {
                                             docsref.document(document.id)
-                                                    .update("isApproved", true)
+                                                    .update("isApproved", true).addOnSuccessListener {
+                                                        val comment_body = HashMap<String, Any>()
+                                                        comment_body["timestamp"] = comment.timestamp
+                                                        comment_body["text"] = comment.textString
+                                                        comment_body["uuid"] = comment.uuid
+                                                        comment_body["actual_owner"] = comment.user.target.blockstackId
+                                                        presenter.sendComment(user.blockstackId, uuid, comment_body)
+                                                    }
                                             comment.isApproved = true
                                             thoughtBox.put(comment)
                                             adapter.update(comment)

@@ -13,6 +13,12 @@ import com.dk.pden.common.Utils.config
 import com.dk.pden.common.visible
 import com.dk.pden.model.User
 import com.google.firebase.firestore.FirebaseFirestore
+import com.pusher.pushnotifications.BeamsCallback
+import com.pusher.pushnotifications.PushNotifications
+import com.pusher.pushnotifications.PusherCallbackError
+import com.pusher.pushnotifications.auth.AuthData
+import com.pusher.pushnotifications.auth.AuthDataGetter
+import com.pusher.pushnotifications.auth.BeamsTokenProvider
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_main.*
 import org.blockstack.android.sdk.BlockstackSession
@@ -87,6 +93,38 @@ class MainActivity : AppCompatActivity() {
         user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
         user.isSelf = true
         userBox.put(user)
+
+
+        val tokenProvider = BeamsTokenProvider(
+                "https://app.pden.xyz/.netlify/functions/beam_token",
+                object : AuthDataGetter {
+                    override fun getAuthData(): AuthData {
+                        return AuthData(
+                                // Headers and URL query params your auth endpoint needs to
+                                // request a Beams Token for a given user
+                                headers = hashMapOf(
+                                        // for example:
+                                        // "Authorization" to sessionToken
+                                ),
+                                queryParams = hashMapOf("blockstack_id" to user.blockstackId)
+                        )
+                    }
+                }
+        )
+
+        PushNotifications.setUserId(
+                user.blockstackId,
+                tokenProvider,
+                object : BeamsCallback<Void, PusherCallbackError> {
+                    override fun onFailure(error: PusherCallbackError) {
+                        Log.e("BeamsAuth", "Could not login to Beams: ${error.message}");
+                    }
+
+                    override fun onSuccess(vararg values: Void) {
+                        Log.i("BeamsAuth", "Beams login success");
+                    }
+                }
+        )
 
         mixpanel.track("Login")
         mixpanel.identify(user.blockstackId)

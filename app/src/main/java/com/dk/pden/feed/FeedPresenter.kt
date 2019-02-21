@@ -11,6 +11,7 @@ import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.dk.pden.service.ApiServiceFactory
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.objectbox.Box
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -47,9 +48,16 @@ open class FeedPresenter : BasePresenter<FeedMvpView>() {
         rootObject.addProperty("text", thought.textString)
         rootObject.addProperty("actual_owner", thought.user.target.blockstackId)
         rootObject.addProperty("uuid", thought.uuid)
+        rootObject.addProperty("topic", blockstack_id)
 
-        envelopeObject.addProperty("to", "/topics/" + blockstack_id)
-        envelopeObject.add("data", rootObject)
+        val interests = JsonArray()
+        interests.add(blockstack_id)
+        val fcm = JsonObject()
+        fcm.add("data", rootObject)
+
+        envelopeObject.add("interests", interests)
+        envelopeObject.add("fcm", fcm)
+
         firebaseService.publishToTopic(envelopeObject)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())

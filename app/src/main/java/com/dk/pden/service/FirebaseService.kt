@@ -11,8 +11,15 @@ interface FirebaseService {
 
     @Headers(
             "Content-Type: application/json",
-            "Authorization: key=AIzaSyDdce1-B_i-BgzFWgZzkd1wRDK9p1U_OdU"
+            "Authorization: Bearer AF3FF3FB2924281983BAB4D2DA02E5DDB8AA505CC2D60E953ABAB70B02AB5593"
     )
-    @POST("fcm/send")
+    @POST("interests")
     fun publishToTopic(@Body msg: JsonObject): Single<PublishStatusApiResponse>
+
+    @Headers(
+            "Content-Type: application/json",
+            "Authorization: Bearer AF3FF3FB2924281983BAB4D2DA02E5DDB8AA505CC2D60E953ABAB70B02AB5593"
+    )
+    @POST("users")
+    fun publishToUser(@Body msg: JsonObject): Single<PublishStatusApiResponse>
 }

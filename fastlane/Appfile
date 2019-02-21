@@ -6,4 +6,4 @@
 
 # app_identifier "com.your.app" # the bundle identifier of your app
 # apple_id "apple@fastlane.tools" # Your Apple ID
-json_key_file "/Users/dk/Desktop/pden-beta-release-manager.json"
+json_key_file "/Users/dk/AndroidStudioProjects/pden/fastlane/pden_fastlane_android_supply.json"

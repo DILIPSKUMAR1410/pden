@@ -6,6 +6,7 @@ import android.util.Patterns
 import com.dk.pden.base.BasePresenter
 import com.dk.pden.service.ApiServiceFactory
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
@@ -40,18 +41,24 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         dataobj.addProperty("timestamp", rootObject?.getString("timestamp"))
         dataobj.addProperty("uuid", rootObject?.getString("uuid"))
         dataobj.addProperty("text", rootObject?.getString("text"))
+        dataobj.addProperty("topic", topic)
 
         // Create a new comment
         val comment = HashMap<String, Any>()
         comment["timestamp"] = rootObject!!.getString("timestamp")
         comment["text"] = rootObject.getString("text")
 
+        val interests = JsonArray()
+        interests.add(topic)
+
+        val fcm = JsonObject()
+        fcm.add("data",dataobj)
+
+        envelopeObject.add("interests",interests)
+        envelopeObject.add("fcm", fcm)
+
         val admin = HashMap<String, Any>()
         admin["admin"] = topic
-
-        envelopeObject.addProperty("to", "/topics/$topic")
-        envelopeObject.addProperty("priority", "high")
-        envelopeObject.add("data", dataobj)
 
         val db = FirebaseFirestore.getInstance()
         db.collection("thoughts").document(rootObject.getString("uuid"))
@@ -64,7 +71,6 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
                 .add(comment)
                 .addOnSuccessListener { Log.d("ComposeThoughtPresenter", "DocumentSnapshot successfully written!") }
                 .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
-
 
         firebaseService.publishToTopic(envelopeObject)
                 .observeOn(AndroidSchedulers.mainThread())

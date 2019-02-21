@@ -8,7 +8,7 @@ apply plugin: 'com.google.gms.google-services'
 
 ext.versionMajor = 0
 ext.versionMinor = 1
-ext.versionPatch = 43
+ext.versionPatch = 46
 ext.versionClassifier = 'beta'
 ext.isSnapshot = true
 ext.minimumSdkVersion = 21
@@ -90,16 +90,17 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxkotlin:2.3.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'org.greenrobot:eventbus:3.1.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     implementation 'com.google.firebase:firebase-core:16.0.7'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.9'
     implementation 'com.airbnb.android:lottie:2.7.0'
     implementation 'com.mixpanel.android:mixpanel-android:5.4.1'
     implementation 'com.google.android.gms:play-services-gcm:16.0.0'
     implementation 'com.github.stfalcon:chatkit:0.3.3'
-    implementation 'com.google.firebase:firebase-firestore:18.0.0'
+    implementation 'com.google.firebase:firebase-firestore:18.0.1'
+    implementation 'com.pusher:push-notifications-android:1.2.0'
     implementation 'com.github.faruktoptas:FancyShowCaseView:1.1.5'
 }
 kotlin {

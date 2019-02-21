@@ -1,5 +1,6 @@
 package com.dk.pden.firebase
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,6 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
+import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.dk.pden.App
@@ -20,16 +22,17 @@ import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.*
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.pusher.pushnotifications.PushNotifications
+import com.pusher.pushnotifications.fcm.MessagingService
 import io.objectbox.Box
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONObject
 
 
+@SuppressLint("Registered")
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "NAME_SHADOWING")
-class MyFirebaseMessagingService : FirebaseMessagingService() {
+class NotificationsMessagingService : MessagingService() {
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var discussionBox: Box<Discussion>
@@ -40,7 +43,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
      * @param remoteMessage Object representing the message received from Firebase Cloud Messaging.
      */
     // [START receive_message]
-    override fun onMessageReceived(remoteMessage: RemoteMessage?) {
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
         // [START_EXCLUDE]
         // There are two types of messages data messages and notification messages. Data messages are handled
         // here in onMessageReceived whether the app is in the foreground or background. Data messages are the type
@@ -53,17 +57,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
-        Log.d(TAG, "From: ${remoteMessage?.from}")
+        Log.d(TAG, "From: ${remoteMessage.from}")
 
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
 
         // Check if message contains a data payload.
-        remoteMessage?.data?.isNotEmpty()?.let {
+        remoteMessage.data?.isNotEmpty()?.let {
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
-            var topic = remoteMessage.from?.removePrefix("/topics/")
-
+            var topic = remoteMessage.data.getOrDefault("topic","NAN")
             val user = userBox.find(User_.blockstackId, topic).firstOrNull()
             var isComment = false
             if (remoteMessage.data.containsKey("isComment") and remoteMessage.data.containsKey("topicId")) {
@@ -78,9 +81,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 val props = JSONObject()
                 if (remoteMessage.data.containsKey("actual_owner")) {
                     var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
+                    thought.timestamp = remoteMessage.sentTime
                     if (actual_owner == null) {
                         actual_owner = User(remoteMessage.data.get("actual_owner")!!)
-                        actual_owner.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                        actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
                     }
                     actual_owner.thoughts.add(thought)
                     if (!isComment) user!!.spreaded_thoughts.add(thought)
@@ -91,6 +95,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     thought.spreadBy.setAndPutTarget(user)
                     props.put("New", false)
                 } else {
+                    Log.d(TAG, "Message data payload: " + remoteMessage.data)
                     user!!.thoughts.add(thought)
                     userBox.put(user)
                     props.put("New", true)
@@ -103,19 +108,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     if (assert_conversation.isEmpty()) {
                         discussion = Discussion(thought.uuid)
                         // [START subscribe_topics]
-                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
+                        PushNotifications.addDeviceInterest(thought.uuid)
                         // [END subscribe_topics]
                     } else
                         discussion = assert_conversation.first()
                     EventBus.getDefault().post(NewThoughtsEvent(mutableList))
                     App.mixpanel.track("Thought received", props)
-
                 } else {
                     val assert_conversation = discussionBox.find(Discussion_.uuid, topic)
                     if (assert_conversation.isEmpty()) {
                         discussion = Discussion(topic!!)
                         // [START subscribe_topics]
-                        FirebaseMessaging.getInstance().subscribeToTopic("/topics/$topic")
+                        PushNotifications.addDeviceInterest(topic)
                         // [END subscribe_topics]
                     } else
                         discussion = assert_conversation.first()
@@ -138,22 +142,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 Log.d(TAG, "Already got the word")
             }
 
-
-//            if (/* Check if data needs to be processed by long running job */ true) {
-//                // For long-running tasks (10 seconds or more) use Firebase Job Dispatcher.
-//                scheduleJob()
-//            } else {
-//                // Handle message within 10 seconds
-//                handleNow()
-//            }
-            // Check if message contains a notification payload.
-//            remoteMessage?.notification?.let
-//            {
-//                Log.d(TAG, "Message Notification Body: ${it.body}")
-//            }
-
-            // Also if you intend on generating your own notifications as a result of a received FCM
-            // message, here is where that should be initiated. See sendNotification method below.
         }
 
 
@@ -161,51 +149,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 // [END receive_message]
 
 
-// [START on_new_token]
-    /**
-     * Called if InstanceID token is updated. This may occur if the security of
-     * the previous token had been compromised. Note that this is called when the InstanceID token
-     * is initially generated so this is where you would retrieve the token.
-     */
-    override fun onNewToken(token: String?) {
-        Log.d(TAG, "Refreshed token: $token")
-
-        // If you want to send messages to this application instance or
-        // manage this apps subscriptions on the server side, send the
-        // Instance ID token to your app server.
-        sendRegistrationToServer(token)
-    }
-// [END on_new_token]
-
-    /**
-     * Schedule a job using FirebaseJobDispatcher.
-     */
-    private fun scheduleJob() {
-        // [START dispatch_job]
-//        val dispatcher = FirebaseJobDispatcher(GooglePlayDriver(this))
-//        val myJob = dispatcher.newJobBuilder()
-//                .setService(MyJobService::class.java)
-//                .setTag("my-job-tag")
-//                .build()
-//        dispatcher.schedule(myJob)
-        // [END dispatch_job]
-    }
-
-    /**
-     * Handle time allotted to BroadcastReceivers.
-     */
-    private fun handleNow() {
-        Log.d(TAG, "Short lived task is done.")
-    }
-
-    /**
-     * Persist token to third-party servers.
-     *
-     * Modify this method to associate the user's FCM InstanceID token with any server-side account
-     * maintained by your application.
-     *
-     * @param token The new token.
-     */
     private fun sendRegistrationToServer(token: String?) {
         // TODO: Implement this method to send token to your app server.
 
@@ -242,23 +185,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
          * @param messageBody FCM message body received.
          */
 
-        private fun sendNotification(myFirebaseMessagingService: MyFirebaseMessagingService, thought: Thought) {
+        private fun sendNotification(notificationsMessagingService: NotificationsMessagingService, thought: Thought) {
             val intent: Intent
 
             if (thought.isComment) {
-                intent = Intent(myFirebaseMessagingService, DiscussActivity::class.java)
+                intent = Intent(notificationsMessagingService, DiscussActivity::class.java)
                 intent.putExtra("uuid", thought.discussion.target.uuid)
 
             } else {
-                intent = Intent(myFirebaseMessagingService, FeedActivity::class.java)
+                intent = Intent(notificationsMessagingService, FeedActivity::class.java)
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val pendingIntent = PendingIntent.getActivity(myFirebaseMessagingService, 0 /* Request code */, intent,
+            val pendingIntent = PendingIntent.getActivity(notificationsMessagingService, 0 /* Request code */, intent,
                     PendingIntent.FLAG_ONE_SHOT)
 
-            val channelId = myFirebaseMessagingService.getString(R.string.default_notification_channel_id)
+            val channelId = notificationsMessagingService.getString(R.string.default_notification_channel_id)
             val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val notificationBuilder = NotificationCompat.Builder(myFirebaseMessagingService, channelId)
+            val notificationBuilder = NotificationCompat.Builder(notificationsMessagingService, channelId)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle(thought.user.target.blockstackId + " posted new thought")
                     .setContentText(thought.textString)
@@ -266,13 +209,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     .setSound(defaultSoundUri)
                     .setContentIntent(pendingIntent)
 
-            val notificationManager = myFirebaseMessagingService.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = notificationsMessagingService.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             // Since android Oreo notification channel is needed.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 // Create the NotificationChannel
-                val name = myFirebaseMessagingService.getString(R.string.channel_name)
-                val descriptionText = myFirebaseMessagingService.getString(R.string.channel_description)
+                val name = notificationsMessagingService.getString(R.string.channel_name)
+                val descriptionText = notificationsMessagingService.getString(R.string.channel_description)
                 val importance = NotificationManager.IMPORTANCE_HIGH
                 val mChannel = NotificationChannel(channelId, name, importance)
                 mChannel.description = descriptionText

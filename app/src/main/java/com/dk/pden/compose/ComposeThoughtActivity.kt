@@ -22,7 +22,7 @@ import com.dk.pden.model.Discussion
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
-import com.google.firebase.messaging.FirebaseMessaging
+import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
 import org.blockstack.android.sdk.BlockstackSession
@@ -135,8 +135,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                         if (readURLResult.hasValue) {
                                             user.thoughts.add(thought)
                                             // [START subscribe_topics]
-                                            FirebaseMessaging.getInstance().subscribeToTopic("/topics/" + thought.uuid)
-                                                    .addOnCompleteListener { _ ->
+                                            PushNotifications.addDeviceInterest(thought.uuid)
+                                                    .let {
                                                         userBox.put(user)
                                                         val conversation = Discussion(thought.uuid)
                                                         conversation.thoughts.add(thought)
