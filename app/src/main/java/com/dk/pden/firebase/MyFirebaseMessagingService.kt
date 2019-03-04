@@ -66,74 +66,83 @@ class NotificationsMessagingService : MessagingService() {
         // Check if message contains a data payload.
         remoteMessage.data?.isNotEmpty()?.let {
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
-            var topic = remoteMessage.data.getOrDefault("topic","NAN")
-            val user = userBox.find(User_.blockstackId, topic).firstOrNull()
-            var isComment = false
-            if (remoteMessage.data.containsKey("isComment") and remoteMessage.data.containsKey("topicId")) {
-                isComment = true
-                topic = remoteMessage.data.get("topicId")
-            }
+
             val thought = thoughtBox.find(Thought_.uuid, remoteMessage.data.get("uuid"))
             if (thought.isEmpty()) {
+                val props = JSONObject()
+                var user = userBox.find(User_.blockstackId, remoteMessage.data.get("from")).firstOrNull()
+                // If comment from unknown user from discussion topic
+                if (user == null) {
+                    user = User(remoteMessage.data.get("from")!!)
+                    user.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${user.blockstackId}"
+                }
                 val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
                 thought.uuid = remoteMessage.data.get("uuid")!!
-                thought.isComment = isComment
-                val props = JSONObject()
-                if (remoteMessage.data.containsKey("actual_owner")) {
-                    var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
-                    thought.timestamp = remoteMessage.sentTime
-                    if (actual_owner == null) {
-                        actual_owner = User(remoteMessage.data.get("actual_owner")!!)
-                        actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
-                    }
-                    actual_owner.thoughts.add(thought)
-                    if (!isComment) user!!.spreaded_thoughts.add(thought)
-                    userBox.run {
-                        if (!isComment) put(user)
-                        put(actual_owner)
-                    }
-                    thought.spreadBy.setAndPutTarget(user)
-                    props.put("New", false)
-                } else {
-                    Log.d(TAG, "Message data payload: " + remoteMessage.data)
-                    user!!.thoughts.add(thought)
-                    userBox.put(user)
-                    props.put("New", true)
-                }
                 val mutableList: MutableList<Thought> = ArrayList()
-                mutableList.add(thought)
                 val discussion: Discussion
-                if (!isComment) {
-                    val assert_conversation = discussionBox.find(Discussion_.uuid, thought.uuid)
-                    if (assert_conversation.isEmpty()) {
-                        discussion = Discussion(thought.uuid)
-                        // [START subscribe_topics]
-                        PushNotifications.addDeviceInterest(thought.uuid)
-                        // [END subscribe_topics]
-                    } else
-                        discussion = assert_conversation.first()
-                    EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                    App.mixpanel.track("Thought received", props)
-                } else {
+                val isSelf: Boolean
+                // Comment for discussion topic
+                if (remoteMessage.data.containsKey("topic")) {
+                    val topic = remoteMessage.data.containsKey("topic").toString()
+                    thought.isComment = true
                     val assert_conversation = discussionBox.find(Discussion_.uuid, topic)
                     if (assert_conversation.isEmpty()) {
-                        discussion = Discussion(topic!!)
+                        discussion = Discussion(topic)
                         // [START subscribe_topics]
                         PushNotifications.addDeviceInterest(topic)
                         // [END subscribe_topics]
                     } else
                         discussion = assert_conversation.first()
+                    isSelf = discussion.thoughts.hasA { thought ->
+                        thought.user.target.isSelf
+                    }
+                    thought.discussion.setAndPutTarget(discussion)
+                    discussion.thoughts.add(thought)
+                    discussionBox.put(discussion)
+                    mutableList.add(thought)
                     EventBus.getDefault().post(NewCommentEvent(mutableList))
                     App.mixpanel.track("Comment received", props)
                 }
-                thought.discussion.setAndPutTarget(discussion)
-                discussion.thoughts.add(thought)
-                discussionBox.put(discussion)
-
-                val isSelf = discussion.thoughts.hasA { thought ->
-                    thought.user.target.isSelf
+                // Thought
+                else {
+                    // Spread thought from your interest
+                    if (remoteMessage.data.containsKey("actual_owner")) {
+                        var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
+                        thought.timestamp = remoteMessage.sentTime
+                        if (actual_owner == null) {
+                            actual_owner = User(remoteMessage.data.get("actual_owner")!!)
+                            actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
+                        }
+                        actual_owner.thoughts.add(thought)
+                        user.spreaded_thoughts.add(thought)
+                        userBox.run {
+                            put(user)
+                            put(actual_owner)
+                        }
+                        thought.spreadBy.setAndPutTarget(user)
+                        props.put("New", false)
+                    } else {
+                        // Fresh new thought
+                        user.thoughts.add(thought)
+                        userBox.put(user)
+                        props.put("New", true)
+                    }
+                    mutableList.add(thought)
+                    val discussion = Discussion(thought.uuid)
+                    // [START subscribe_topics]
+                    PushNotifications.addDeviceInterest(thought.uuid)
+                    // [END subscribe_topics]
+                    thought.discussion.setAndPutTarget(discussion)
+                    discussion.thoughts.add(thought)
+                    discussionBox.put(discussion)
+                    isSelf = discussion.thoughts.hasA { thought ->
+                        thought.user.target.isSelf
+                    }
+                    EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                    App.mixpanel.track("Thought received", props)
                 }
-                if (isSelf or !isComment)
+
+                if (isSelf or !thought.isComment)
                     sendNotification(this, thought)
                 else
                     Log.d(TAG, "Not opted")
@@ -141,7 +150,6 @@ class NotificationsMessagingService : MessagingService() {
             } else {
                 Log.d(TAG, "Already got the word")
             }
-
         }
 
 

@@ -111,13 +111,13 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 thought.isComment = true
                                 if (document.data.containsKey("isApproved"))
                                     thought.isApproved = document.data["isApproved"] as Boolean
-                                var actual_owner = userBox.find(User_.blockstackId, document.data["actual_owner"] as String).firstOrNull()
-                                if (actual_owner == null) {
-                                    actual_owner = User(document.data["actual_owner"] as String)
-                                    actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
+                                var from = userBox.find(User_.blockstackId, document.data["from"] as String).firstOrNull()
+                                if (from == null) {
+                                    from = User(document.data["from"] as String)
+                                    from.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${from.blockstackId}"
                                 }
-                                actual_owner.thoughts.add(thought)
-                                actual_owners.add(actual_owner)
+                                from.thoughts.add(thought)
+                                actual_owners.add(from)
                             } else {
                                 thought = thoughtBox.find(Thought_.uuid, uuid).first()
                             }
@@ -159,7 +159,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         comment["timestamp"] = thought.timestamp
         comment["text"] = thought.textString
         comment["uuid"] = thought.uuid
-        comment["actual_owner"] = blockstack_id
+        comment["from"] = blockstack_id
 
         var conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
         if (conversation == null) {
@@ -235,7 +235,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                                         comment_body["timestamp"] = comment.timestamp
                                                         comment_body["text"] = comment.textString
                                                         comment_body["uuid"] = comment.uuid
-                                                        comment_body["actual_owner"] = comment.user.target.blockstackId
+                                                        comment_body["from"] = comment.user.target.blockstackId
                                                         presenter.sendComment(user.blockstackId, uuid, comment_body)
                                                     }
                                             comment.isApproved = true

@@ -28,12 +28,11 @@ class DiscussPresenter : BasePresenter<MvpView>() {
         dataobj.addProperty("timestamp", comment["timestamp"].toString())
         dataobj.addProperty("uuid", comment["uuid"].toString())
         dataobj.addProperty("text", comment["text"].toString())
-        dataobj.addProperty("topicId", topic)
-        dataobj.addProperty("isComment", true)
-        dataobj.addProperty("actual_owner", comment["actual_owner"].toString())
+        dataobj.addProperty("topic", topic)
+        dataobj.addProperty("from", comment["from"].toString())
         val to = JsonArray()
         val via: Single<PublishStatusApiResponse>
-        if (admin.equals(comment["actual_owner"].toString())) {
+        if (admin.equals(comment["from"].toString())) {
             to.add(topic)
             envelopeObject.add("interests", to)
             via = firebaseService.publishToTopic(envelopeObject)
