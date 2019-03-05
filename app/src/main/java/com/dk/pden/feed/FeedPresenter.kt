@@ -48,7 +48,7 @@ open class FeedPresenter : BasePresenter<FeedMvpView>() {
         rootObject.addProperty("text", thought.textString)
         rootObject.addProperty("actual_owner", thought.user.target.blockstackId)
         rootObject.addProperty("uuid", thought.uuid)
-        rootObject.addProperty("topic", blockstack_id)
+        rootObject.addProperty("sender", blockstack_id)
 
         val interests = JsonArray()
         interests.add(blockstack_id)

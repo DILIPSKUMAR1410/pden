@@ -41,7 +41,7 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         dataobj.addProperty("timestamp", rootObject?.getString("timestamp"))
         dataobj.addProperty("uuid", rootObject?.getString("uuid"))
         dataobj.addProperty("text", rootObject?.getString("text"))
-        dataobj.addProperty("topic", topic)
+        dataobj.addProperty("sender", topic)
 
         // Create a new comment
         val comment = HashMap<String, Any>()
