@@ -71,19 +71,19 @@ class NotificationsMessagingService : MessagingService() {
             var isComment = false
             if (remoteMessage.data.containsKey("isComment") and remoteMessage.data.containsKey("topicId")) {
                 isComment = true
-                topic = remoteMessage.data.get("topicId")
+                topic = remoteMessage.data["topicId"]
             }
-            val thought = thoughtBox.find(Thought_.uuid, remoteMessage.data.get("uuid"))
+            val thought = thoughtBox.find(Thought_.uuid, remoteMessage.data["uuid"])
             if (thought.isEmpty()) {
-                val thought = Thought(remoteMessage.data.get("text")!!, remoteMessage.data.get("timestamp")!!.toLong())
-                thought.uuid = remoteMessage.data.get("uuid")!!
+                val thought = Thought(remoteMessage.data["text"]!!, remoteMessage.data["timestamp"]!!.toLong())
+                thought.uuid = remoteMessage.data["uuid"]!!
                 thought.isComment = isComment
                 val props = JSONObject()
                 if (remoteMessage.data.containsKey("actual_owner")) {
                     var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
                     thought.timestamp = remoteMessage.sentTime
                     if (actual_owner == null) {
-                        actual_owner = User(remoteMessage.data.get("actual_owner")!!)
+                        actual_owner = User(remoteMessage.data["actual_owner"]!!)
                         actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
                     }
                     actual_owner.thoughts.add(thought)

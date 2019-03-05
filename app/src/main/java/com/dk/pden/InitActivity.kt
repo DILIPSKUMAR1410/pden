@@ -155,6 +155,7 @@ class InitActivity : AppCompatActivity() {
                                             // [START subscribe_topics]
                                             PushNotifications.addDeviceInterest(interest)
                                             if (counter == interests.length() - 1) {
+                                                PushNotifications.addDeviceInterest("debug-testing")
                                                 close()
                                             } else
                                                 fetchBooks(interests, counter + 1)
@@ -162,6 +163,7 @@ class InitActivity : AppCompatActivity() {
                                             // [END subscribe_topics]
                                         } else {
                                             if (counter == interests.length() - 1) {
+                                                PushNotifications.addDeviceInterest("debug-testing")
                                                 close()
                                             } else
                                                 fetchBooks(interests, counter + 1)

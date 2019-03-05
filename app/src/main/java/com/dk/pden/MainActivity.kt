@@ -12,7 +12,6 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils.config
 import com.dk.pden.common.visible
 import com.dk.pden.model.User
-import com.google.firebase.firestore.FirebaseFirestore
 import com.pusher.pushnotifications.BeamsCallback
 import com.pusher.pushnotifications.PushNotifications
 import com.pusher.pushnotifications.PusherCallbackError
@@ -64,25 +63,6 @@ class MainActivity : AppCompatActivity() {
         val preferencesHelper = PreferencesHelper(this)
         // save token on preferences
         preferencesHelper.blockstackId = userData.json.getString("username")
-
-        // Create a new comment
-        val users = HashMap<String, String?>()
-        users["registration_id"] = PreferencesHelper(this).registration_id
-
-        val db = FirebaseFirestore.getInstance()
-
-        // Add a new document with a generated ID
-        db.collection("users")
-                .document(PreferencesHelper(this).blockstackId)
-                .set(users as Map<*, *>)
-                .addOnSuccessListener { documentReference ->
-                    Log.d(TAG, "DocumentSnapshot written with ID: $documentReference")
-                }
-                .addOnFailureListener { e ->
-                    Log.w(TAG, "Error adding document", e)
-                }
-
-
 
         userBox = ObjectBox.boxStore.boxFor(User::
         class.java)
