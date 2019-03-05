@@ -128,7 +128,7 @@ class InitActivity : AppCompatActivity() {
                     }
                     user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
-                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/"+user.blockstackId+".png"
                     userBox.put(user)
 
 
@@ -153,6 +153,7 @@ class InitActivity : AppCompatActivity() {
 
                                         if (!user.isSelf) {
                                             // [START subscribe_topics]
+                                            PushNotifications.addDeviceInterest(interest)
                                             if (counter == interests.length() - 1) {
                                                 close()
                                             } else
@@ -161,7 +162,6 @@ class InitActivity : AppCompatActivity() {
                                             // [END subscribe_topics]
                                         } else {
                                             if (counter == interests.length() - 1) {
-                                                PushNotifications.addDeviceInterest("debug-testing")
                                                 close()
                                             } else
                                                 fetchBooks(interests, counter + 1)

@@ -38,15 +38,15 @@ class SearchUsersPresenter(private val textQuery: String) : BasePresenter<Search
                 .subscribeBy(
 
                         onSuccess = { it ->
-                            var users = mutableListOf<User>()
+                            val users = mutableListOf<User>()
                             it.users.forEach {
                                 val user = User(it.get("fullyQualifiedName").asString.trim())
                                 val profile = it.getAsJsonObject("profile")
                                 if (profile.has("image")) {
-                                    var url = profile.getAsJsonArray("image").get(0).asJsonObject.get("contentUrl").toString()
+                                    val url = profile.getAsJsonArray("image").get(0).asJsonObject.get("contentUrl").toString()
                                     user.avatarImage = url.substring(1, url.length - 1)
                                 } else
-                                    user.avatarImage = "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                                    user.avatarImage = "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
 
                                 if (profile.has("description"))
                                     user.description = profile.get("description").toString().trim()

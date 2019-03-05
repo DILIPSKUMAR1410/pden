@@ -89,7 +89,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                     if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                         user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
-                        user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                        user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/"+user.blockstackId+".png"
                         userBox.put(user)
                         launch(UI) {
                             blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
@@ -181,7 +181,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                     }
                                                     user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                                                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
-                                                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://s3.amazonaws.com/pden.xyz/avatar_placeholder.png"
+                                                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/"+user.blockstackId+".png"
                                                     userBox.put(user)
                                                     launch(UI) {
                                                         blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
