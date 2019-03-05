@@ -13,6 +13,7 @@ import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.dk.pden.App
+import com.dk.pden.App.Constants.TAG
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -92,6 +93,7 @@ class NotificationsMessagingService : MessagingService() {
                         // [END subscribe_topics]
                     } else
                         discussion = assert_conversation.first()
+
                     user.thoughts.add(thought)
                     userBox.put(user)
                     opted = discussion.thoughts.hasA { thought ->

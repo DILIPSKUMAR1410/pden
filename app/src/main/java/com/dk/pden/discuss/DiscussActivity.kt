@@ -111,6 +111,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 thought.isComment = true
                                 if (document.data.containsKey("isApproved"))
                                     thought.isApproved = document.data["isApproved"] as Boolean
+
                                 var sender = userBox.find(User_.blockstackId, document.data["sender"] as String).firstOrNull()
                                 if (sender == null) {
                                     sender = User(document.data["sender"] as String)
@@ -160,6 +161,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         comment["text"] = thought.textString
         comment["uuid"] = thought.uuid
         comment["sender"] = blockstack_id
+
 
         var conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
         if (conversation == null) {
@@ -236,6 +238,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                                         comment_body["text"] = comment.textString
                                                         comment_body["uuid"] = comment.uuid
                                                         comment_body["sender"] = comment.user.target.blockstackId
+
                                                         presenter.sendComment(user.blockstackId, uuid, comment_body)
                                                     }
                                             comment.isApproved = true
