@@ -153,9 +153,7 @@ class InitActivity : AppCompatActivity() {
 
                                         if (!user.isSelf) {
                                             // [START subscribe_topics]
-                                            PushNotifications.addDeviceInterest(interest)
                                             if (counter == interests.length() - 1) {
-                                                PushNotifications.addDeviceInterest("debug-testing")
                                                 close()
                                             } else
                                                 fetchBooks(interests, counter + 1)
