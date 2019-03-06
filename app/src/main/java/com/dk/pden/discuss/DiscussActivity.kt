@@ -47,6 +47,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     private var menu: Menu? = null
     //We can pass any data to ViewHolder with payload
     val payload = CustomIncomingTextMessageViewHolder.Payload();
+    lateinit var admin: String
 
     companion object {
 
@@ -115,7 +116,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 var sender = userBox.find(User_.blockstackId, document.data["sender"] as String).firstOrNull()
                                 if (sender == null) {
                                     sender = User(document.data["sender"] as String)
-                                    sender.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${sender.blockstackId}"
+                                    sender.avatarImage = "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                                 }
                                 sender.thoughts.add(thought)
                                 senders.add(sender)
@@ -136,7 +137,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
             adapter.addToEnd(conversation.thoughts.sortedByDescending { it -> it.timestamp }, false)
 
 
-
+        admin = thoughtBox.find(Thought_.uuid, uuid).first().user.target.blockstackId
         input.setInputListener(this)
         input.setTypingListener(this)
     }
@@ -161,6 +162,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         comment["text"] = thought.textString
         comment["uuid"] = thought.uuid
         comment["sender"] = blockstack_id
+        comment["iamAdmin"] = admin == blockstack_id
 
 
         var conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
@@ -181,7 +183,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         db.collection("thoughts").document(uuid).collection("discussion")
                 .add(comment)
                 .addOnSuccessListener {
-                    presenter.sendComment(user.blockstackId, uuid, comment)
+                    presenter.sendComment(admin, uuid, comment)
                     Log.d(TAG, "DocumentSnapshot successfully written!")
                     props.put("Success", true)
                 }
@@ -189,7 +191,6 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                     Log.w(TAG, "Error writing document", e)
                     props.put("Failure", true)
                 }
-        presenter.sendComment(user.blockstackId, thought.uuid, comment)
         App.mixpanel.track("Comment", props)
         App.mixpanel.people.increment("Comment", 1.0)
         return true
@@ -238,8 +239,8 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                                         comment_body["text"] = comment.textString
                                                         comment_body["uuid"] = comment.uuid
                                                         comment_body["sender"] = comment.user.target.blockstackId
-
-                                                        presenter.sendComment(user.blockstackId, uuid, comment_body)
+                                                        comment_body["iamAdmin"] = admin == blockstack_id
+                                                        presenter.sendComment(admin, uuid, comment_body)
                                                     }
                                             comment.isApproved = true
                                             thoughtBox.put(comment)

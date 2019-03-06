@@ -13,7 +13,6 @@ import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.dk.pden.App
-import com.dk.pden.App.Constants.TAG
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -74,7 +73,7 @@ class NotificationsMessagingService : MessagingService() {
                 // If comment from unknown user from discussion topic
                 if (user == null) {
                     user = User(remoteMessage.data["sender"]!!)
-                    user.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${user.blockstackId}"
+                    user.avatarImage = "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                 }
                 val thought = Thought(remoteMessage.data["text"]!!, remoteMessage.data["timestamp"]!!.toLong())
                 thought.uuid = remoteMessage.data["uuid"]!!
@@ -114,7 +113,7 @@ class NotificationsMessagingService : MessagingService() {
                         thought.timestamp = remoteMessage.sentTime
                         if (actual_owner == null) {
                             actual_owner = User(remoteMessage.data["actual_owner"]!!)
-                            actual_owner.avatarImage = "https://ui-avatars.com/api/?background=8432F8&color=F5C227&rounded=true&name=${actual_owner.blockstackId}"
+                            actual_owner.avatarImage = "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                         }
                         actual_owner.thoughts.add(thought)
                         user.spreaded_thoughts.add(thought)

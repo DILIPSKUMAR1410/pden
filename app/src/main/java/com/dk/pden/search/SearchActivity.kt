@@ -61,7 +61,7 @@ class SearchActivity : AppCompatActivity(), SearchUsersMvpView {
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)
-        recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
+
         recyclerView.adapter = adapterSearch
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
         })

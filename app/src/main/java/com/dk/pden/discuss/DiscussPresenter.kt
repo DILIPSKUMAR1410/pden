@@ -32,7 +32,8 @@ class DiscussPresenter : BasePresenter<MvpView>() {
         dataobj.addProperty("sender", comment["sender"].toString())
         val to = JsonArray()
         val via: Single<PublishStatusApiResponse>
-        if (admin.equals(comment["sender"].toString())) {
+
+        if (comment["iamAdmin"].toString().toBoolean()) {
             to.add(topic)
             envelopeObject.add("interests", to)
             via = firebaseService.publishToTopic(envelopeObject)
@@ -58,6 +59,5 @@ class DiscussPresenter : BasePresenter<MvpView>() {
                             Log.d("error-->>", it.message)
                         }
                 )
-
     }
 }

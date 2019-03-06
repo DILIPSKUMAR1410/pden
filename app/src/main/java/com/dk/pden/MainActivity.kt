@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         user.nameString = if (userData.profile?.name != null) userData.profile?.name!! else ""
         user.description = if (userData.profile?.description != null) userData.profile?.description!! else ""
         user.email = if (userData.profile?.email != null) userData.profile?.email!! else ""
-        user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://api.adorable.io/avatars/285/"+user.blockstackId+".png"
+        user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
         user.isSelf = true
         userBox.put(user)
 

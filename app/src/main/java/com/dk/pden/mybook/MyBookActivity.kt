@@ -124,7 +124,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)
-        recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
+
         recyclerView.adapter = adapter
         adapter.user = user
 
