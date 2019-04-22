@@ -2,7 +2,6 @@ package com.dk.pden.model
 
 import com.beust.klaxon.Json
 import com.stfalcon.chatkit.commons.models.IMessage
-import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToOne
@@ -35,7 +34,6 @@ data class Thought(@Json(name = "text")
 
     var isComment: Boolean = false
 
-    @Backlink(to = "discussion")
     lateinit var discussion: ToOne<Discussion>
 
     override fun getId(): String {

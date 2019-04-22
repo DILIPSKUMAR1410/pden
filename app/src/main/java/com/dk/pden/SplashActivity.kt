@@ -22,7 +22,7 @@ class SplashActivity : AppCompatActivity() {
         // Get a instance of PreferencesHelper class
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         val intent: Intent
-        if (userBox.find(User_.blockstackId, PreferencesHelper(this).blockstackId).isNotEmpty()) {
+        if (userBox.query().equal(User_.blockstackId, PreferencesHelper(this).blockstackId).build().find().isNotEmpty()) {
             intent = Intent(this, FeedActivity::class.java)
         } else {
             intent = Intent(this, MainActivity::class.java)

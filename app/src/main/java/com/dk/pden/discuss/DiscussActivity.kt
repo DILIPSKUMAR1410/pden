@@ -75,7 +75,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
 
-        user = userBox.find(User_.blockstackId, blockstack_id).first()
+        user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!
         imageLoader = ImageLoader { imageView, url, _ -> imageView.loadAvatar(url) }
 
 
@@ -83,7 +83,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
 
 
         //For example click listener
-        payload.iamAdmin = thoughtBox.find(Thought_.uuid, uuid).first().user.targetId == user.pk
+        payload.iamAdmin = thoughtBox.query().equal(Thought_.uuid, uuid).build().findFirst()!!.user.targetId == user.pk
 
 
         val holdersConfig = MessageHolders()
@@ -96,7 +96,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
             adapter.enableSelectionMode(this)
         }
         messagesList.setAdapter(adapter)
-        var conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
+        var conversation = discussionBox.query().equal(Discussion_.uuid, uuid).build().findFirst()
         if (conversation == null) {
             conversation = Discussion(uuid)
             val docsref = db.collection("thoughts").document(uuid).collection("discussion")
@@ -113,7 +113,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 if (document.data.containsKey("isApproved"))
                                     thought.isApproved = document.data["isApproved"] as Boolean
 
-                                var sender = userBox.find(User_.blockstackId, document.data["sender"] as String).firstOrNull()
+                                var sender = userBox.query().equal(User_.blockstackId, document.data["sender"] as String).build().findFirst()
                                 if (sender == null) {
                                     sender = User(document.data["sender"] as String)
                                     sender.avatarImage = "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
@@ -121,7 +121,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 sender.thoughts.add(thought)
                                 senders.add(sender)
                             } else {
-                                thought = thoughtBox.find(Thought_.uuid, uuid).first()
+                                thought = thoughtBox.query().equal(Thought_.uuid, uuid).build().findFirst()!!
                             }
                             conversation.thoughts.add(thought)
 
@@ -137,7 +137,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
             adapter.addToEnd(conversation.thoughts.sortedByDescending { it -> it.timestamp }, false)
 
 
-        admin = thoughtBox.find(Thought_.uuid, uuid).first().user.target.blockstackId
+        admin = thoughtBox.query().equal(Thought_.uuid, uuid).build().findFirst()!!.user.target.blockstackId
         input.setInputListener(this)
         input.setTypingListener(this)
     }
@@ -165,7 +165,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
         comment["iamAdmin"] = admin == blockstack_id
 
 
-        var conversation = discussionBox.find(Discussion_.uuid, uuid).firstOrNull()
+        var conversation = discussionBox.query().equal(Discussion_.uuid, uuid).build().findFirst()
         if (conversation == null) {
             conversation = Discussion(uuid)
             // [START subscribe_topics]
@@ -199,7 +199,9 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onAddEvent(event: NewCommentEvent) {
         /* Do something */
-        adapter.addToStart(event.thoughts.get(0), true)
+        if (event.thoughts[0].discussion.target.uuid.equals(uuid)) {
+            adapter.addToStart(event.thoughts[0], true)
+        }
 
     }
 
@@ -230,7 +232,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                 .addOnSuccessListener { result ->
                                     var count = 0
                                     for (document in result) {
-                                        val comment = thoughtBox.find(Thought_.uuid, document.data["uuid"].toString()).firstOrNull()
+                                        val comment = thoughtBox.query().equal(Thought_.uuid, document.data["uuid"].toString()).build().findFirst()
                                         if (document.data["uuid"] in uuids && !comment?.isApproved!!) {
                                             docsref.document(document.id)
                                                     .update("isApproved", true).addOnSuccessListener {
@@ -248,7 +250,7 @@ class DiscussActivity : AppCompatActivity(), MessagesListAdapter.SelectionListen
                                             count += 1
                                         }
                                     }
-                                    Toast.makeText(this, count.toString() + " comment/s made public", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this, "$count comment/s made public", Toast.LENGTH_SHORT).show()
                                 }
                                 .addOnFailureListener { exception ->
                                     Log.d(TAG, "Error getting documents: ", exception)

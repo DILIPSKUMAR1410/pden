@@ -66,10 +66,10 @@ class NotificationsMessagingService : MessagingService() {
         // Check if message contains a data payload.
         remoteMessage.data?.isNotEmpty()?.let {
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
-            val thought = thoughtBox.find(Thought_.uuid, remoteMessage.data["uuid"])
+            val thought = thoughtBox.query().equal(Thought_.uuid, remoteMessage.data["uuid"]).build().find()
             if (thought.isEmpty()) {
                 val props = JSONObject()
-                var user = userBox.find(User_.blockstackId, remoteMessage.data["sender"]).firstOrNull()
+                var user = userBox.query().equal(User_.blockstackId, remoteMessage.data["sender"]).build().findFirst()
                 // If comment from unknown user from discussion topic
                 if (user == null) {
                     user = User(remoteMessage.data["sender"]!!)
@@ -84,7 +84,7 @@ class NotificationsMessagingService : MessagingService() {
                 if (remoteMessage.data.containsKey("topic")) {
                     val topic = remoteMessage.data["topic"].toString()
                     thought.isComment = true
-                    val assert_conversation = discussionBox.find(Discussion_.uuid, topic)
+                    val assert_conversation = discussionBox.query().equal(Discussion_.uuid, topic).build().find()
                     if (assert_conversation.isEmpty()) {
                         discussion = Discussion(topic)
                         // [START subscribe_topics]
@@ -109,7 +109,7 @@ class NotificationsMessagingService : MessagingService() {
                 else {
                     // Spread thought from your interest
                     if (remoteMessage.data.containsKey("actual_owner")) {
-                        var actual_owner = userBox.find(User_.blockstackId, remoteMessage.data["actual_owner"]).firstOrNull()
+                        var actual_owner = userBox.query().equal(User_.blockstackId, remoteMessage.data["actual_owner"]).build().findFirst()
                         thought.timestamp = remoteMessage.sentTime
                         if (actual_owner == null) {
                             actual_owner = User(remoteMessage.data["actual_owner"]!!)

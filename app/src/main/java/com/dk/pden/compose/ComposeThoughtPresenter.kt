@@ -52,9 +52,9 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         interests.add(topic)
 
         val fcm = JsonObject()
-        fcm.add("data",dataobj)
+        fcm.add("data", dataobj)
 
-        envelopeObject.add("interests",interests)
+        envelopeObject.add("interests", interests)
         envelopeObject.add("fcm", fcm)
 
         val admin = HashMap<String, Any>()

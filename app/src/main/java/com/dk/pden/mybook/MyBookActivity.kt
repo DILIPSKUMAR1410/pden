@@ -16,10 +16,8 @@ import android.widget.ToggleButton
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
-import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.common.visible
-import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.feed.FeedPresenter
 import com.dk.pden.model.Thought
@@ -89,7 +87,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         blockstack_id = intent.getStringExtra(TAG_USER_blockstackId)
 
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        user = userBox.find(User_.blockstackId, blockstack_id).firstOrNull()
+        user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()
 
         if (user == null) {
             user = User(blockstack_id)

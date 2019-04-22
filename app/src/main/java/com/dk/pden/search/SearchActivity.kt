@@ -11,9 +11,7 @@ import android.view.MenuItem
 import android.widget.ProgressBar
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.R
-import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
-import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.model.User
 
 class SearchActivity : AppCompatActivity(), SearchUsersMvpView {

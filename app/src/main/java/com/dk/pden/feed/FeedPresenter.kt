@@ -34,7 +34,7 @@ open class FeedPresenter : BasePresenter<FeedMvpView>() {
 
         val blockstack_id = PreferencesHelper(context).blockstackId
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        val me = userBox.find(User_.blockstackId, blockstack_id).first()
+        val me = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         thought.isSpread = true
         thoughtBox.put(thought)

@@ -73,7 +73,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         }
 
         spreadOutsideImageButton.setOnClickListener {
-        listener.spreadOutside(thought)
+            listener.spreadOutside(thought)
         }
         userProfilePicImageView.setOnClickListener {
             listener.showUser(thought.user.target)

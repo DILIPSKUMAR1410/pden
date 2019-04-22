@@ -121,7 +121,7 @@ class InitActivity : AppCompatActivity() {
                 if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                     val user: User
                     if (interest.equals(blockstack_id)) {
-                        user = userBox.find(User_.blockstackId, blockstack_id).first()
+                        user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!
                     } else {
                         user = User(interest)
                         user.isFollowed = true

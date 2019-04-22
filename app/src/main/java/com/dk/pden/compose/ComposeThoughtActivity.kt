@@ -106,7 +106,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     composeThoughtEditText.isEnabled = false
                     showLoading()
                     val blockstack_id = PreferencesHelper(this).blockstackId
-                    val user = userBox.find(User_.blockstackId, blockstack_id).first()
+                    val user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()
                     val thought = Thought(getThought(), System.currentTimeMillis())
                     thought.isComment = false
                     rootObject.put("timestamp", thought.timestamp)
@@ -133,7 +133,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                     blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
                                     { readURLResult ->
                                         if (readURLResult.hasValue) {
-                                            user.thoughts.add(thought)
+                                            user!!.thoughts.add(thought)
                                             // [START subscribe_topics]
                                             PushNotifications.addDeviceInterest(thought.uuid)
                                                     .let {

@@ -20,10 +20,8 @@ import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
-import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
-import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
@@ -126,51 +124,44 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         Handler().postDelayed(
                 {
                     val fancyShowCaseView0 = FancyShowCaseView.Builder(this)
-                            .title("Compose\n" +
-                                    "door to the world for your thoughts")
+                            .title(" \n\n\n Compose your thoughts")
                             .focusOn(floatingActionButton)
                             .titleStyle(R.style.MyTitleStyle, Gravity.CENTER)
                             .showOnce("Compose")
                             .build()
                     val fancyShowCaseView1 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myBook)) // ActionBar menu item id
-                            .title("Book\n" +
-                                    "your public short-form diary which you share with the world.")
+                            .title("\n\n\n    Book is your collection of thoughts.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Book")
                             .build()
                     val fancyShowCaseView2 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myShelf)) // ActionBar menu item id
-                            .title("Shelf\n" +
-                                    "list of books you have borrowed.")
+                            .title("\n\n\n    Shelf is list of books you have borrowed.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Shelf")
                             .build()
                     val fancyShowCaseView3 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.action_search)) // ActionBar menu item id
-                            .title("Search\n" +
-                                    "find your inspirations here")
+                            .title("\n\n\n    Search users")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Search")
                             .build()
                     val fancyShowCaseView4 = FancyShowCaseView.Builder(this)
-                            .title("Discuss\n" +
-                                    "explain your views")
+                            .title("Discuss your views on the post")
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Discuss")
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.threadImageButton))
                             .build()
                     val fancyShowCaseView5 = FancyShowCaseView.Builder(this)
-                            .title("Spread\n" +
-                                    "let others have a look at thoughts that moved you")
+                            .title("Spread the thought in other communities")
                             .enableAutoTextPosition()
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Spread")
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.spreadImageButton))
                             .build()
                     val fancyShowCaseView6 = FancyShowCaseView.Builder(this)
-                            .title("Social group\n" +
-                                    "Tell other communities about the thought ")
+                            .title("Tell other communities about the thought")
                             .enableAutoTextPosition()
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Social group")
@@ -211,7 +202,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     private fun openProfile() {
         val preferencesHelper = PreferencesHelper(this)
         val blockstack_id = preferencesHelper.blockstackId
-        val user = ObjectBox.boxStore.boxFor(User::class.java).find(User_.blockstackId, blockstack_id).firstOrNull()
+        val user = ObjectBox.boxStore.boxFor(User::class.java).query().equal(User_.blockstackId, blockstack_id).build().findFirst()
         user?.let { MyBookActivity.launch(this, it) }
     }
 
@@ -223,7 +214,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         if (isPackageExist("com.whatsapp")) {
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
-            sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
+            sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout Pden app, I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
             sendIntent.type = "text/plain"
             sendIntent.setPackage("com.whatsapp")
             startActivity(sendIntent)
@@ -248,7 +239,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
             sendIntent.putExtra(Intent.EXTRA_TEXT, thought.user.target.blockstackId + " \nsays: \n" + thought.text +
-            "\nCheckout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
+                    "\nCheckout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
             sendIntent.type = "text/plain"
             sendIntent.setPackage("com.whatsapp")
             startActivity(sendIntent)

@@ -89,7 +89,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                     if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                         user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
-                        user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/"+user.blockstackId+".png"
+                        user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                         userBox.put(user)
                         launch(UI) {
                             blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
@@ -112,7 +112,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         i++
                                     }
                                     Log.d("thoughts -> Mybook open", my_book.toString())
-                                    if (!userBox.find(User_.blockstackId, user.blockstackId).isEmpty()) {
+                                    if (!userBox.query().equal(User_.blockstackId, user.blockstackId).build().find().isEmpty()) {
                                         thoughtBox.query().run {
                                             equal(Thought_.userId, user.pk)
                                             build().remove()
@@ -181,7 +181,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                     }
                                                     user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                                                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
-                                                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/"+user.blockstackId+".png"
+                                                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                                                     userBox.put(user)
                                                     launch(UI) {
                                                         blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->

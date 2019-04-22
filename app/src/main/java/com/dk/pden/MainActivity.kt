@@ -1,17 +1,18 @@
 package com.dk.pden
 
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.ProgressBar
 import android.widget.Toast
-import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils.config
 import com.dk.pden.common.visible
 import com.dk.pden.model.User
+import com.dk.pden.service.ApiServiceFactory
 import com.pusher.pushnotifications.BeamsCallback
 import com.pusher.pushnotifications.PushNotifications
 import com.pusher.pushnotifications.PusherCallbackError
@@ -19,6 +20,9 @@ import com.pusher.pushnotifications.auth.AuthData
 import com.pusher.pushnotifications.auth.AuthDataGetter
 import com.pusher.pushnotifications.auth.BeamsTokenProvider
 import io.objectbox.Box
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.UserData
@@ -28,7 +32,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var userBox: Box<User>
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var loadingProgressBar: ProgressBar
-
+    private val apiService by lazy {
+        ApiServiceFactory.createService()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,63 +64,87 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("CheckResult")
     private fun onSignIn(userData: UserData) {
-        // Get a instance of PreferencesHelper class
-        val preferencesHelper = PreferencesHelper(this)
-        // save token on preferences
-        preferencesHelper.blockstackId = userData.json.getString("username")
+        val username = userData.json.getString("username")
+        apiService.getUser(username)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeBy(
+                        onSuccess = {
+                            if (!it.has("error"))
+                            {// Get a instance of PreferencesHelper class
+                                val preferencesHelper = PreferencesHelper(this)
+                                // save token on preferences
+                                preferencesHelper.blockstackId = userData.json.getString("username")
 
-        userBox = ObjectBox.boxStore.boxFor(User::
-        class.java)
-        val user = User(userData.json.getString("username"))
-        user.nameString = if (userData.profile?.name != null) userData.profile?.name!! else ""
-        user.description = if (userData.profile?.description != null) userData.profile?.description!! else ""
-        user.email = if (userData.profile?.email != null) userData.profile?.email!! else ""
-        user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
-        user.isSelf = true
-        userBox.put(user)
+                                userBox = ObjectBox.boxStore.boxFor(User::
+                                class.java)
+                                val user = User(userData.json.getString("username"))
+                                user.nameString = if (userData.profile?.name != null) userData.profile?.name!! else ""
+                                user.description = if (userData.profile?.description != null) userData.profile?.description!! else ""
+                                user.email = if (userData.profile?.email != null) userData.profile?.email!! else ""
+                                user.avatarImage = if (userData.profile?.avatarImage != null) userData.profile?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
+                                user.isSelf = true
+                                userBox.put(user)
 
 
-        val tokenProvider = BeamsTokenProvider(
-                "https://app.pden.xyz/.netlify/functions/beam_token",
-                object : AuthDataGetter {
-                    override fun getAuthData(): AuthData {
-                        return AuthData(
-                                // Headers and URL query params your auth endpoint needs to
-                                // request a Beams Token for a given user
-                                headers = hashMapOf(
-                                        // for example:
-                                        // "Authorization" to sessionToken
-                                ),
-                                queryParams = hashMapOf("blockstack_id" to user.blockstackId)
-                        )
-                    }
-                }
-        )
+                                val tokenProvider = BeamsTokenProvider(
+                                        "https://app.pden.xyz/.netlify/functions/beam_token",
+                                        object : AuthDataGetter {
+                                            override fun getAuthData(): AuthData {
+                                                return AuthData(
+                                                        // Headers and URL query params your auth endpoint needs to
+                                                        // request a Beams Token for a given user
+                                                        headers = hashMapOf(
+                                                                // for example:
+                                                                // "Authorization" to sessionToken
+                                                        ),
+                                                        queryParams = hashMapOf("blockstack_id" to user.blockstackId)
+                                                )
+                                            }
+                                        }
+                                )
 
-        PushNotifications.setUserId(
-                user.blockstackId,
-                tokenProvider,
-                object : BeamsCallback<Void, PusherCallbackError> {
-                    override fun onFailure(error: PusherCallbackError) {
-                        Log.e("BeamsAuth", "Could not login to Beams: ${error.message}");
-                    }
+                                PushNotifications.setUserId(
+                                        user.blockstackId,
+                                        tokenProvider,
+                                        object : BeamsCallback<Void, PusherCallbackError> {
+                                            override fun onFailure(error: PusherCallbackError) {
+                                                Log.e("BeamsAuth", "Could not login to Beams: ${error.message}");
+                                            }
 
-                    override fun onSuccess(vararg values: Void) {
-                        Log.i("BeamsAuth", "Beams login success");
-                    }
-                }
-        )
+                                            override fun onSuccess(vararg values: Void) {
+                                                Log.i("BeamsAuth", "Beams login success");
+                                            }
+                                        }
+                                )
 
-        mixpanel.track("Login")
-        mixpanel.identify(user.blockstackId)
-        mixpanel.people.identify(user.blockstackId)
-        mixpanel.people.increment("Login", 1.0)
-        loadingProgressBar.visible(false)
+                                App.mixpanel.track("Login")
+                                App.mixpanel.identify(user.blockstackId)
+                                App.mixpanel.people.identify(user.blockstackId)
+                                App.mixpanel.people.increment("Login", 1.0)
+                                loadingProgressBar.visible(false)
 
-        val intent = Intent(this, InitActivity::class.java)
-        startActivity(intent)
-        finish()
+                                val intent = Intent(this, InitActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            else{
+                                signInButton.isEnabled = true
+                                loadingProgressBar.visible(false)
+                                Toast.makeText(this, "Your blockstack is not ready yet ! Please try to login after some time", Toast.LENGTH_LONG).show()
+                            }
+
+                        },
+                        onError =
+                        {
+                            signInButton.isEnabled = true
+                            loadingProgressBar.visible(false)
+                            Toast.makeText(this, "Your blockstack is not ready yet ! Please try to login after some time",  Toast.LENGTH_LONG).show()
+                        }
+                )
+
     }
 
 
@@ -163,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun blockstackSession(): BlockstackSession {
+    private fun blockstackSession(): BlockstackSession {
         val session = _blockstackSession
         if (session != null) {
             return session
