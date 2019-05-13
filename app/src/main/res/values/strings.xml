@@ -20,4 +20,5 @@
     <string name="hint_enter_a_message">Hit enter</string>
     <string name="make_public">Make public</string>
     <string name="selected_count">selected_count</string>
+    <string name="your_blockstack_is_not_ready_yet_please_try_to_login_after_some_time">Your blockstack ID is not ready yet ! Please try to login after some time.</string>
 </resources>

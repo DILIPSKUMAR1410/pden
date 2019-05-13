@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                             else{
                                 signInButton.isEnabled = true
                                 loadingProgressBar.visible(false)
-                                Toast.makeText(this, "Your blockstack is not ready yet ! Please try to login after some time", Toast.LENGTH_LONG).show()
+                                warning.visible(true)
                             }
 
                         },
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                         {
                             signInButton.isEnabled = true
                             loadingProgressBar.visible(false)
-                            Toast.makeText(this, "Your blockstack is not ready yet ! Please try to login after some time",  Toast.LENGTH_LONG).show()
+                            warning.visible(true)
                         }
                 )
 

@@ -15,13 +15,11 @@ import android.util.Log
 import com.dk.pden.App
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
-import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.*
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.RemoteMessage
 import com.pusher.pushnotifications.PushNotifications
 import com.pusher.pushnotifications.fcm.MessagingService
@@ -162,28 +160,28 @@ class NotificationsMessagingService : MessagingService() {
     private fun sendRegistrationToServer(token: String?) {
         // TODO: Implement this method to send token to your app server.
 
-        // Get a instance of PreferencesHelper class
-        val preferencesHelper = PreferencesHelper(this)
-        // save token on preferences
-        preferencesHelper.registration_id = token
-
-        if (PreferencesHelper(this).blockstackId.isNotEmpty()) {
-            // Create a new comment
-            val users = HashMap<String, String?>()
-            users["registration_id"] = token
-            val db = FirebaseFirestore.getInstance()
-
-            // Add a new document with a generated ID
-            db.collection("users")
-                    .document(PreferencesHelper(this).blockstackId)
-                    .set(users as Map<*, *>)
-                    .addOnSuccessListener { documentReference ->
-                        Log.d(TAG, "DocumentSnapshot written with ID: $documentReference")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.w(TAG, "Error adding document", e)
-                    }
-        }
+//        // Get a instance of PreferencesHelper class
+//        val preferencesHelper = PreferencesHelper(this)
+//        // save token on preferences
+//        preferencesHelper.registration_id = token
+//
+//        if (PreferencesHelper(this).blockstackId.isNotEmpty()) {
+//            // Create a new comment
+//            val users = HashMap<String, String?>()
+//            users["registration_id"] = token
+//            val db = FirebaseFirestore.getInstance()
+//
+//            // Add a new document with a generated ID
+//            db.collection("users")
+//                    .document(PreferencesHelper(this).blockstackId)
+//                    .set(users as Map<*, *>)
+//                    .addOnSuccessListener { documentReference ->
+//                        Log.d(TAG, "DocumentSnapshot written with ID: $documentReference")
+//                    }
+//                    .addOnFailureListener { e ->
+//                        Log.w(TAG, "Error adding document", e)
+//                    }
+//        }
     }
 
     companion object {
