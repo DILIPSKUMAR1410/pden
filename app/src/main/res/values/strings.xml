@@ -20,4 +20,6 @@
     <string name="hint_enter_a_message">Hit enter</string>
     <string name="make_public">Make public</string>
     <string name="selected_count">selected_count</string>
+    <string name="borrow">Borrow</string>
+    <string name="borrowed">Borrowed</string>
 </resources>
