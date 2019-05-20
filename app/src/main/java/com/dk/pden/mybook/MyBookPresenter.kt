@@ -17,8 +17,9 @@ import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
 import org.blockstack.android.sdk.PutFileOptions
@@ -91,7 +92,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                         user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                         userBox.put(user)
-                        launch(UI) {
+                        GlobalScope.launch(Dispatchers.Main) {
                             blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {
                                     var my_book = JSONArray()
@@ -151,7 +152,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         _blockstackSession = BlockstackSession(context, config
         ) {
             blockstackSession().getFile("pasand.json", options_get) { contentResult ->
-                launch(UI) {
+                GlobalScope.launch(Dispatchers.Main) {
                     if (contentResult.hasValue) {
                         var content: String?
                         if (contentResult.value is String) {
@@ -172,7 +173,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                 app = "https://app.pden.xyz",
                                                 decrypt = false)
                                         val thoughts = mutableListOf<Thought>()
-                                        launch(UI) {
+                                        GlobalScope.launch(Dispatchers.Main) {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                                                 val is_exist = profileResult.value?.json?.get("apps") as JSONObject
                                                 if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
@@ -183,7 +184,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                                                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                                                     userBox.put(user)
-                                                    launch(UI) {
+                                                    GlobalScope.launch(Dispatchers.Main) {
                                                         blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                                                             if (contentResult.hasValue) {
                                                                 var my_book = JSONArray()
@@ -276,7 +277,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         _blockstackSession = BlockstackSession(context, config
         ) {
             blockstackSession().getFile("pasand.json", options_get) { contentResult ->
-                launch(UI) {
+                GlobalScope.launch(Dispatchers.Main) {
                     if (contentResult.hasValue) {
                         var content: String? = null
                         if (contentResult.value is String) {

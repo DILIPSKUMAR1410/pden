@@ -12,7 +12,9 @@ import android.widget.ProgressBar
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
+import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
+import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import io.objectbox.Box
@@ -59,7 +61,7 @@ class ShelfActivity : AppCompatActivity(), ShelfUsersMvpView {
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)
-
+        recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapterShelf
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
         })

@@ -15,8 +15,9 @@ import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blockstack.android.sdk.BlockstackSession
 import org.blockstack.android.sdk.GetFileOptions
 import org.blockstack.android.sdk.PutFileOptions
@@ -40,14 +41,13 @@ class InitActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_init)
+        blockstack_id = PreferencesHelper(this).blockstackId
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         progressPercent = findViewById(R.id.progressPercent)
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
             val options = GetFileOptions(false)
-            Log.d("errorMsg", options.toString())
-
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
             blockstackSession().getFile("pasand.json", options) { contentResult ->
                 var interests = JSONArray()
@@ -57,13 +57,11 @@ class InitActivity : AppCompatActivity() {
                         content = contentResult.value as String
                         if (content.isNotEmpty()) {
                             interests = JSONArray(content)
-                            blockstack_id = PreferencesHelper(this).blockstackId
                             interests.put(blockstack_id)
                             // Default borrowed handles
                             interests.put("cryptoupdates.id.blockstack")
                             interests.put("scienceandtech.id.blockstack")
                             interests.put("amazingquotes.id.blockstack")
-
 
                             if (interests.length() > 0)
                                 fetchBooks(interests, counter)
@@ -72,11 +70,20 @@ class InitActivity : AppCompatActivity() {
                         }
                     } else {
                         val options_put = PutFileOptions(false)
-                        launch(UI) {
+                        GlobalScope.launch(Dispatchers.Main) {
                             blockstackSession().putFile("pasand.json", interests.toString(), options_put)
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
-                                    close()
+                                    interests.put(blockstack_id)
+                                    // Default borrowed handles
+                                    interests.put("cryptoupdates.id.blockstack")
+                                    interests.put("scienceandtech.id.blockstack")
+                                    interests.put("amazingquotes.id.blockstack")
+
+                                    if (interests.length() > 0)
+                                        fetchBooks(interests, counter)
+                                    else
+                                        close()
                                 } else {
                                     throw IllegalStateException(readURLResult.error)
                                 }
@@ -114,9 +121,10 @@ class InitActivity : AppCompatActivity() {
                 zoneFileLookupURL = zoneFileLookupUrl,
                 app = "https://app.pden.xyz",
                 decrypt = false)
-        launch(UI) {
+        GlobalScope.launch(Dispatchers.Main) {
             progressPercent.text = "$percent %"
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
+                Log.d(">>>>>>>>", interest)
                 val is_exist = profileResult.value?.json?.get("apps") as JSONObject
                 if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                     val user: User
@@ -126,13 +134,12 @@ class InitActivity : AppCompatActivity() {
                         user = User(interest)
                         user.isFollowed = true
                     }
+
                     user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                     user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
                     userBox.put(user)
-
-
-                    launch(UI) {
+                    GlobalScope.launch(Dispatchers.Main) {
                         blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                             if (contentResult.hasValue) {
                                 val content: Any

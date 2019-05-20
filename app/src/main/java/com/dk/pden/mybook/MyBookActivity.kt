@@ -16,8 +16,10 @@ import android.widget.ToggleButton
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
+import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.common.visible
+import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.feed.FeedPresenter
 import com.dk.pden.model.Thought
@@ -122,7 +124,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)
-
+        recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
         adapter.user = user
 

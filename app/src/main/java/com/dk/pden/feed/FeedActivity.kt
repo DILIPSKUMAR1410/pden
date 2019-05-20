@@ -20,8 +20,10 @@ import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
+import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.compose.ComposeThoughtActivity
+import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
@@ -78,7 +80,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         val linearLayoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.setHasFixedSize(true)
-
+        recyclerView.addItemDecoration(SpaceTopItemDecoration(Utils.dpToPx(this, 10)))
         recyclerView.adapter = adapter
 
 //        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
