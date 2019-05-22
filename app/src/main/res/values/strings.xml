@@ -22,4 +22,5 @@
     <string name="selected_count">selected_count</string>
     <string name="borrow">Borrow</string>
     <string name="borrowed">Borrowed</string>
+    <string name="thoughts">Thoughts</string>
 </resources>

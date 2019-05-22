@@ -13,6 +13,7 @@ import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
+import com.google.firebase.firestore.FirebaseFirestore
 import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,8 @@ class InitActivity : AppCompatActivity() {
     var counter = 0
     var blockstack_id: String = ""
     private lateinit var progressPercent: TextView
+    private lateinit var db: FirebaseFirestore
+    private val TAG = "InitActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,46 +47,29 @@ class InitActivity : AppCompatActivity() {
         blockstack_id = PreferencesHelper(this).blockstackId
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         progressPercent = findViewById(R.id.progressPercent)
+        db = FirebaseFirestore.getInstance()
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
             // BlockstackSession API methods
             val options = GetFileOptions(false)
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
+            createOrFetchWallet()
             blockstackSession().getFile("pasand.json", options) { contentResult ->
-                var interests = JSONArray()
                 if (contentResult.hasValue) {
                     val content: String?
                     if (contentResult.value is String) {
                         content = contentResult.value as String
                         if (content.isNotEmpty()) {
-                            interests = JSONArray(content)
-                            interests.put(blockstack_id)
-                            // Default borrowed handles
-                            interests.put("cryptoupdates.id.blockstack")
-                            interests.put("scienceandtech.id.blockstack")
-                            interests.put("amazingquotes.id.blockstack")
-
-                            if (interests.length() > 0)
-                                fetchBooks(interests, counter)
-                            else
-                                close()
+                            defaultHandles(JSONArray(content))
                         }
                     } else {
+                        val interests = JSONArray()
                         val options_put = PutFileOptions(false)
                         GlobalScope.launch(Dispatchers.Main) {
                             blockstackSession().putFile("pasand.json", interests.toString(), options_put)
                             { readURLResult ->
                                 if (readURLResult.hasValue) {
-                                    interests.put(blockstack_id)
-                                    // Default borrowed handles
-                                    interests.put("cryptoupdates.id.blockstack")
-                                    interests.put("scienceandtech.id.blockstack")
-                                    interests.put("amazingquotes.id.blockstack")
-
-                                    if (interests.length() > 0)
-                                        fetchBooks(interests, counter)
-                                    else
-                                        close()
+                                    defaultHandles(interests)
                                 } else {
                                     throw IllegalStateException(readURLResult.error)
                                 }
@@ -112,6 +98,19 @@ class InitActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun defaultHandles(interests: JSONArray) {
+        interests.put(blockstack_id)
+        // Default borrowed handles
+        interests.put("cryptoupdates.id.blockstack")
+        interests.put("scienceandtech.id.blockstack")
+        interests.put("amazingquotes.id.blockstack")
+
+        if (interests.length() > 0)
+            fetchBooks(interests, counter)
+        else
+            close()
+    }
+
     @SuppressLint("SetTextI18n")
     private fun fetchBooks(interests: JSONArray, counter: Int) {
         val interest = interests.getString(counter)
@@ -124,7 +123,6 @@ class InitActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             progressPercent.text = "$percent %"
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                Log.d(">>>>>>>>", interest)
                 val is_exist = profileResult.value?.json?.get("apps") as JSONObject
                 if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                     val user: User
@@ -195,5 +193,49 @@ class InitActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+
+    private fun createOrFetchWallet() {
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    if (user.exists()) {
+                        Log.d(TAG, "DocumentSnapshot data: ${user.data}")
+                        // Get a instance of PreferencesHelper class
+                        val preferencesHelper = PreferencesHelper(this)
+                        // save token on preferences
+                        preferencesHelper.inkBal = user.data?.get("ink_bal") as Long
+                        preferencesHelper.freePromoPost = user.data?.get("free_promo_post") as Long
+                        preferencesHelper.freePromoLove = user.data?.get("free_promo_love") as Long
+                        preferencesHelper.freePromoSpread = user.data?.get("free_promo_spread") as Long
+                        preferencesHelper.freePromoComment = user.data?.get("free_promo_comment") as Long
+
+                    } else {
+                        Log.d(TAG, "No such document")
+                        val newUser = HashMap<String, Any>()
+                        // Get a instance of PreferencesHelper class
+                        val preferencesHelper = PreferencesHelper(this)
+                        // save token on preferences
+                        preferencesHelper.inkBal = 0
+                        preferencesHelper.freePromoPost = 50
+                        preferencesHelper.freePromoLove = 50
+                        preferencesHelper.freePromoSpread = 50
+                        preferencesHelper.freePromoComment = 50
+                        newUser["ink_bal"] = 0
+                        newUser["free_promo_post"] = 50
+                        newUser["free_promo_love"] = 50
+                        newUser["free_promo_spread"] = 50
+                        newUser["free_promo_comment"] = 50
+
+                        db.collection("users").document(blockstack_id)
+                                .set(newUser)
+                                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
+                                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
     }
 }

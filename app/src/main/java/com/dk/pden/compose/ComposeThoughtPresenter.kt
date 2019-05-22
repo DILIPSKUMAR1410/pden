@@ -43,10 +43,11 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
         dataobj.addProperty("text", rootObject?.getString("text"))
         dataobj.addProperty("sender", topic)
 
-        // Create a new comment
-        val comment = HashMap<String, Any>()
-        comment["timestamp"] = rootObject!!.getString("timestamp")
-        comment["text"] = rootObject.getString("text")
+        // Create a new thought in Firestore
+        val thought = HashMap<String, Any>()
+        thought["timestamp"] = rootObject!!.getString("timestamp")
+        thought["text"] = rootObject.getString("text")
+
 
         val interests = JsonArray()
         interests.add(topic)
@@ -59,6 +60,7 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
         val admin = HashMap<String, Any>()
         admin["admin"] = topic
+        admin["postedAt"] = rootObject.getString("timestamp")
 
         val db = FirebaseFirestore.getInstance()
         db.collection("thoughts").document(rootObject.getString("uuid"))
@@ -68,8 +70,8 @@ class ComposeThoughtPresenter : BasePresenter<ComposeThoughtMvpView>() {
 
 
         db.collection("thoughts").document(rootObject.getString("uuid")).collection("discussion")
-                .add(comment)
-                .addOnSuccessListener { Log.d("ComposeThoughtPresenter", "DocumentSnapshot successfully written!") }
+                .add(thought)
+                .addOnSuccessListener { Log.d("ComposeThoughtPresenter", "Thought successfully written!") }
                 .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
 
         firebaseService.publishToTopic(envelopeObject)

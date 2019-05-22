@@ -56,7 +56,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="3dp"
                             android:singleLine="true"
-                            android:text="Thoughts"
+                            android:text="@string/thoughts"
                             android:textColor="#ffffff"
                             android:textSize="18sp" />
 

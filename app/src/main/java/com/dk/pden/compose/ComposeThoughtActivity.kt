@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
@@ -18,10 +19,9 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.visible
 import com.dk.pden.events.NewThoughtsEvent
-import com.dk.pden.model.Discussion
-import com.dk.pden.model.Thought
-import com.dk.pden.model.User
-import com.dk.pden.model.User_
+import com.dk.pden.model.*
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
 import kotlinx.android.synthetic.main.activity_compose.*
@@ -36,9 +36,16 @@ import org.json.JSONObject
 class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     private val presenter: ComposeThoughtPresenter by lazy { ComposeThoughtPresenter() }
     private var _blockstackSession: BlockstackSession? = null
+    private var blockstack_id: String = ""
+
     private lateinit var userBox: Box<User>
+    private lateinit var transactionBox: Box<Transaction>
     private lateinit var discussionBox: Box<Discussion>
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var db: FirebaseFirestore
+    private lateinit var preferencesHelper: PreferencesHelper
+    private val TAG = "ComposeActivity"
+
 
     companion object {
         fun launch(context: Context) {
@@ -50,6 +57,8 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_compose)
+        preferencesHelper = PreferencesHelper(this)
+        blockstack_id = preferencesHelper.blockstackId
 
         // Get the support action bar
         val actionBar = supportActionBar
@@ -60,11 +69,12 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         actionBar.elevation = 4.0F
         actionBar.setDisplayHomeAsUpEnabled(true)
 
-
+        db = FirebaseFirestore.getInstance()
         presenter.attachView(this)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
+        transactionBox = ObjectBox.boxStore.boxFor(Transaction::class.java)
         mixpanel.timeEvent("Compose");
 
         composeThoughtEditText.addTextChangedListener(object : TextWatcher {
@@ -105,7 +115,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     item.isEnabled = false
                     composeThoughtEditText.isEnabled = false
                     showLoading()
-                    val blockstack_id = PreferencesHelper(this).blockstackId
                     val user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()
                     val thought = Thought(getThought(), System.currentTimeMillis())
                     thought.isComment = false
@@ -130,33 +139,44 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 my_book.put(rootObject)
                                 val options_put = PutFileOptions(false)
                                 runOnUiThread {
-                                    blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
-                                    { readURLResult ->
-                                        if (readURLResult.hasValue) {
-                                            user!!.thoughts.add(thought)
-                                            // [START subscribe_topics]
-                                            PushNotifications.addDeviceInterest(thought.uuid)
-                                                    .let {
-                                                        userBox.put(user)
-                                                        val conversation = Discussion(thought.uuid)
-                                                        conversation.thoughts.add(thought)
-                                                        discussionBox.put(conversation)
-                                                        presenter.sendThought(blockstack_id, rootObject)
-                                                        val mutableList: MutableList<Thought> = ArrayList()
-                                                        mutableList.add(thought)
-                                                        if (mutableList.isNotEmpty())
-                                                            EventBus.getDefault().post(NewThoughtsEvent(mutableList))
-                                                        close()
-                                                    }
-                                            // [END subscribe_topics]
-                                        } else {
-                                            props.put("Success", false)
-                                            Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
-                                        }
-                                        props.put("Success", true)
-                                        mixpanel.track("Post", props)
-                                        mixpanel.people.increment("Post", 1.0)
+                                    val status = checkBalance()
+                                    if (0 < status) {
+                                        rootObject.put("transactionType", status)
+                                        blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
+                                        { readURLResult ->
+                                            if (readURLResult.hasValue) {
+                                                if (status == 1) {
+                                                    deductFromFreePost(thought)
+                                                } else if (status == 2) {
+                                                    deductFromInk(thought)
+                                                }
+                                                user!!.thoughts.add(thought)
+                                                userBox.put(user)
+                                                // [START subscribe_topics]
+                                                PushNotifications.addDeviceInterest(thought.uuid)
+                                                        .let {
+                                                            val conversation = Discussion(thought.uuid)
+                                                            conversation.thoughts.add(thought)
+                                                            discussionBox.put(conversation)
+                                                            presenter.sendThought(blockstack_id, rootObject)
+                                                            val mutableList: MutableList<Thought> = ArrayList()
+                                                            mutableList.add(thought)
+                                                            if (mutableList.isNotEmpty())
+                                                                EventBus.getDefault().post(NewThoughtsEvent(mutableList))
+                                                            close()
+                                                        }
+                                                // [END subscribe_topics]
+                                            } else {
+                                                props.put("Success", false)
+                                                Toast.makeText(this, "error: " + readURLResult.error, Toast.LENGTH_SHORT).show()
+                                            }
+                                            props.put("Success", true)
+                                            mixpanel.track("Post", props)
+                                            mixpanel.people.increment("Post", 1.0)
 
+                                        }
+                                    } else {
+                                        Toast.makeText(this, "Insufficient Ink", Toast.LENGTH_SHORT).show()
                                     }
                                 }
 
@@ -217,5 +237,78 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         }
     }
 
+    private fun checkBalance(): Int {
+        var status = 0
+        if (0 < preferencesHelper.freePromoPost) {
+            status = 1
+        } else if (7 < preferencesHelper.inkBal) {
+            status = 2
+        }
+        return status
+    }
 
+    private fun deductFromFreePost(thought: Thought) {
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    val newValue = HashMap<String, Any>()
+                    val leftPromoPst = user.getLong("free_promo_post")!! - 1
+                    newValue["free_promo_post"] = leftPromoPst
+                    docRef.set(newValue, SetOptions.merge())
+                    preferencesHelper.freePromoPost = leftPromoPst
+                    val transaction = Transaction(blockstack_id, "BURN", 0, "FREE POST")
+                    transaction.thought?.setAndPutTarget(thought)
+
+                    // Create a new transaction
+                    val transactionFS = HashMap<String, Any>()
+                    transactionFS["timestamp"] = transaction.timestamp
+                    transactionFS["from"] = blockstack_id
+                    transactionFS["to"] = "BURN"
+                    transactionFS["amount"] = 0
+                    transactionFS["activity"] = "FREE POST"
+                    db.collection("thoughts").document(thought.uuid).collection("transactions")
+                            .add(transactionFS)
+                            .addOnSuccessListener {
+                                transactionBox.put(transaction)
+                                Log.d("ComposeThoughtPresenter", "Transaction successfully written!")
+                            }
+                            .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
+    }
+
+    private fun deductFromInk(thought: Thought) {
+
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    val newValue = HashMap<String, Any>()
+                    val remainingInkBal = user.getLong("ink_bal")!! - 7
+                    newValue["ink_bal"] = remainingInkBal
+                    docRef.set(newValue, SetOptions.merge())
+                    preferencesHelper.inkBal = remainingInkBal
+                    val transaction = Transaction(blockstack_id, "BURN", 7, "POST")
+                    transaction.thought.setAndPutTarget(thought)
+
+                    // Create a new transaction
+                    val transactionFS = HashMap<String, Any>()
+                    transactionFS["timestamp"] = transaction.timestamp
+                    transactionFS["from"] = blockstack_id
+                    transactionFS["to"] = "BURN"
+                    transactionFS["amount"] = 7
+                    transactionFS["activity"] = "PAID POST"
+                    db.collection("thoughts").document(thought.uuid).collection("transactions")
+                            .add(transactionFS)
+                            .addOnSuccessListener {
+                                transactionBox.put(transaction)
+                                Log.d(TAG, "Transaction successfully written!")
+                            }
+                            .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
+    }
 }
