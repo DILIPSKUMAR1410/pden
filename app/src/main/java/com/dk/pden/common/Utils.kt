@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit
 
 object Utils {
 
+    private lateinit var preferencesHelper: PreferencesHelper
 
     val config = java.net.URI("https://app.pden.xyz").run {
         org.blockstack.android.sdk.BlockstackConfig(
@@ -64,5 +65,26 @@ object Utils {
     fun inputStreamFromUri(context: Context, uri: Uri): InputStream = context.contentResolver.openInputStream(uri)
 
 
+    fun checkPostBalance(context: Context): Int {
+        preferencesHelper = PreferencesHelper(context)
+        var status = 0
+        if (0 < preferencesHelper.freePromoPost) {
+            status = 1
+        } else if (7 < preferencesHelper.inkBal) {
+            status = 2
+        }
+        return status
+    }
+
+    fun checkLoveBalance(context: Context): Int {
+        preferencesHelper = PreferencesHelper(context)
+        var status = 0
+        if (0 < preferencesHelper.freePromoLove) {
+            status = 1
+        } else if (4 < preferencesHelper.inkBal) {
+            status = 2
+        }
+        return status
+    }
 }
 

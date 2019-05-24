@@ -6,6 +6,7 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import com.airbnb.lottie.LottieAnimationView
 import com.dk.pden.R
 import com.dk.pden.base.holder.FeedBaseViewHolder
 import com.dk.pden.common.Utils
@@ -20,6 +21,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         FeedBaseViewHolder(container, listener) {
 
     protected var spreadTextView: TextView = container.spreadTextView
+    protected var loveImageButton: LottieAnimationView? = container.love
     protected var spreadImageButton: ImageButton = container.spreadImageButton
     protected var threadImageButton: ImageButton = container.threadImageButton
     protected var burnTextView: TextView = container.burnTextView
@@ -53,8 +55,33 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         }
 
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
-        else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
+        else if (!thought.user.target.isSelf) {
+            spreadImageButton.setImageResource(R.drawable.ic_repeat)
+            spreadImageButton.setOnClickListener {
+                if (!thought.isSpread) {
+                    AlertDialog.Builder(container.context)
+                            .setTitle(R.string.spread_title)
+                            .setPositiveButton(R.string.spread)
+                            { _, _ ->
+                                spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
+                                listener.spread(thought)
+                            }
+                            .setNegativeButton(R.string.cancel, null)
+                            .create().show()
+                }
 
+            }
+        }
+
+        if (thought.isLoved) loveImageButton?.progress = 1f
+        else if (!thought.user.target.isSelf) {
+            loveImageButton!!.setOnClickListener {
+                if (!thought.isLoved) {
+                    loveImageButton!!.playAnimation();
+                    listener.love(thought)
+                }
+            }
+        }
         spreadOutsideImageButton.setImageResource(R.drawable.social_group
         )
 
@@ -70,23 +97,6 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
             listener.showThread(thought)
         }
         statusTextView.text = thought.textString
-
-
-        spreadImageButton.setOnClickListener {
-            if (!thought.isSpread) {
-                if (!thought.isSpread) {
-                    AlertDialog.Builder(container.context)
-                            .setTitle(R.string.spread_title)
-                            .setPositiveButton(R.string.spread)
-                            { _, _ ->
-                                spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
-                                listener.spread(thought)
-                            }
-                            .setNegativeButton(R.string.cancel, null)
-                            .create().show()
-                }
-            }
-        }
 
         spreadOutsideImageButton.setOnClickListener {
             listener.spreadOutside(thought)

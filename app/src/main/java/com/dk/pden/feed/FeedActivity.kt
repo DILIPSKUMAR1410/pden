@@ -28,13 +28,12 @@ import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
 import com.dk.pden.feed.holder.FeedInteractionListener
-import com.dk.pden.model.Thought
-import com.dk.pden.model.Thought_
-import com.dk.pden.model.User
-import com.dk.pden.model.User_
+import com.dk.pden.model.*
 import com.dk.pden.mybook.MyBookActivity
 import com.dk.pden.search.SearchActivity
 import com.dk.pden.search.ShelfActivity
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import io.objectbox.Box
 import io.objectbox.query.QueryBuilder
 import me.toptas.fancyshowcase.FancyShowCaseQueue
@@ -53,7 +52,13 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var preferencesHelper: PreferencesHelper
+    private var blockstack_id: String = ""
+    private lateinit var db: FirebaseFirestore
+    private lateinit var transactionBox: Box<Transaction>
     private fun getFeedPresenter() = FeedPresenter()
+    private val TAG = "FeedActivity"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +66,9 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
         // Get the support action bar
         val actionBar = supportActionBar
-
+        db = FirebaseFirestore.getInstance()
+        preferencesHelper = PreferencesHelper(this)
+        blockstack_id = preferencesHelper.blockstackId
         // Set the action bar title, subtitle and elevation
         actionBar!!.title = "Feed"
         actionBar.elevation = 4.0F
@@ -354,6 +361,18 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         presenter.spreadThought(thought, this)
     }
 
+    override fun love(thought: Thought) {
+        val status = Utils.checkPostBalance(this)
+        if (0 < status) {
+            if (status == 1) {
+                deductFromFreeLove(thought)
+            } else if (status == 2) {
+                deductFromInk(thought)
+            }
+            presenter.loveThought(thought, this)
+        }
+    }
+
 
     override fun showUser(user: User) {
         MyBookActivity.launch(this, user)
@@ -361,6 +380,71 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
     override fun showThread(thought: Thought) {
         DiscussActivity.launch(this, thought.uuid)
+    }
+
+    private fun deductFromFreeLove(thought: Thought) {
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    val newValue = HashMap<String, Any>()
+                    val leftPromoLve = user.getLong("free_promo_love")!! - 1
+                    newValue["free_promo_love"] = leftPromoLve
+                    docRef.set(newValue, SetOptions.merge())
+                    preferencesHelper.freePromoLove = leftPromoLve
+                    val transaction = Transaction(blockstack_id, thought.user.target.blockstackId, 4, "LOVE")
+                    transaction.thought.setAndPutTarget(thought)
+
+                    // Create a new transaction
+                    val transactionFS = HashMap<String, Any>()
+                    transactionFS["timestamp"] = transaction.timestamp
+                    transactionFS["from"] = blockstack_id
+                    transactionFS["to"] = thought.user.target.blockstackId
+                    transactionFS["amount"] = 4
+                    transactionFS["activity"] = "LOVE"
+                    db.collection("thoughts").document(thought.uuid).collection("transactions")
+                            .add(transactionFS)
+                            .addOnSuccessListener {
+                                transactionBox.put(transaction)
+                                Log.d("ComposeThoughtPresenter", "Transaction successfully written!")
+                            }
+                            .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
+    }
+
+    private fun deductFromInk(thought: Thought) {
+
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    val newValue = HashMap<String, Any>()
+                    val remainingInkBal = user.getLong("ink_bal")!! - 4
+                    newValue["ink_bal"] = remainingInkBal
+                    docRef.set(newValue, SetOptions.merge())
+                    preferencesHelper.inkBal = remainingInkBal
+                    val transaction = Transaction(blockstack_id, thought.user.target.blockstackId, 4, "LOVE")
+                    transaction.thought.setAndPutTarget(thought)
+
+                    // Create a new transaction
+                    val transactionFS = HashMap<String, Any>()
+                    transactionFS["timestamp"] = transaction.timestamp
+                    transactionFS["from"] = blockstack_id
+                    transactionFS["to"] = thought.user.target.blockstackId
+                    transactionFS["amount"] = 4
+                    transactionFS["activity"] = "LOVE"
+                    db.collection("thoughts").document(thought.uuid).collection("transactions")
+                            .add(transactionFS)
+                            .addOnSuccessListener {
+                                transactionBox.put(transaction)
+                                Log.d(TAG, "Transaction successfully written!")
+                            }
+                            .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
     }
 
 }

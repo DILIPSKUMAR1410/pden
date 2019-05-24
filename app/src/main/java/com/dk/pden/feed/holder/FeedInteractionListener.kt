@@ -7,6 +7,8 @@ interface FeedInteractionListener {
 
     fun spread(thought: Thought)
 
+    fun love(thought: Thought)
+
     fun showUser(user: User)
 
     fun showThread(thought: Thought)

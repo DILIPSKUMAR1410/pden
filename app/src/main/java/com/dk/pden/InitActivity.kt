@@ -11,6 +11,7 @@ import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.feed.FeedActivity
 import com.dk.pden.model.Thought
+import com.dk.pden.model.Transaction
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.google.firebase.firestore.FirebaseFirestore
@@ -152,6 +153,20 @@ class InitActivity : AppCompatActivity() {
                                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
                                             thought.uuid = item.getString("uuid")
                                             thoughts.add(thought)
+                                            val docsref = db.collection("thoughts").document(thought.uuid).collection("transactions")
+                                            docsref.get()
+                                                    .addOnSuccessListener { result ->
+                                                        for (document in result) {
+                                                            if (document.data["from"] == blockstack_id || document.data["to"] == blockstack_id) {
+                                                                val transaction = Transaction(document.data["from"] as String, document.data["to"] as String, document.data["amount"] as Int, document.data["activity"] as String)
+                                                                transaction.timestamp = document.data["timestamp"] as Long
+                                                                transaction.thought.setAndPutTarget(thought)
+                                                            }
+                                                        }
+                                                    }
+                                                    .addOnFailureListener { exception ->
+                                                        Log.d(TAG, "Error getting documents: ", exception)
+                                                    }
                                         }
                                         user.thoughts.addAll(thoughts)
                                         userBox.put(user)

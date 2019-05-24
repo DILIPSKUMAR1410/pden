@@ -27,6 +27,7 @@ import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.dk.pden.mybook.holder.BookInteractionListener
 import io.objectbox.Box
+import kotlinx.android.synthetic.main.activity_my_book.*
 
 
 class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListener {
@@ -116,6 +117,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         }
 
         tcountvalue.text = user!!.thoughts.size.toString()
+        ink_bal_val.text = preferencesHelper.inkBal.toString()
         name.text = if (user!!.nameString.isNotEmpty()) user!!.nameString else ""
         blockstack_name.text = user!!.blockstackId
         about_me.text = if (user!!.description.isNotEmpty()) user!!.description else ""

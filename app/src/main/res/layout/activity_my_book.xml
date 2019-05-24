@@ -60,6 +60,24 @@
                             android:textColor="#ffffff"
                             android:textSize="18sp" />
 
+                        <TextView
+                            android:id="@+id/ink_bal_val"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:singleLine="true"
+                            android:textColor="#ffffff"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:id="@+id/ink_bal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="3dp"
+                            android:singleLine="true"
+                            android:text="INK BAL"
+                            android:textColor="#ffffff"
+                            android:textSize="18sp" />
+
                     </LinearLayout>
 
                     <TextView

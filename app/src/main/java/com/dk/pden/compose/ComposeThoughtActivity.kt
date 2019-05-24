@@ -139,7 +139,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                                 my_book.put(rootObject)
                                 val options_put = PutFileOptions(false)
                                 runOnUiThread {
-                                    val status = checkBalance()
+                                    val status = Utils.checkPostBalance(this)
                                     if (0 < status) {
                                         rootObject.put("transactionType", status)
                                         blockstackSession().putFile("kitab141.json", my_book.toString(), options_put)
@@ -235,16 +235,6 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
         } else {
             throw IllegalStateException("No session.")
         }
-    }
-
-    private fun checkBalance(): Int {
-        var status = 0
-        if (0 < preferencesHelper.freePromoPost) {
-            status = 1
-        } else if (7 < preferencesHelper.inkBal) {
-            status = 2
-        }
-        return status
     }
 
     private fun deductFromFreePost(thought: Thought) {
