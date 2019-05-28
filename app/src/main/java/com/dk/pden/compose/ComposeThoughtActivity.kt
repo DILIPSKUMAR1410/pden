@@ -247,7 +247,7 @@ class ComposeThoughtActivity : AppCompatActivity(), ComposeThoughtMvpView {
                     docRef.set(newValue, SetOptions.merge())
                     preferencesHelper.freePromoPost = leftPromoPst
                     val transaction = Transaction(blockstack_id, "BURN", 0, "FREE POST")
-                    transaction.thought?.setAndPutTarget(thought)
+                    transaction.thought.setAndPutTarget(thought)
 
                     // Create a new transaction
                     val transactionFS = HashMap<String, Any>()

@@ -44,10 +44,10 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
             var burn = 0
             var earn = 0
             if (0 < thought.transactions.count()) {
-                burn = thought.transactions.filter { it.from == thought.user.target.blockstackId }
-                        .sumBy { it.amount }
-                earn = thought.transactions.filter { it.to == thought.user.target.blockstackId }
-                        .sumBy { it.amount }
+                thought.transactions.filter { it.from == thought.user.target.blockstackId }
+                        .forEach { burn = (burn + it.amount).toInt() }
+                thought.transactions.filter { it.to == thought.user.target.blockstackId }
+                        .forEach { earn = (earn + it.amount).toInt() }
             }
 
             burnTextView.text = if (burn != 0) burn.toString() else "FREE POST"
@@ -73,8 +73,9 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
             }
         }
 
+        loveImageButton?.visible()
         if (thought.isLoved) loveImageButton?.progress = 1f
-        else if (!thought.user.target.isSelf) {
+        else {
             loveImageButton!!.setOnClickListener {
                 if (!thought.isLoved) {
                     loveImageButton!!.playAnimation();

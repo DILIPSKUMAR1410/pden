@@ -12,7 +12,7 @@ data class Transaction(
 
         var to: String,
 
-        var amount: Int,
+        var amount: Long,
 
         var actvity: String
 ) {

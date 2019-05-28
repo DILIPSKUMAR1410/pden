@@ -15,6 +15,7 @@ import android.util.Log
 import com.dk.pden.App
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
+import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.events.NewCommentEvent
 import com.dk.pden.events.NewThoughtsEvent
@@ -34,6 +35,9 @@ class NotificationsMessagingService : MessagingService() {
     private lateinit var userBox: Box<User>
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var discussionBox: Box<Discussion>
+    private lateinit var preferencesHelper: PreferencesHelper
+    private lateinit var transactionBox: Box<Transaction>
+
 
     /**
      * Called when message is received.
@@ -60,6 +64,8 @@ class NotificationsMessagingService : MessagingService() {
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         discussionBox = ObjectBox.boxStore.boxFor(Discussion::class.java)
+        preferencesHelper = PreferencesHelper(this)
+        transactionBox = ObjectBox.boxStore.boxFor(Transaction::class.java)
 
         // Check if message contains a data payload.
         remoteMessage.data?.isNotEmpty()?.let {
@@ -148,7 +154,13 @@ class NotificationsMessagingService : MessagingService() {
                     Log.d(TAG, "Not opted")
 
             } else {
-                Log.d(TAG, "Already got the word")
+                if (remoteMessage.data.containsKey("isLove")) {
+                    val transaction = Transaction(remoteMessage.data["sender"]!!, preferencesHelper.blockstackId, 4, "LOVE")
+                    transaction.thought.setAndPutTarget(thought.first())
+                    transactionBox.put(transaction)
+                } else {
+                    Log.d(TAG, "Already got the word")
+                }
             }
         }
 

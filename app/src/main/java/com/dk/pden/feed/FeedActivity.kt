@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -81,6 +82,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         floatingActionButton = findViewById(R.id.fab_compose)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+        transactionBox = ObjectBox.boxStore.boxFor(Transaction::class.java)
         floatingActionButton.setOnClickListener {
             ComposeThoughtActivity.launch(this)
         }
@@ -107,7 +109,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 //        }
 
         if (adapter.thoughts.isEmpty()) {
-            showThoughts(thoughtBox.query().equal(Thought_.isComment, false)
+            showThoughts(thoughtBox.query().equal(Thought_.isComment, false).filter { !it.user.target.isSelf }
                     .order(Thought_.timestamp, QueryBuilder.DESCENDING).build().find())
         }
     }
@@ -197,6 +199,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         when (item?.itemId) {
             R.id.myBook -> openProfile()
             R.id.myShelf -> openShelf()
+            R.id.myInk -> openInk()
             R.id.share_pden -> sharePden()
         }
 
@@ -215,8 +218,21 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         user?.let { MyBookActivity.launch(this, it) }
     }
 
-    fun openShelf() {
+    private fun openShelf() {
         ShelfActivity.launch(this)
+    }
+
+    private fun openInk() {
+        val items = arrayOf("Ink bal : ${preferencesHelper.inkBal}",
+                "Free promo post : ${preferencesHelper.freePromoPost}",
+                "Free promo love : ${preferencesHelper.freePromoLove}")
+        val builder = AlertDialog.Builder(this)
+        with(builder)
+        {
+            setTitle("Balance")
+            setItems(items) { _, _ -> }
+            show()
+        }
     }
 
     fun sharePden() {

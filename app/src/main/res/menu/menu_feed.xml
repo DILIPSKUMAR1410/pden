@@ -21,7 +21,11 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
-
+    <item
+        android:id="@+id/myInk"
+        android:title="Ink"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/share_pden"
         android:icon="@drawable/share"

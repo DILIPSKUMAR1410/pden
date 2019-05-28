@@ -25,29 +25,32 @@ open class BookStatusViewHolder(container: View, listener: BookInteractionListen
     @SuppressLint("SetTextI18n")
     @CallSuper
     override fun setup(thought: Thought, user: User) {
-        val currentThought = thought
-        val currentUser = user
-//        userNameTextView.textString = currentUser.blockstackId
-        userScreenNameTextView.text = "@${currentUser.blockstackId}"
-        timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"
-        userProfilePicImageView.loadAvatar(currentUser.avatarImage)
+        //        userNameTextView.textString = currentUser.blockstackId
+        userScreenNameTextView.text = "@${user.blockstackId}"
+        timeTextView.text = " • ${Utils.formatDate(thought.timestamp)}"
+        userProfilePicImageView.loadAvatar(user.avatarImage)
         burnTextView.visible()
         earnTextView.visible()
         var burn = 0
         var earn = 0
-        if (!thought.transactions.isNullOrEmpty()) {
-            burn = thought.transactions.filter { it.from == thought.user.target.blockstackId }
-                    .sumBy { it.amount }
-            earn = thought.transactions.filter { it.to == thought.user.target.blockstackId }
-                    .sumBy { it.amount }
+        try {
+            if (!thought.transactions.isNullOrEmpty()) {
+                thought.transactions.filter { it.from == thought.user.target.blockstackId }
+                        .forEach { burn = +it.amount.toInt() }
+                thought.transactions.filter { it.to == thought.user.target.blockstackId }
+                        .forEach { earn = +it.amount.toInt() }
+            }
+        } catch (e: IllegalStateException) {
+            // Must be safe
         }
+
 
         burnTextView.text = if (burn != 0) burn.toString() else "FREE POST"
         earnTextView.text = earn.toString()
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
         else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
-        statusTextView.text = currentThought.textString
+        statusTextView.text = thought.textString
 
         threadImageButton.setImageResource(R.drawable.ic_thread)
         threadImageButton.setOnClickListener {

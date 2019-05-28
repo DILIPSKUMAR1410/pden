@@ -147,7 +147,7 @@ class InitActivity : AppCompatActivity() {
                                     if (content.isNotEmpty()) {
                                         val interested_book = JSONArray(content)
                                         val thoughts = mutableListOf<Thought>()
-                                        for (i in 0..(interested_book.length() - 1)) {
+                                        for (i in 0 until interested_book.length()) {
                                             val item = interested_book.getJSONObject(i)
                                             // Your code here
                                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
@@ -158,7 +158,7 @@ class InitActivity : AppCompatActivity() {
                                                     .addOnSuccessListener { result ->
                                                         for (document in result) {
                                                             if (document.data["from"] == blockstack_id || document.data["to"] == blockstack_id) {
-                                                                val transaction = Transaction(document.data["from"] as String, document.data["to"] as String, document.data["amount"] as Int, document.data["activity"] as String)
+                                                                val transaction = Transaction(document.data["from"] as String, document.data["to"] as String, document.data["amount"] as Long, document.data["activity"] as String)
                                                                 transaction.timestamp = document.data["timestamp"] as Long
                                                                 transaction.thought.setAndPutTarget(thought)
                                                             }
