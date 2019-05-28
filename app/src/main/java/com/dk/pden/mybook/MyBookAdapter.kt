@@ -21,6 +21,7 @@ open class MyBookAdapter(val listener: BookInteractionListener) : RecyclerView.A
                     LayoutInflater.from(parent.context).inflate(R.layout.thought_basic, parent, false), listener)
 
     override fun onBindViewHolder(holderBook: BookBaseViewHolder, position: Int) {
+        holderBook.setIsRecyclable(false);
         holderBook.setup(thoughts[position], this.user!!)
     }
 
