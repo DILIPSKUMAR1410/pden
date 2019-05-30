@@ -77,6 +77,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         mixpanel.people.increment("Feed opened", 1.0)
 
         adapter = FeedAdapter(this)
+        adapter.setHasStableIds(true)
         recyclerView = findViewById(R.id.tweetsRecyclerView)
 //        swipeRefreshLayout = findViewById(R.pk.swipeRefreshLayout)
         floatingActionButton = findViewById(R.id.fab_compose)
@@ -409,7 +410,8 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                     preferencesHelper.freePromoLove = leftPromoLve
                     val transaction = Transaction(blockstack_id, thought.user.target.blockstackId, 4, "LOVE")
                     transaction.thought.setAndPutTarget(thought)
-
+                    thought.transactions.add(transaction)
+                    thought.isLoved = true
                     // Create a new transaction
                     val transactionFS = HashMap<String, Any>()
                     transactionFS["timestamp"] = transaction.timestamp
@@ -421,6 +423,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .add(transactionFS)
                             .addOnSuccessListener {
                                 transactionBox.put(transaction)
+                                thoughtBox.put(thought)
                                 Log.d("ComposeThoughtPresenter", "Transaction successfully written!")
                             }
                             .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
@@ -442,6 +445,8 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                     preferencesHelper.inkBal = remainingInkBal
                     val transaction = Transaction(blockstack_id, thought.user.target.blockstackId, 4, "LOVE")
                     transaction.thought.setAndPutTarget(thought)
+                    thought.transactions.add(transaction)
+                    thought.isLoved = true
 
                     // Create a new transaction
                     val transactionFS = HashMap<String, Any>()
@@ -454,6 +459,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .add(transactionFS)
                             .addOnSuccessListener {
                                 transactionBox.put(transaction)
+                                thoughtBox.put(thought)
                                 Log.d(TAG, "Transaction successfully written!")
                             }
                             .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }

@@ -3,16 +3,15 @@ package com.dk.pden.mybook
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.ToggleButton
+import android.widget.*
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -23,9 +22,12 @@ import com.dk.pden.custom.decorators.SpaceTopItemDecoration
 import com.dk.pden.discuss.DiscussActivity
 import com.dk.pden.feed.FeedPresenter
 import com.dk.pden.model.Thought
+import com.dk.pden.model.Transaction
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
 import com.dk.pden.mybook.holder.BookInteractionListener
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import io.objectbox.Box
 
 
@@ -51,6 +53,10 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
     }
 
     private lateinit var userBox: Box<User>
+    private lateinit var thoughtBox: Box<Thought>
+    private lateinit var transactionBox: Box<Transaction>
+    private lateinit var db: FirebaseFirestore
+    private lateinit var preferencesHelper: PreferencesHelper
     private val presenter: MyBookPresenter by lazy { getMyBookPresenter() }
     private val feedpresenter: FeedPresenter by lazy { getFeedPresenter() }
     private lateinit var adapter: MyBookAdapter
@@ -67,15 +73,20 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
     private fun getMyBookPresenter() = MyBookPresenter()
     private fun getFeedPresenter() = FeedPresenter()
     private lateinit var blockstack_id: String
+    private val TAG = "BookActivity"
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_book)
         presenter.attachView(this)
-        val preferencesHelper = PreferencesHelper(this)
+        db = FirebaseFirestore.getInstance()
+        preferencesHelper = PreferencesHelper(this)
         val my_blockstack_id = preferencesHelper.blockstackId
+        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
+        transactionBox = ObjectBox.boxStore.boxFor(Transaction::class.java)
         adapter = MyBookAdapter(this)
+        adapter.setHasStableIds(true)
         recyclerView = findViewById(R.id.tweetsRecyclerView)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
@@ -186,6 +197,12 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
 
     override fun getLastMyThoughtId(): Long = if (adapter.thoughts.size > 0) adapter.thoughts[0].id else -1
 
+    override fun updateAdapter() {
+        runOnUiThread {
+            adapter.notifyDataSetChanged()
+        }
+    }
+
     override fun stopRefresh() {
         runOnUiThread {
             if (swipeRefreshLayout.isRefreshing)
@@ -228,4 +245,112 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
     override fun showThread(thought: Thought) {
         DiscussActivity.launch(this, thought.uuid)
     }
+
+    fun isPackageExist(targetPackage: String): Boolean {
+        val pm: PackageManager = getPackageManager()
+        val packages = pm.getInstalledApplications(0);
+        for (packageInfo in packages) {
+            if (packageInfo.packageName.equals(targetPackage)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun spreadOutside(thought: Thought) {
+        if (isPackageExist("com.whatsapp")) {
+            val sendIntent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_TEXT, thought.user.target.blockstackId + " \nsays: \n" + thought.text +
+                    "\nCheckout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
+            sendIntent.type = "text/plain"
+            sendIntent.setPackage("com.whatsapp")
+            startActivity(sendIntent)
+        } else {
+            Toast.makeText(this, "You dont have whatsapp ?", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun love(thought: Thought) {
+        val status = Utils.checkPostBalance(this)
+        if (0 < status) {
+            if (status == 1) {
+                deductFromFreeLove(thought)
+            } else if (status == 2) {
+                deductFromInk(thought)
+            }
+            presenter.loveThought(thought, this)
+        }
+    }
+
+    private fun deductFromFreeLove(thought: Thought) {
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    val newValue = HashMap<String, Any>()
+                    val leftPromoLve = user.getLong("free_promo_love")!! - 1
+                    newValue["free_promo_love"] = leftPromoLve
+                    docRef.set(newValue, SetOptions.merge())
+                    preferencesHelper.freePromoLove = leftPromoLve
+                    val transaction = Transaction(blockstack_id, thought.user.target.blockstackId, 4, "LOVE")
+                    transaction.thought.setAndPutTarget(thought)
+                    thought.transactions.add(transaction)
+                    thought.isLoved = true
+                    // Create a new transaction
+                    val transactionFS = HashMap<String, Any>()
+                    transactionFS["timestamp"] = transaction.timestamp
+                    transactionFS["from"] = blockstack_id
+                    transactionFS["to"] = thought.user.target.blockstackId
+                    transactionFS["amount"] = 4
+                    transactionFS["activity"] = "LOVE"
+                    db.collection("thoughts").document(thought.uuid).collection("transactions")
+                            .add(transactionFS)
+                            .addOnSuccessListener {
+                                transactionBox.put(transaction)
+                                thoughtBox.put(thought)
+                                Log.d("ComposeThoughtPresenter", "Transaction successfully written!")
+                            }
+                            .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
+    }
+
+    private fun deductFromInk(thought: Thought) {
+
+        val docRef = db.collection("users").document(blockstack_id)
+        docRef.get()
+                .addOnSuccessListener { user ->
+                    val newValue = HashMap<String, Any>()
+                    val remainingInkBal = user.getLong("ink_bal")!! - 4
+                    newValue["ink_bal"] = remainingInkBal
+                    docRef.set(newValue, SetOptions.merge())
+                    preferencesHelper.inkBal = remainingInkBal
+                    val transaction = Transaction(blockstack_id, thought.user.target.blockstackId, 4, "LOVE")
+                    transaction.thought.setAndPutTarget(thought)
+                    thought.transactions.add(transaction)
+                    thought.isLoved = true
+
+                    // Create a new transaction
+                    val transactionFS = HashMap<String, Any>()
+                    transactionFS["timestamp"] = transaction.timestamp
+                    transactionFS["from"] = blockstack_id
+                    transactionFS["to"] = thought.user.target.blockstackId
+                    transactionFS["amount"] = 4
+                    transactionFS["activity"] = "LOVE"
+                    db.collection("thoughts").document(thought.uuid).collection("transactions")
+                            .add(transactionFS)
+                            .addOnSuccessListener {
+                                transactionBox.put(transaction)
+                                thoughtBox.put(thought)
+                                Log.d(TAG, "Transaction successfully written!")
+                            }
+                            .addOnFailureListener { e -> Log.w("ComposeThoughtPresenter", "Error writing document", e) }
+                }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
+                }
+    }
+
 }

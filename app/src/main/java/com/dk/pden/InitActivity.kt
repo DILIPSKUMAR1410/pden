@@ -36,6 +36,8 @@ class InitActivity : AppCompatActivity() {
 
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
+    private lateinit var thoughtBox: Box<Thought>
+
     var counter = 0
     var blockstack_id: String = ""
     private lateinit var progressPercent: TextView
@@ -48,6 +50,7 @@ class InitActivity : AppCompatActivity() {
         blockstack_id = PreferencesHelper(this).blockstackId
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         progressPercent = findViewById(R.id.progressPercent)
+        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
         db = FirebaseFirestore.getInstance()
         _blockstackSession = BlockstackSession(this, Utils.config) {
             // Wait until this callback fires before using any of the
@@ -157,7 +160,15 @@ class InitActivity : AppCompatActivity() {
                                             docsref.get()
                                                     .addOnSuccessListener { result ->
                                                         for (document in result) {
-                                                            if (document.data["from"] == blockstack_id || document.data["to"] == blockstack_id) {
+                                                            if (document.data["from"] == blockstack_id) {
+                                                                val transaction = Transaction(document.data["from"] as String, document.data["to"] as String, document.data["amount"] as Long, document.data["activity"] as String)
+                                                                transaction.timestamp = document.data["timestamp"] as Long
+                                                                if (document.data["activity"] == "LOVE") {
+                                                                    thought.isLoved = true
+                                                                    thoughtBox.put(thought)
+                                                                }
+                                                                transaction.thought.setAndPutTarget(thought)
+                                                            } else if (document.data["to"] == blockstack_id) {
                                                                 val transaction = Transaction(document.data["from"] as String, document.data["to"] as String, document.data["amount"] as Long, document.data["activity"] as String)
                                                                 transaction.timestamp = document.data["timestamp"] as Long
                                                                 transaction.thought.setAndPutTarget(thought)

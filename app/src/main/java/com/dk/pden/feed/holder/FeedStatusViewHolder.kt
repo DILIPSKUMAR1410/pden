@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import com.airbnb.lottie.LottieAnimationView
+import com.dk.pden.App
 import com.dk.pden.R
 import com.dk.pden.base.holder.FeedBaseViewHolder
 import com.dk.pden.common.Utils
@@ -20,13 +21,12 @@ import kotlinx.android.synthetic.main.thought_basic.view.*
 open class FeedStatusViewHolder(container: View, listener: FeedInteractionListener) :
         FeedBaseViewHolder(container, listener) {
 
-    protected var spreadTextView: TextView = container.spreadTextView
-    protected var loveImageButton: LottieAnimationView? = container.love
-    protected var spreadImageButton: ImageButton = container.spreadImageButton
-    protected var threadImageButton: ImageButton = container.threadImageButton
-    protected var burnTextView: TextView = container.burnTextView
-    protected var earnTextView: TextView = container.earnTextView
-    protected var spreadOutsideImageButton: ImageButton = container.spreadOutsideImageButton
+    private var spreadTextView: TextView = container.spreadTextView
+    private var loveImageButton: LottieAnimationView? = container.love
+    private var spreadImageButton: ImageButton = container.spreadImageButton
+    private var threadImageButton: ImageButton = container.threadImageButton
+    private var burnTextView: TextView = container.burnTextView
+    private var spreadOutsideImageButton: ImageButton = container.spreadOutsideImageButton
     @SuppressLint("SetTextI18n")
     @CallSuper
     override fun setup(thought: Thought) {
@@ -38,21 +38,17 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
             spreadTextView.text = container.context.getString(
                     R.string.spreadDiscp)
         }
-        if (thought.user.target.isSelf) {
-            burnTextView.visible()
-            earnTextView.visible()
-            var burn = 0
-            var earn = 0
-            if (0 < thought.transactions.count()) {
-                thought.transactions.filter { it.from == thought.user.target.blockstackId }
-                        .forEach { burn = (burn + it.amount).toInt() }
-                thought.transactions.filter { it.to == thought.user.target.blockstackId }
-                        .forEach { earn = (earn + it.amount).toInt() }
-            }
 
-            burnTextView.text = if (burn != 0) burn.toString() else "FREE POST"
-            earnTextView.text = earn.toString()
+        if (!thought.transactions.isNullOrEmpty()) {
+            var burn = 0
+            thought.transactions.filter { it.from == App.BLOCKSTACK_ID }
+                    .forEach {
+                        burn = (burn + it.amount).toInt()
+                    }
+            burnTextView.visible()
+            burnTextView.text = if (burn != 0) burn.toString() else null
         }
+
 
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
         else if (!thought.user.target.isSelf) {
@@ -83,8 +79,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
                 }
             }
         }
-        spreadOutsideImageButton.setImageResource(R.drawable.social_group
-        )
+        spreadOutsideImageButton.setImageResource(R.drawable.social_group)
 
 //        userNameTextView.textString = currentUser.blockstackId
         userScreenNameTextView.text = "@${thought.user.target.blockstackId}"

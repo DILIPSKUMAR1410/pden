@@ -88,9 +88,6 @@ open class FeedPresenter : BasePresenter<FeedMvpView>() {
 
         val blockstack_id = PreferencesHelper(context).blockstackId
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
-        thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
-        thought.isLoved = true
-        thoughtBox.put(thought)
         mvpView?.updateAdapter()
         val envelopeObject = JsonObject()
         val dataobj = JsonObject()

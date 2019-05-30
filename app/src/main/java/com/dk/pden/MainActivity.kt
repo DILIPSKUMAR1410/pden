@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         val preferencesHelper = PreferencesHelper(this)
         // save token on preferences
         preferencesHelper.blockstackId = userData.json.getString("username")
-
+        App.BLOCKSTACK_ID = userData.json.getString("username")
         userBox = ObjectBox.boxStore.boxFor(User::
         class.java)
         val user = User(userData.json.getString("username"))

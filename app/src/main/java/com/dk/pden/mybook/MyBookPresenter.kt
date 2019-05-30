@@ -1,12 +1,15 @@
 package com.dk.pden.mybook
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import com.dk.pden.App.Constants.mixpanel
 import com.dk.pden.ObjectBox
 import com.dk.pden.base.BasePresenter
+import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils.config
 import com.dk.pden.events.NewThoughtsEvent
 import com.dk.pden.events.RemoveThoughtsEvent
@@ -15,8 +18,16 @@ import com.dk.pden.model.Thought
 import com.dk.pden.model.Thought_
 import com.dk.pden.model.User
 import com.dk.pden.model.User_
+import com.dk.pden.service.ApiResponses.PublishStatusApiResponse
+import com.dk.pden.service.ApiServiceFactory
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.pusher.pushnotifications.PushNotifications
 import io.objectbox.Box
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,6 +45,9 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var thoughtBox: Box<Thought>
     private lateinit var userBox: Box<User>
+    private val firebaseService by lazy {
+        ApiServiceFactory.createFirebaseService()
+    }
 
     open fun onRefresh(context: Activity, user: User, self: Boolean) {
         checkViewAttached()
@@ -352,5 +366,47 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
         } else {
             throw IllegalStateException("No session.")
         }
+    }
+
+    @SuppressLint("CheckResult")
+    fun loveThought(thought: Thought, context: Context) {
+
+        mvpView?.showLoading()
+
+        val blockstack_id = PreferencesHelper(context).blockstackId
+        userBox = ObjectBox.boxStore.boxFor(User::class.java)
+        mvpView?.updateAdapter()
+        val envelopeObject = JsonObject()
+        val dataobj = JsonObject()
+
+        dataobj.addProperty("uuid", thought.uuid)
+        dataobj.addProperty("isLove", true)
+        dataobj.addProperty("sender", blockstack_id)
+        val to = JsonArray()
+        val via: Single<PublishStatusApiResponse>
+
+        to.add(thought.user.target.blockstackId)
+        envelopeObject.add("users", to)
+        via = firebaseService.publishToUser(envelopeObject)
+
+
+        val fcm = JsonObject()
+        fcm.add("data", dataobj)
+
+        envelopeObject.add("fcm", fcm)
+
+        via.observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeBy(
+                        onSuccess = {
+                            Log.d("success-->>", "Loved")
+                        },
+                        onError =
+                        {
+                            Log.d("error-->>", it.message)
+                        }
+                )
+        mvpView?.hideLoading()
+
     }
 }

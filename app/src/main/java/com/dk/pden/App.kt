@@ -17,7 +17,10 @@ class App : Application() {
 
         @SuppressLint("StaticFieldLeak")
         lateinit var mixpanel: MixpanelAPI
+
+        var BLOCKSTACK_ID: String = ""
     }
+
 
     override fun onCreate() {
         super.onCreate()

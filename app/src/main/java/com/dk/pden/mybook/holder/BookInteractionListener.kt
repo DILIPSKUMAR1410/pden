@@ -8,4 +8,8 @@ interface BookInteractionListener {
 
     fun showThread(thought: Thought)
 
+    fun love(thought: Thought)
+
+    fun spreadOutside(thought: Thought)
+
 }

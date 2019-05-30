@@ -28,4 +28,7 @@ interface MyBookMvpView : MvpView {
     fun startRefresh()
 
     fun setBorrowed(flag: Boolean)
+
+    fun updateAdapter()
+
 }

@@ -20,13 +20,16 @@ open class FeedAdapter(val listener: FeedInteractionListener) : RecyclerView.Ada
                     LayoutInflater.from(parent.context).inflate(R.layout.thought_basic, parent, false), listener)
 
     override fun onBindViewHolder(holderFeed: FeedBaseViewHolder, position: Int) {
-        holderFeed.setIsRecyclable(false);
         holderFeed.setup(thoughts[position])
     }
 
     override fun getItemCount() = thoughts.size
 
     override fun getItemViewType(position: Int): Int {
-        return R.layout.thought_basic
+        return position
+    }
+
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
     }
 }

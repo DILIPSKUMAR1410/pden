@@ -27,8 +27,11 @@ open class MyBookAdapter(val listener: BookInteractionListener) : RecyclerView.A
 
     override fun getItemCount() = thoughts.size
 
-    override fun getItemViewType(position: Int): Int {
-        return R.layout.thought_basic
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
     }
-
+    
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
 }

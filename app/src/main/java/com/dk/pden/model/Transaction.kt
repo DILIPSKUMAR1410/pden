@@ -16,6 +16,9 @@ data class Transaction(
 
         var actvity: String
 ) {
+
+    constructor() : this("", "", 0, "")
+
     @Id
     var id: Long = 0
     var timestamp: Long = System.currentTimeMillis()
