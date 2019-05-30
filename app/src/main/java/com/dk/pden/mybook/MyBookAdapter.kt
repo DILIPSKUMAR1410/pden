@@ -1,5 +1,6 @@
 package com.dk.pden.mybook
 
+import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,8 +12,9 @@ import com.dk.pden.mybook.holder.BookInteractionListener
 import com.dk.pden.mybook.holder.BookStatusViewHolder
 import java.util.*
 
-open class MyBookAdapter(val listener: BookInteractionListener) : RecyclerView.Adapter<BookBaseViewHolder>() {
+open class MyBookAdapter(val context: Context) : RecyclerView.Adapter<BookBaseViewHolder>() {
 
+    val listener = context as BookInteractionListener
     var thoughts: MutableList<Thought> = ArrayList()
     var user: User? = null
 
@@ -22,7 +24,7 @@ open class MyBookAdapter(val listener: BookInteractionListener) : RecyclerView.A
 
     override fun onBindViewHolder(holderBook: BookBaseViewHolder, position: Int) {
         holderBook.setIsRecyclable(false);
-        holderBook.setup(thoughts[position], this.user!!)
+        holderBook.setup(thoughts[position], context)
     }
 
     override fun getItemCount() = thoughts.size
@@ -30,7 +32,7 @@ open class MyBookAdapter(val listener: BookInteractionListener) : RecyclerView.A
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
-    
+
     override fun getItemViewType(position: Int): Int {
         return position
     }

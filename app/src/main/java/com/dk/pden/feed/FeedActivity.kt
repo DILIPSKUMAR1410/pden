@@ -379,7 +379,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     override fun love(thought: Thought) {
-        val status = Utils.checkPostBalance(this)
+        val status = Utils.checkLoveBalance(this)
         if (0 < status) {
             if (status == 1) {
                 deductFromFreeLove(thought)
@@ -387,7 +387,8 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                 deductFromInk(thought)
             }
             presenter.loveThought(thought, this)
-        }
+        } else
+            Toast.makeText(this, "Not enough ink for love this thought", Toast.LENGTH_SHORT).show()
     }
 
 

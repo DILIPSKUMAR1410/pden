@@ -1,5 +1,6 @@
 package com.dk.pden.base.holder
 
+import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
@@ -18,6 +19,6 @@ abstract class FeedBaseViewHolder(val container: View, val listener: FeedInterac
     protected val timeTextView: TextView = container.timeTextView
     protected val userProfilePicImageView: ImageView = container.userProfilePicImageView
 
-    abstract fun setup(thought: Thought)
+    abstract fun setup(thought: Thought, context: Context)
 
 }

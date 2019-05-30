@@ -1,15 +1,16 @@
 package com.dk.pden.feed.holder
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.support.annotation.CallSuper
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import com.airbnb.lottie.LottieAnimationView
-import com.dk.pden.App
 import com.dk.pden.R
 import com.dk.pden.base.holder.FeedBaseViewHolder
+import com.dk.pden.common.PreferencesHelper
 import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
 import com.dk.pden.common.visible
@@ -21,6 +22,7 @@ import kotlinx.android.synthetic.main.thought_basic.view.*
 open class FeedStatusViewHolder(container: View, listener: FeedInteractionListener) :
         FeedBaseViewHolder(container, listener) {
 
+    private lateinit var preferencesHelper: PreferencesHelper
     private var spreadTextView: TextView = container.spreadTextView
     private var loveImageButton: LottieAnimationView? = container.love
     private var spreadImageButton: ImageButton = container.spreadImageButton
@@ -29,8 +31,8 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
     private var spreadOutsideImageButton: ImageButton = container.spreadOutsideImageButton
     @SuppressLint("SetTextI18n")
     @CallSuper
-    override fun setup(thought: Thought) {
-
+    override fun setup(thought: Thought, context: Context) {
+        preferencesHelper = PreferencesHelper(context)
         if (thought.spreadBy.isNull) {
             spreadTextView.visible(false)
         } else {
@@ -41,7 +43,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
 
         if (!thought.transactions.isNullOrEmpty()) {
             var burn = 0
-            thought.transactions.filter { it.from == App.BLOCKSTACK_ID }
+            thought.transactions.filter { it.from == preferencesHelper.blockstackId }
                     .forEach {
                         burn = (burn + it.amount).toInt()
                     }
@@ -65,7 +67,6 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
                             .setNegativeButton(R.string.cancel, null)
                             .create().show()
                 }
-
             }
         }
 
@@ -73,7 +74,7 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
         if (thought.isLoved) loveImageButton?.progress = 1f
         else {
             loveImageButton!!.setOnClickListener {
-                if (!thought.isLoved) {
+                if (!thought.isLoved && 0 < preferencesHelper.freePromoLove && 4 < preferencesHelper.inkBal) {
                     loveImageButton!!.playAnimation();
                     listener.love(thought)
                 }
