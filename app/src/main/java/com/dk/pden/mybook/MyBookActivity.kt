@@ -3,16 +3,14 @@ package com.dk.pden.mybook
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.ToggleButton
+import android.widget.*
 import com.dk.pden.ObjectBox
 import com.dk.pden.R
 import com.dk.pden.common.PreferencesHelper
@@ -85,11 +83,10 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
         name = findViewById(R.id.name)
         blockstack_name = findViewById(R.id.blockstack_id)
         about_me = findViewById(R.id.about_me)
-
         blockstack_id = intent.getStringExtra(TAG_USER_blockstackId)
-
         userBox = ObjectBox.boxStore.boxFor(User::class.java)
         user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()
+        val interests = arrayOf("cryptoupdates.id.blockstack", "scienceandtech.id.blockstack", "amazingquotes.id.blockstack")
 
         if (user == null) {
             user = User(blockstack_id)
@@ -98,6 +95,8 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
             user!!.description = intent.getStringExtra(TAG_USER_description)
         } else if (my_blockstack_id.equals(blockstack_id)) {
             self = true
+            toggleAddToShelf.visibility = View.INVISIBLE
+        } else if (interests.contains(blockstack_id)) {
             toggleAddToShelf.visibility = View.INVISIBLE
         } else if (user!!.isFollowed) {
             setBorrowed(true)
@@ -150,7 +149,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
                         .filter { thought -> !thought.isComment }
                         as MutableList<Thought>)
             else {
-                showLoading()
                 presenter.onRefresh(this, user!!, self)
             }
         }
@@ -168,8 +166,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
 
     override fun showThought(thought: Thought) {
         if (adapter.thoughts.isNotEmpty()) {
-            var removedPosition: Int
-            removedPosition = adapter.thoughts.size - 1
+            val removedPosition: Int = adapter.thoughts.size - 1
             adapter.thoughts.removeAt(removedPosition)
             adapter.notifyItemRemoved(removedPosition)
         }
@@ -228,4 +225,30 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
     override fun showThread(thought: Thought) {
         DiscussActivity.launch(this, thought.uuid)
     }
+
+    override fun spreadOutside(thought: Thought) {
+        if (isPackageExist("com.whatsapp")) {
+            val sendIntent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_TEXT, thought.user.target.blockstackId + " \nsays: \n" + thought.text +
+                    "\nCheckout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
+            sendIntent.type = "text/plain"
+            sendIntent.setPackage("com.whatsapp")
+            startActivity(sendIntent)
+        } else {
+            Toast.makeText(this, "You dont have whatsapp ?", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun isPackageExist(targetPackage: String): Boolean {
+        val pm: PackageManager = getPackageManager()
+        val packages = pm.getInstalledApplications(0);
+        for (packageInfo in packages) {
+            if (packageInfo.packageName.equals(targetPackage)) {
+                return true
+            }
+        }
+        return false
+    }
+
 }

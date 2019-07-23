@@ -8,4 +8,6 @@ interface BookInteractionListener {
 
     fun showThread(thought: Thought)
 
+    fun spreadOutside(thought: Thought)
+
 }

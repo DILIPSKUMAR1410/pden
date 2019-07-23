@@ -12,19 +12,6 @@
         android:paddingTop="15dp"
         android:paddingBottom="10dp">
 
-        <TextView
-            android:id="@+id/burnTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="5dp"
-            android:duplicateParentState="true"
-            android:textAlignment="textEnd"
-            android:visibility="gone"
-            android:textSize="10sp" />
-
         <include layout="@layout/item_userinfo" />
 
         <TextView
@@ -47,19 +34,6 @@
             android:layout_marginRight="15dp"
             android:fontFamily="sans-serif-thin"
             android:textColor="@color/colorSpread" />
-
-        <TextView
-            android:id="@+id/earnTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="5dp"
-            android:duplicateParentState="true"
-            android:visibility="gone"
-            android:textAlignment="textEnd"
-            android:textSize="10sp" />
 
         <include layout="@layout/item_interaction" />
 

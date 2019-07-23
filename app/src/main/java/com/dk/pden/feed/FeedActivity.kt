@@ -156,14 +156,14 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.threadImageButton))
                             .build()
                     val fancyShowCaseView5 = FancyShowCaseView.Builder(this)
-                            .title("Spread the thought in other communities")
+                            .title("Spread the thought")
                             .enableAutoTextPosition()
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Spread")
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.spreadImageButton))
                             .build()
                     val fancyShowCaseView6 = FancyShowCaseView.Builder(this)
-                            .title("Tell other communities about the thought")
+                            .title("Spread thought to other social networks")
                             .enableAutoTextPosition()
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
                             .showOnce("Social group")
@@ -307,7 +307,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     override fun showLoading() {
-        if (!swipeRefreshLayout.isRefreshing)
+//        if (!swipeRefreshLayout.isRefreshing)
             loadingProgressBar.visible()
     }
 

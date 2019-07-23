@@ -53,7 +53,6 @@ class InitActivity : AppCompatActivity() {
             // BlockstackSession API methods
             val options = GetFileOptions(false)
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
-            createOrFetchWallet()
             blockstackSession().getFile("pasand.json", options) { contentResult ->
                 if (contentResult.hasValue) {
                     val content: String?
@@ -193,49 +192,5 @@ class InitActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-
-    private fun createOrFetchWallet() {
-        val docRef = db.collection("users").document(blockstack_id)
-        docRef.get()
-                .addOnSuccessListener { user ->
-                    if (user.exists()) {
-                        Log.d(TAG, "DocumentSnapshot data: ${user.data}")
-                        // Get a instance of PreferencesHelper class
-                        val preferencesHelper = PreferencesHelper(this)
-                        // save token on preferences
-                        preferencesHelper.inkBal = user.data?.get("ink_bal") as Long
-                        preferencesHelper.freePromoPost = user.data?.get("free_promo_post") as Long
-                        preferencesHelper.freePromoLove = user.data?.get("free_promo_love") as Long
-                        preferencesHelper.freePromoSpread = user.data?.get("free_promo_spread") as Long
-                        preferencesHelper.freePromoComment = user.data?.get("free_promo_comment") as Long
-
-                    } else {
-                        Log.d(TAG, "No such document")
-                        val newUser = HashMap<String, Any>()
-                        // Get a instance of PreferencesHelper class
-                        val preferencesHelper = PreferencesHelper(this)
-                        // save token on preferences
-                        preferencesHelper.inkBal = 0
-                        preferencesHelper.freePromoPost = 50
-                        preferencesHelper.freePromoLove = 50
-                        preferencesHelper.freePromoSpread = 50
-                        preferencesHelper.freePromoComment = 50
-                        newUser["ink_bal"] = 0
-                        newUser["free_promo_post"] = 50
-                        newUser["free_promo_love"] = 50
-                        newUser["free_promo_spread"] = 50
-                        newUser["free_promo_comment"] = 50
-
-                        db.collection("users").document(blockstack_id)
-                                .set(newUser)
-                                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-                                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    Log.d(TAG, "get failed with ", exception)
-                }
     }
 }

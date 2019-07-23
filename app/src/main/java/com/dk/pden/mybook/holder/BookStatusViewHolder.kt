@@ -9,7 +9,6 @@ import android.widget.TextView
 import com.dk.pden.R
 import com.dk.pden.common.Utils
 import com.dk.pden.common.loadAvatar
-import com.dk.pden.common.visible
 import com.dk.pden.model.Thought
 import com.dk.pden.model.User
 import kotlinx.android.synthetic.main.item_interaction.view.*
@@ -17,33 +16,23 @@ import kotlinx.android.synthetic.main.thought_basic.view.*
 
 open class BookStatusViewHolder(container: View, listener: BookInteractionListener) :
         BookBaseViewHolder(container, listener) {
+    protected var spreadTextView: TextView = container.spreadTextView
     protected var threadImageButton: ImageButton = container.threadImageButton
     protected var spreadImageButton: ImageButton = container.spreadImageButton
-    protected var burnTextView: TextView = container.burnTextView
-    protected var earnTextView: TextView = container.earnTextView
+    protected var spreadOutsideImageButton: ImageButton = container.spreadOutsideImageButton
+
 
     @SuppressLint("SetTextI18n")
     @CallSuper
     override fun setup(thought: Thought, user: User) {
+
         val currentThought = thought
         val currentUser = user
 //        userNameTextView.textString = currentUser.blockstackId
         userScreenNameTextView.text = "@${currentUser.blockstackId}"
         timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"
         userProfilePicImageView.loadAvatar(currentUser.avatarImage)
-        burnTextView.visible()
-        earnTextView.visible()
-        var burn = 0
-        var earn = 0
-        if (!thought.transactions.isNullOrEmpty()) {
-            burn = thought.transactions.filter { it.from == thought.user.target.blockstackId }
-                    .sumBy { it.amount }
-            earn = thought.transactions.filter { it.to == thought.user.target.blockstackId }
-                    .sumBy { it.amount }
-        }
 
-        burnTextView.text = if (burn != 0) burn.toString() else "FREE POST"
-        earnTextView.text = earn.toString()
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
         else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
@@ -53,7 +42,11 @@ open class BookStatusViewHolder(container: View, listener: BookInteractionListen
         threadImageButton.setOnClickListener {
             listener.showThread(thought)
         }
-
+        spreadOutsideImageButton.setImageResource(R.drawable.social_group
+        )
+        spreadOutsideImageButton.setOnClickListener {
+            listener.spreadOutside(thought)
+        }
         spreadImageButton.setOnClickListener {
             if (!thought.isSpread) {
                 if (!thought.isSpread) {

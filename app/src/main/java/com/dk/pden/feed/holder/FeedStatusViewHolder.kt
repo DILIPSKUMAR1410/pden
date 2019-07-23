@@ -22,9 +22,8 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
     protected var spreadTextView: TextView = container.spreadTextView
     protected var spreadImageButton: ImageButton = container.spreadImageButton
     protected var threadImageButton: ImageButton = container.threadImageButton
-    protected var burnTextView: TextView = container.burnTextView
-    protected var earnTextView: TextView = container.earnTextView
     protected var spreadOutsideImageButton: ImageButton = container.spreadOutsideImageButton
+
     @SuppressLint("SetTextI18n")
     @CallSuper
     override fun setup(thought: Thought) {
@@ -35,21 +34,6 @@ open class FeedStatusViewHolder(container: View, listener: FeedInteractionListen
             spreadTextView.visible()
             spreadTextView.text = container.context.getString(
                     R.string.spreadDiscp)
-        }
-        if (thought.user.target.isSelf) {
-            burnTextView.visible()
-            earnTextView.visible()
-            var burn = 0
-            var earn = 0
-            if (0 < thought.transactions.count()) {
-                burn = thought.transactions.filter { it.from == thought.user.target.blockstackId }
-                        .sumBy { it.amount }
-                earn = thought.transactions.filter { it.to == thought.user.target.blockstackId }
-                        .sumBy { it.amount }
-            }
-
-            burnTextView.text = if (burn != 0) burn.toString() else "FREE POST"
-            earnTextView.text = earn.toString()
         }
 
         if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)

@@ -36,6 +36,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
     private lateinit var userBox: Box<User>
 
     open fun onRefresh(context: Activity, user: User, self: Boolean) {
+        mvpView?.showLoading()
         checkViewAttached()
         var thoughts = mutableListOf<Thought>()
         var options = GetFileOptions(false)
@@ -73,7 +74,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         user.thoughts.addAll(thoughts)
                         userBox.put(user)
                         mvpView?.showThoughts(thoughts.asReversed())
-                        mvpView?.stopRefresh()
+                        mvpView?.hideLoading()
                     } else {
                         Toast.makeText(context, "error: " + contentResult.error, Toast.LENGTH_SHORT).show()
                     }
@@ -113,7 +114,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         i++
                                     }
                                     Log.d("thoughts -> Mybook open", my_book.toString())
-                                    if (!userBox.query().equal(User_.blockstackId, user.blockstackId).build().find().isEmpty()) {
+                                    if (userBox.query().equal(User_.blockstackId, user.blockstackId).build().find().isNotEmpty()) {
                                         thoughtBox.query().run {
                                             equal(Thought_.userId, user.pk)
                                             build().remove()
@@ -122,7 +123,7 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         userBox.put(user)
                                     }
                                     mvpView?.showThoughts(thoughts.asReversed())
-                                    mvpView?.stopRefresh()
+                                    mvpView?.hideLoading()
                                 } else {
                                     val errorMsg = "error: " + contentResult.error
                                     Log.d("errorMsg", errorMsg)
@@ -136,7 +137,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                     }
                 }
             }
-            mvpView?.hideLoading()
         }
 
     }
