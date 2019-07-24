@@ -139,7 +139,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .build()
                     val fancyShowCaseView2 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myShelf)) // ActionBar menu item id
-                            .title("\n\n\n    Shelf is list of books you have borrowed.")
+                            .title("\n\n\n    Shelf is list of books   you have borrowed.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Shelf")
                             .build()

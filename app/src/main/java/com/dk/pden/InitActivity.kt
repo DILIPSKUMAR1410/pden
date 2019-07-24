@@ -92,6 +92,10 @@ class InitActivity : AppCompatActivity() {
     }
 
     fun close() {
+        // Get a instance of PreferencesHelper class
+        val preferencesHelper = PreferencesHelper(this)
+        // save token on preferences
+        preferencesHelper.isInitCompleted = true
         val intent = Intent(this, FeedActivity::class.java)
         startActivity(intent)
         finish()
