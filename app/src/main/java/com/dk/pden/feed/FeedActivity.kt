@@ -133,19 +133,19 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .build()
                     val fancyShowCaseView1 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myBook)) // ActionBar menu item id
-                            .title("\n\n\n    Book is your collection of thoughts.")
+                            .title("\n\n\n Book is your collection of thoughts.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Book")
                             .build()
                     val fancyShowCaseView2 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.myShelf)) // ActionBar menu item id
-                            .title("\n\n\n    Shelf is list of books   you have borrowed.")
+                            .title("\n\n\n Shelf is list of books you have borrowed.")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Shelf")
                             .build()
                     val fancyShowCaseView3 = FancyShowCaseView.Builder(this)
                             .focusOn(findViewById(R.id.action_search)) // ActionBar menu item id
-                            .title("\n\n\n    Search users")
+                            .title("\n\n\n Search users")
                             .titleStyle(R.style.MyTitleStyle, Gravity.FILL)
                             .showOnce("Search")
                             .build()
@@ -156,13 +156,6 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .focusOn(recyclerView.getChildAt(0).findViewById(R.id.threadImageButton))
                             .build()
                     val fancyShowCaseView5 = FancyShowCaseView.Builder(this)
-                            .title("Spread the thought")
-                            .enableAutoTextPosition()
-                            .titleStyle(R.style.MyTitleStyle, Gravity.END)
-                            .showOnce("Spread")
-                            .focusOn(recyclerView.getChildAt(0).findViewById(R.id.spreadImageButton))
-                            .build()
-                    val fancyShowCaseView6 = FancyShowCaseView.Builder(this)
                             .title("Spread thought to other social networks")
                             .enableAutoTextPosition()
                             .titleStyle(R.style.MyTitleStyle, Gravity.END)
@@ -178,8 +171,6 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .add(fancyShowCaseView3)
                             .add(fancyShowCaseView4)
                             .add(fancyShowCaseView5)
-                            .add(fancyShowCaseView6)
-
                     mQueue.show()
                 }, 1000
         )
@@ -308,7 +299,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
 
     override fun showLoading() {
 //        if (!swipeRefreshLayout.isRefreshing)
-            loadingProgressBar.visible()
+        loadingProgressBar.visible()
     }
 
     override fun hideLoading() {

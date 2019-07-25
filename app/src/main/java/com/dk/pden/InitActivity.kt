@@ -35,6 +35,7 @@ class InitActivity : AppCompatActivity() {
 
     private var _blockstackSession: BlockstackSession? = null
     private lateinit var userBox: Box<User>
+    private lateinit var thoughtBox: Box<Thought>
     var counter = 0
     var blockstack_id: String = ""
     private lateinit var progressPercent: TextView
@@ -53,6 +54,7 @@ class InitActivity : AppCompatActivity() {
             // BlockstackSession API methods
             val options = GetFileOptions(false)
             userBox = ObjectBox.boxStore.boxFor(User::class.java)
+            thoughtBox = ObjectBox.boxStore.boxFor(Thought::class.java)
             blockstackSession().getFile("pasand.json", options) { contentResult ->
                 if (contentResult.hasValue) {
                     val content: String?
@@ -131,7 +133,14 @@ class InitActivity : AppCompatActivity() {
                     val user: User
                     if (interest.equals(blockstack_id)) {
                         user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!
+                        thoughtBox.remove(user.thoughts)
                     } else {
+                        val checkUserExist = userBox.query().equal(User_.blockstackId, interest).build()
+                        if (checkUserExist.count() > 0) {
+                            val checkUserExistObj = checkUserExist.findFirst() as User
+                            thoughtBox.remove(checkUserExistObj.thoughts)
+                            userBox.remove(checkUserExistObj.pk)
+                        }
                         user = User(interest)
                         user.isFollowed = true
                     }
