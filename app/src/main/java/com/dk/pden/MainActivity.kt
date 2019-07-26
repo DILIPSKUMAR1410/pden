@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleAuthResponse(intent: Intent) {
         val response = intent.dataString
-        Log.d(TAG, "response ${response}")
+        Log.d(TAG, "response $response")
         if (response != null) {
             val authResponseTokens = response.split(':')
             if (authResponseTokens.size > 1) {

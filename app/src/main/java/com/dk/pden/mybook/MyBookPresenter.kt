@@ -92,7 +92,6 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                         user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                         user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
-                        userBox.put(user)
                         GlobalScope.launch(Dispatchers.Main) {
                             blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
                                 if (contentResult.hasValue) {

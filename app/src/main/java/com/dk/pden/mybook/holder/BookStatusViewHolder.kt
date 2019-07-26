@@ -26,42 +26,43 @@ open class BookStatusViewHolder(container: View, listener: BookInteractionListen
     @CallSuper
     override fun setup(thought: Thought, user: User) {
 
-        val currentThought = thought
-        val currentUser = user
-//        userNameTextView.textString = currentUser.blockstackId
-        userScreenNameTextView.text = "@${currentUser.blockstackId}"
-        timeTextView.text = " • ${Utils.formatDate(currentThought.timestamp)}"
-        userProfilePicImageView.loadAvatar(currentUser.avatarImage)
+        //        userNameTextView.textString = currentUser.blockstackId
+        userScreenNameTextView.text = "@${user.blockstackId}"
+        timeTextView.text = " • ${Utils.formatDate(thought.timestamp)}"
+        userProfilePicImageView.loadAvatar(user.avatarImage)
 
-        if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
-        else if (!thought.user.target.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
 
-        statusTextView.text = currentThought.textString
 
-        threadImageButton.setImageResource(R.drawable.ic_thread)
-        threadImageButton.setOnClickListener {
-            listener.showThread(thought)
-        }
-        spreadOutsideImageButton.setImageResource(R.drawable.social_group
-        )
-        spreadOutsideImageButton.setOnClickListener {
-            listener.spreadOutside(thought)
-        }
-        spreadImageButton.setOnClickListener {
-            if (!thought.isSpread) {
+        statusTextView.text = thought.textString
+
+        if (user.isFollowed) {
+            threadImageButton.setImageResource(R.drawable.ic_thread)
+            if (thought.isSpread) spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
+            else if (!user.isSelf) spreadImageButton.setImageResource(R.drawable.ic_repeat)
+            spreadOutsideImageButton.setImageResource(R.drawable.social_group)
+            threadImageButton.setOnClickListener {
+                listener.showThread(thought)
+            }
+            spreadOutsideImageButton.setOnClickListener {
+                listener.spreadOutside(thought)
+            }
+            spreadImageButton.setOnClickListener {
                 if (!thought.isSpread) {
-                    AlertDialog.Builder(container.context)
-                            .setTitle(R.string.spread_title)
-                            .setPositiveButton(R.string.spread)
-                            { _, _ ->
-                                spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
-                                listener.spread(thought)
-                            }
-                            .setNegativeButton(R.string.cancel, null)
-                            .create().show()
+                    if (!thought.isSpread) {
+                        AlertDialog.Builder(container.context)
+                                .setTitle(R.string.spread_title)
+                                .setPositiveButton(R.string.spread)
+                                { _, _ ->
+                                    spreadImageButton.setImageResource(R.drawable.ic_repeat_blue)
+                                    listener.spread(thought)
+                                }
+                                .setNegativeButton(R.string.cancel, null)
+                                .create().show()
+                    }
                 }
             }
         }
+
 
     }
 

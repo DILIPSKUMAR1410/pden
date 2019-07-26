@@ -93,7 +93,7 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
             user!!.avatarImage = intent.getStringExtra(TAG_USER_avatarImage)
             user!!.nameString = intent.getStringExtra(TAG_USER_name)
             user!!.description = intent.getStringExtra(TAG_USER_description)
-        } else if (my_blockstack_id.equals(blockstack_id)) {
+        } else if (my_blockstack_id == blockstack_id) {
             self = true
             toggleAddToShelf.visibility = View.INVISIBLE
         } else if (interests.contains(blockstack_id)) {
@@ -156,7 +156,6 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
 
 
     override fun showThoughts(thoughts: MutableList<Thought>) {
-
         runOnUiThread {
             adapter.thoughts = thoughts
             tcountvalue.text = adapter.thoughts.size.toString()
@@ -197,13 +196,17 @@ class MyBookActivity : AppCompatActivity(), MyBookMvpView, BookInteractionListen
     }
 
     override fun showLoading() {
-        if (!swipeRefreshLayout.isRefreshing)
-            loadingProgressBar.visible()
+        runOnUiThread {
+            if (!swipeRefreshLayout.isRefreshing)
+                loadingProgressBar.visible()
+        }
     }
 
     override fun hideLoading() {
-        if (loadingProgressBar.isEnabled)
-            loadingProgressBar.visible(false)
+        runOnUiThread {
+            if (loadingProgressBar.isEnabled)
+                loadingProgressBar.visible(false)
+        }
     }
 
 
