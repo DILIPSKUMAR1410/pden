@@ -131,7 +131,7 @@ class InitActivity : AppCompatActivity() {
                 val is_exist = profileResult.value?.json?.get("apps") as JSONObject
                 if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
                     val user: User
-                    if (interest.equals(blockstack_id)) {
+                    if (interest == blockstack_id) {
                         user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!
                         thoughtBox.remove(user.thoughts)
                     } else {
@@ -158,7 +158,7 @@ class InitActivity : AppCompatActivity() {
                                     if (content.isNotEmpty()) {
                                         val interested_book = JSONArray(content)
                                         val thoughts = mutableListOf<Thought>()
-                                        for (i in 0..(interested_book.length() - 1)) {
+                                        for (i in 0 until interested_book.length()) {
                                             val item = interested_book.getJSONObject(i)
                                             // Your code here
                                             val thought = Thought(item.getString("text"), item.getLong("timestamp"))
@@ -195,12 +195,20 @@ class InitActivity : AppCompatActivity() {
                             } else {
                                 val errorMsg = "error: " + contentResult.error
                                 Log.d("errorMsg", errorMsg)
+                                if (counter == interests.length() - 1)
+                                    close()
+                                else
+                                    fetchBooks(interests, counter + 1)
                             }
                         }
                     }
                 } else {
                     val errorMsg = "error: " + profileResult.error
                     Log.d("errorMsg", errorMsg)
+                    if (counter == interests.length() - 1)
+                        close()
+                    else
+                        fetchBooks(interests, counter + 1)
                 }
             }
         }
