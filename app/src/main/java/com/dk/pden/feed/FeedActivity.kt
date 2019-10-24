@@ -203,24 +203,12 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
         ShelfActivity.launch(this)
     }
 
-    fun sharePden() {
+    private fun sharePden() {
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
             sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout Pden app, I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
             sendIntent.type = "text/plain"
-            sendIntent.setPackage("com.whatsapp")
-            startActivity(sendIntent)
-    }
-
-    fun isPackageExist(targetPackage: String): Boolean {
-        val pm: PackageManager = getPackageManager()
-        val packages = pm.getInstalledApplications(0);
-        for (packageInfo in packages) {
-            if (packageInfo.packageName.equals(targetPackage)) {
-                return true
-            }
-        }
-        return false
+        this.startActivity(sendIntent)
     }
 
     override fun spreadOutside(thought: Thought) {
@@ -229,7 +217,6 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
             sendIntent.putExtra(Intent.EXTRA_TEXT, thought.user.target.blockstackId + " \nsays: \n" + thought.text +
                     "\nCheckout this pden app I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
             sendIntent.type = "text/plain"
-            sendIntent.setPackage("com.whatsapp")
             startActivity(sendIntent)
     }
 
