@@ -204,16 +204,12 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     fun sharePden() {
-        if (isPackageExist("com.whatsapp")) {
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
             sendIntent.putExtra(Intent.EXTRA_TEXT, "Checkout Pden app, I found it best for thoughtful expressions \n https://play.google.com/store/apps/details?id=com.dk.pden")
             sendIntent.type = "text/plain"
             sendIntent.setPackage("com.whatsapp")
             startActivity(sendIntent)
-        } else {
-            Toast.makeText(this, "You dont have whatsapp ?", Toast.LENGTH_SHORT).show()
-        }
     }
 
     fun isPackageExist(targetPackage: String): Boolean {
@@ -228,7 +224,6 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
     }
 
     override fun spreadOutside(thought: Thought) {
-        if (isPackageExist("com.whatsapp")) {
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
             sendIntent.putExtra(Intent.EXTRA_TEXT, thought.user.target.blockstackId + " \nsays: \n" + thought.text +
@@ -236,9 +231,6 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
             sendIntent.type = "text/plain"
             sendIntent.setPackage("com.whatsapp")
             startActivity(sendIntent)
-        } else {
-            Toast.makeText(this, "You dont have whatsapp ?", Toast.LENGTH_SHORT).show()
-        }
     }
 
     override fun showThoughts(thoughts: MutableList<Thought>) {

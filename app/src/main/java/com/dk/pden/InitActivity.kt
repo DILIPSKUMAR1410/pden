@@ -107,7 +107,6 @@ class InitActivity : AppCompatActivity() {
         interests.put(blockstack_id)
         // Default borrowed handles
         interests.put("cryptoupdates.id.blockstack")
-        interests.put("scienceandtech.id.blockstack")
         interests.put("amazingquotes.id.blockstack")
 
         if (interests.length() > 0)
