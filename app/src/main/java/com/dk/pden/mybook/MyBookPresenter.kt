@@ -83,12 +83,12 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                 val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
                 options = GetFileOptions(username = user.blockstackId,
                         zoneFileLookupURL = zoneFileLookupUrl,
-                        app = "https://app.pden.xyz",
+                        app = "https://pden.xyz",
                         decrypt = false)
                 thoughts = mutableListOf()
                 blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                     val is_exist = profileResult.value?.json?.get("apps") as JSONObject
-                    if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
+                    if (profileResult.hasValue && is_exist.has("https://pden.xyz")) {
                         user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                         user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
                         user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
@@ -169,15 +169,15 @@ open class MyBookPresenter : BasePresenter<MyBookMvpView>() {
                                         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
                                         val options = GetFileOptions(username = user.blockstackId,
                                                 zoneFileLookupURL = zoneFileLookupUrl,
-                                                app = "https://app.pden.xyz",
+                                                app = "https://pden.xyz",
                                                 decrypt = false)
                                         val thoughts = mutableListOf<Thought>()
                                         GlobalScope.launch(Dispatchers.Main) {
                                             blockstackSession().lookupProfile(user.blockstackId, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                                                 val is_exist = profileResult.value?.json?.get("apps") as JSONObject
-                                                if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
+                                                if (profileResult.hasValue && is_exist.has("https://pden.xyz")) {
                                                     val x = profileResult.value?.json?.get("apps") as JSONObject
-                                                    if (x.has("https://app.pden.xyz")) {
+                                                    if (x.has("https://pden.xyz")) {
                                                     }
                                                     user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
                                                     user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""

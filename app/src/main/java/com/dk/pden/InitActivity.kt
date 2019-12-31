@@ -122,13 +122,13 @@ class InitActivity : AppCompatActivity() {
         val zoneFileLookupUrl = URL("https://core.blockstack.org/v1/names")
         val options = GetFileOptions(username = interest,
                 zoneFileLookupURL = zoneFileLookupUrl,
-                app = "https://app.pden.xyz",
+                app = "https://pden.xyz",
                 decrypt = false)
         GlobalScope.launch(Dispatchers.Main) {
             progressPercent.text = "$percent %"
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
                 val is_exist = profileResult.value?.json?.get("apps") as JSONObject
-                if (profileResult.hasValue && is_exist.has("https://app.pden.xyz")) {
+                if (profileResult.hasValue && is_exist.has("https://pden.xyz")) {
                     val user: User
                     if (interest == blockstack_id) {
                         user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!

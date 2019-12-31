@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
 
         val tokenProvider = BeamsTokenProvider(
-                "https://app.pden.xyz/.netlify/functions/beam_token",
+                "https://pden.xyz/.netlify/functions/beam_token",
                 object : AuthDataGetter {
                     override fun getAuthData(): AuthData {
                         return AuthData(

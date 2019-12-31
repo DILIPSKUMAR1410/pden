@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit
 object Utils {
 
 
-    val config = java.net.URI("https://app.pden.xyz").run {
+    val config = java.net.URI("https://pden.xyz").run {
         org.blockstack.android.sdk.BlockstackConfig(
                 this,
-                java.net.URI("${this}/redirect/"),
-                java.net.URI("${this}/manifest.json"),
+                java.net.URI("https://pden.xyz/redirect/"),
+                java.net.URI("https://pden.xyz/manifest.json"),
                 kotlin.arrayOf(Scope.StoreWrite, Scope.PublishData))
     }
 

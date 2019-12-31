@@ -15,13 +15,13 @@ default_platform :android
 # info which you can add here later
 lane :internal do
 
-  	# build the release variant
-  	gradle(
-    task: 'assemble',
-    build_type: 'Release'
-  )
+# build the release variant
+  	#gradle(
+   #task: 'assemble',
+   #build_type: 'Release'
+#)
 
   	# upload to Google Play
   	supply(track: "internal",
-  		apk:"/Users/dk/AndroidStudioProjects/pden/app/build/outputs/apk/release/app-release.apk")
+  		apk:"/Users/dilip/pden/app/release/app-release.apk")
 end
