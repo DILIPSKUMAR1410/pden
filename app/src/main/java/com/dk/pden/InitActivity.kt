@@ -127,88 +127,99 @@ class InitActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             progressPercent.text = "$percent %"
             blockstackSession().lookupProfile(interest, zoneFileLookupURL = zoneFileLookupUrl) { profileResult ->
-                val is_exist = profileResult.value?.json?.get("apps") as JSONObject
-                if (profileResult.hasValue && is_exist.has("https://pden.xyz")) {
-                    val user: User
-                    if (interest == blockstack_id) {
-                        user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!
-                        thoughtBox.remove(user.thoughts)
-                    } else {
-                        val checkUserExist = userBox.query().equal(User_.blockstackId, interest).build()
-                        if (checkUserExist.count() > 0) {
-                            val checkUserExistObj = checkUserExist.findFirst() as User
-                            thoughtBox.remove(checkUserExistObj.thoughts)
-                            userBox.remove(checkUserExistObj.pk)
+                Log.d("profileResult", profileResult.hasValue.toString())
+                if (profileResult.hasValue){
+                    val is_exist = profileResult.value?.json?.get("apps") as JSONObject
+                    if (profileResult.hasValue && is_exist.has("https://pden.xyz")) {
+                        val user: User
+                        if (interest == blockstack_id) {
+                            user = userBox.query().equal(User_.blockstackId, blockstack_id).build().findFirst()!!
+                            thoughtBox.remove(user.thoughts)
+                        } else {
+                            val checkUserExist = userBox.query().equal(User_.blockstackId, interest).build()
+                            if (checkUserExist.count() > 0) {
+                                val checkUserExistObj = checkUserExist.findFirst() as User
+                                thoughtBox.remove(checkUserExistObj.thoughts)
+                                userBox.remove(checkUserExistObj.pk)
+                            }
+                            user = User(interest)
+                            user.isFollowed = true
                         }
-                        user = User(interest)
-                        user.isFollowed = true
-                    }
 
-                    user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
-                    user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
-                    user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
-                    userBox.put(user)
-                    GlobalScope.launch(Dispatchers.Main) {
-                        blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
-                            if (contentResult.hasValue) {
-                                val content: Any
-                                if (contentResult.value is String) {
-                                    content = contentResult.value as String
-                                    if (content.isNotEmpty()) {
-                                        val interested_book = JSONArray(content)
-                                        val thoughts = mutableListOf<Thought>()
-                                        for (i in 0 until interested_book.length()) {
-                                            val item = interested_book.getJSONObject(i)
-                                            // Your code here
-                                            val thought = Thought(item.getString("text"), item.getLong("timestamp"))
-                                            thought.uuid = item.getString("uuid")
-                                            thoughts.add(thought)
+                        user.nameString = if (profileResult.value?.name != null) profileResult.value?.name!! else ""
+                        user.description = if (profileResult.value?.description != null) profileResult.value?.description!! else ""
+                        user.avatarImage = if (profileResult.value?.avatarImage != null) profileResult.value?.avatarImage!! else "https://api.adorable.io/avatars/285/" + user.blockstackId + ".png"
+                        userBox.put(user)
+                        GlobalScope.launch(Dispatchers.Main) {
+                            blockstackSession().getFile("kitab141.json", options) { contentResult: Result<Any> ->
+                                if (contentResult.hasValue) {
+                                    val content: Any
+                                    if (contentResult.value is String) {
+                                        content = contentResult.value as String
+                                        if (content.isNotEmpty()) {
+                                            val interested_book = JSONArray(content)
+                                            val thoughts = mutableListOf<Thought>()
+                                            for (i in 0 until interested_book.length()) {
+                                                val item = interested_book.getJSONObject(i)
+                                                // Your code here
+                                                val thought = Thought(item.getString("text"), item.getLong("timestamp"))
+                                                thought.uuid = item.getString("uuid")
+                                                thoughts.add(thought)
+                                            }
+                                            user.thoughts.addAll(thoughts)
+                                            userBox.put(user)
+
+                                            if (!user.isSelf) {
+                                                // [START subscribe_topics]
+                                                PushNotifications.addDeviceInterest(interest)
+                                                if (counter == interests.length() - 1) {
+                                                    close()
+                                                } else
+                                                    fetchBooks(interests, counter + 1)
+
+                                                // [END subscribe_topics]
+                                            } else {
+                                                if (counter == interests.length() - 1) {
+                                                    close()
+                                                } else
+                                                    fetchBooks(interests, counter + 1)
+                                            }
                                         }
-                                        user.thoughts.addAll(thoughts)
-                                        userBox.put(user)
-
-                                        if (!user.isSelf) {
-                                            // [START subscribe_topics]
-                                            PushNotifications.addDeviceInterest(interest)
-                                            if (counter == interests.length() - 1) {
-                                                close()
-                                            } else
-                                                fetchBooks(interests, counter + 1)
-
-                                            // [END subscribe_topics]
-                                        } else {
-                                            if (counter == interests.length() - 1) {
-                                                close()
-                                            } else
-                                                fetchBooks(interests, counter + 1)
-                                        }
+                                    } else {
+                                        val errorMsg = "error: Empty file"
+                                        Log.d("errorMsg", errorMsg)
+                                        if (counter == interests.length() - 1)
+                                            close()
+                                        else
+                                            fetchBooks(interests, counter + 1)
                                     }
                                 } else {
-                                    val errorMsg = "error: Empty file"
+                                    val errorMsg = "error: " + contentResult.error
                                     Log.d("errorMsg", errorMsg)
                                     if (counter == interests.length() - 1)
                                         close()
                                     else
                                         fetchBooks(interests, counter + 1)
                                 }
-                            } else {
-                                val errorMsg = "error: " + contentResult.error
-                                Log.d("errorMsg", errorMsg)
-                                if (counter == interests.length() - 1)
-                                    close()
-                                else
-                                    fetchBooks(interests, counter + 1)
                             }
                         }
+                    } else {
+                        val errorMsg = "error: " + profileResult.error
+                        Log.d("errorMsg", errorMsg)
+                        if (counter == interests.length() - 1)
+                            close()
+                        else
+                            fetchBooks(interests, counter + 1)
                     }
-                } else {
-                    val errorMsg = "error: " + profileResult.error
+                }else{
+                    val errorMsg = "error: Empty file"
                     Log.d("errorMsg", errorMsg)
                     if (counter == interests.length() - 1)
                         close()
                     else
                         fetchBooks(interests, counter + 1)
                 }
+
             }
         }
 

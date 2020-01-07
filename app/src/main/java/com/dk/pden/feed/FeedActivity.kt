@@ -155,7 +155,7 @@ class FeedActivity : AppCompatActivity(), FeedMvpView, FeedInteractionListener {
                             .add(fancyShowCaseView2)
                             .add(fancyShowCaseView3)
 
-                    if (recyclerView.childCount < 1) {
+                    if (recyclerView.childCount > 0) {
                         val fancyShowCaseView4 = FancyShowCaseView.Builder(this)
                                 .title("Discuss your views on the post")
                                 .titleStyle(R.style.MyTitleStyle, Gravity.END)
